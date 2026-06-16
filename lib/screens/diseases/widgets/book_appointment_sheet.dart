@@ -98,6 +98,7 @@ class _BookAppointmentSheetState extends State<_BookAppointmentSheet> {
             ? 'general'
             : DiseaseRegistry.of(widget.disease!).title.toLowerCase(),
         reason: _reasonCtrl.text.trim(),
+        authToken: auth.token,
       );
       if (!mounted) return;
       setState(() {

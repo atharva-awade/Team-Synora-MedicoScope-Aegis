@@ -60,7 +60,10 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     final doctorId = authProvider.user?.id ?? '';
     final patientId = widget.patient['userId']?.toString() ?? '';
     try {
-      final all = await VitalsService.getDoctorAlerts(doctorId: doctorId);
+      final all = await VitalsService.getDoctorAlerts(
+        doctorId: doctorId,
+        authToken: authProvider.token,
+      );
       setState(() {
         _vitalsAlerts = all
             .where((a) =>
@@ -76,7 +79,8 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
 
   Future<void> _deleteVitalsAlert(String alertId) async {
     try {
-      await VitalsService.deleteAlert(alertId: alertId);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      await VitalsService.deleteAlert(alertId: alertId, authToken: authProvider.token);
       setState(() {
         _vitalsAlerts.removeWhere((a) => a['id'] == alertId);
       });

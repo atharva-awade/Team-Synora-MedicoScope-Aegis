@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MedicoScope · Aegis</title>
+<style>
+/* ───────────── DESIGN SYSTEM ───────────── */
+:root{
+  --ink:#332A2E; --ink2:#6E6066; --ink3:#9A8B91;
+  --bg:#FFFBFC; --panel:#FFFFFF;
+  --blossom:#F79CB4; --rose:#E36B8E; --rose-d:#C9527A;
+  --blush:#FCE4EC; --blush2:#FBD0DE; --blush3:#FDEFF4;
+  --leaf:#7EA68C; --leaf-d:#5E8A6E; --gold:#E8B46B; --sky:#8FB8D6; --sky-d:#6C9BC0;
+  --red:#E26D6D; --green:#7EC08F; --amber:#F0B45C;
+  --line:#F3DCE4;
+  --serif:'Playfair Display',Georgia,serif;
+  --sans:'Inter','Segoe UI',system-ui,sans-serif;
+  --mono:'JetBrains Mono','Consolas',monospace;
+  --shadow:0 24px 60px -18px rgba(199,82,122,.28), 0 8px 20px -10px rgba(51,42,46,.10);
+  --shadow-sm:0 10px 28px -12px rgba(199,82,122,.22);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+body{background:#15101280;font-family:var(--sans)}
+.slide{
+  position:relative;width:1280px;height:720px;overflow:hidden;
+  background:
+    radial-gradient(1100px 600px at 88% -8%, #FDEDF2 0%, transparent 55%),
+    radial-gradient(900px 700px at -5% 108%, #FCEFF4 0%, transparent 50%),
+    linear-gradient(135deg,#FFFFFF 0%, #FFF7FA 100%);
+  color:var(--ink);
+}
+/* full-bleed petals layer */
+.petals{position:absolute;inset:0;pointer-events:none}
+.petal{position:absolute;width:46px;height:46px;opacity:.5}
+.petal svg{width:100%;height:100%;display:block}
+/* layout helpers */
+.pad{position:absolute;inset:0;padding:64px 72px}
+.kicker{font-size:14px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--rose-d)}
+h1{font-family:var(--serif);font-weight:800;color:var(--ink);line-height:1.04;letter-spacing:-.5px}
+.lead{color:var(--ink2);font-size:19px;line-height:1.5;font-weight:500}
+.pagenum{position:absolute;right:34px;bottom:26px;font-size:12px;color:var(--ink3);font-weight:600;letter-spacing:.08em}
+.brand{position:absolute;left:48px;bottom:26px;font-size:12px;color:var(--ink3);font-weight:700;letter-spacing:.04em}
+.divider{height:4px;width:64px;border-radius:4px;background:linear-gradient(90deg,var(--rose),var(--blossom))}
+/* glass / cards */
+.glass{
+  background:rgba(255,255,255,.62);backdrop-filter:blur(18px) saturate(140%);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);
+  border:1px solid rgba(255,255,255,.7);border-radius:22px;box-shadow:var(--shadow);
+}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-sm)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;
+  font-size:12.5px;font-weight:700;background:var(--blush);color:var(--rose-d)}
+.pill-live{background:#E8F3EC;color:var(--leaf-d)}
+.pill-road{background:#F1ECEF;color:var(--ink3)}
+.grad-text{background:linear-gradient(120deg,var(--rose),var(--blossom));-webkit-background-clip:text;background-clip:text;color:transparent}
+.glow{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;pointer-events:none}
+.mono{font-family:var(--mono)}
+.flex{display:flex} .col{display:flex;flex-direction:column}
+.center{align-items:center;justify-content:center}
+.between{justify-content:space-between}
+.gap8{gap:8px}.gap16{gap:16px}.gap24{gap:24px}
+.iconbox{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm)}
+svg{display:block}
+</style>
+</head>
+<body>
+<!-- petal SVG symbol -->
+<svg width="0" height="0" style="position:absolute"><defs>
+  <symbol id="blossom" viewBox="0 0 100 100">
+    <g fill="currentColor">
+      <ellipse cx="50" cy="22" rx="15" ry="22"/>
+      <ellipse cx="50" cy="22" rx="15" ry="22" transform="rotate(72 50 50)"/>
+      <ellipse cx="50" cy="22" rx="15" ry="22" transform="rotate(144 50 50)"/>
+      <ellipse cx="50" cy="22" rx="15" ry="22" transform="rotate(216 50 50)"/>
+      <ellipse cx="50" cy="22" rx="15" ry="22" transform="rotate(288 50 50)"/>
+    </g>
+    <circle cx="50" cy="50" r="8" fill="#E8B46B"/>
+  </symbol>
+</defs></svg>
+
+<div class="slide">
+  <div class="glow" style="left:980px;top:-120px;width:420px;height:420px;background:#FAD3E0;opacity:0.7"></div><div class="glow" style="left:-120px;top:640px;width:380px;height:380px;background:#FBE0EA;opacity:0.6"></div>
+  <div class="petals"><div class="petal" style="left:1080px;top:40px;width:70px;height:70px;color:#FBD0DE;opacity:0.7;transform:rotate(10deg)"><svg><use href="#blossom"/></svg></div><div class="petal" style="left:1010px;top:150px;width:46px;height:46px;color:#F79CB4;opacity:0.6;transform:rotate(200deg)"><svg><use href="#blossom"/></svg></div><div class="petal" style="left:1150px;top:200px;width:40px;height:40px;color:#FCE4EC;opacity:0.8;transform:rotate(120deg)"><svg><use href="#blossom"/></svg></div><div class="petal" style="left:70px;top:90px;width:42px;height:42px;color:#FBD0DE;opacity:0.5;transform:rotate(40deg)"><svg><use href="#blossom"/></svg></div></div>
+  <div class="pad col" style="justify-content:center">
+    <div style="position:absolute;left:0;top:0;bottom:0;width:520px;background:linear-gradient(180deg,#FCE4EC 0%,#FDEFF4 100%);opacity:.7"></div>
+    <div style="position:relative">
+      <div class="kicker">Autonomous Healthcare Intelligence</div>
+      <h1 style="font-size:84px;margin-top:14px">MedicoScope<br><span class="grad-text">Aegis</span></h1>
+      <div class="divider" style="margin:26px 0 22px"></div>
+      <div class="lead" style="max-width:560px;font-size:21px">A multi-agent health platform that <b style="color:var(--ink)">observes, reasons, acts</b> — and knows when to stop.</div>
+      <div class="chip" style="margin-top:30px">Theme · AI Agents &amp; Autonomous Systems</div>
+    </div>
+    <div class="glass col" style="position:absolute;right:72px;top:150px;width:430px;height:400px;padding:34px;gap:6px">
+      <div class="kicker" style="font-size:12px">The system, at a glance</div>
+      <div style="margin-top:10px">
+        <div class="flex" style="align-items:baseline;gap:16px;padding:14px 0;border-bottom:1px solid var(--line)"><div style="font-family:var(--serif);font-weight:800;font-size:30px;width:120px;color:#C9527A">9</div><div style="color:var(--ink2);font-size:14px;font-weight:500">autonomous screening modalities</div></div><div class="flex" style="align-items:baseline;gap:16px;padding:14px 0;border-bottom:1px solid var(--line)"><div style="font-family:var(--serif);font-weight:800;font-size:30px;width:120px;color:#5E8A6E">3-tier</div><div style="color:var(--ink2);font-size:14px;font-weight:500">safety gate · fail-closed</div></div><div class="flex" style="align-items:baseline;gap:16px;padding:14px 0;border-bottom:1px solid var(--line)"><div style="font-family:var(--serif);font-weight:800;font-size:30px;width:120px;color:#6C9BC0">100%</div><div style="color:var(--ink2);font-size:14px;font-weight:500">decisions in a tamper-evident ledger</div></div><div class="flex" style="align-items:baseline;gap:16px;padding:14px 0;border-bottom:1px solid var(--line)"><div style="font-family:var(--serif);font-weight:800;font-size:30px;width:120px;color:#E8B46B">0</div><div style="color:var(--ink2);font-size:14px;font-weight:500">fabricated readings — by design</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="brand">MedicoScope · Aegis</div><div class="pagenum">01 / 15</div>
+</div>
+
+<div class="slide">
+  <div class="petals"><div class="petal" style="left:1120px;top:46px;width:60px;height:60px;color:#FBD0DE;opacity:0.55;transform:rotate(20deg)"><svg><use href="#blossom"/></svg></div></div>
+  <div class="pad col">
+    <div class="kicker">The Problem · at scale</div>
+    <h1 style="font-size:44px;margin-top:12px">Billions need screening.<br>Care can't reach them.</h1>
+    <div class="flex gap24" style="margin-top:40px">
+      <div class="card col" style="flex:1;padding:34px;background:linear-gradient(135deg,#FCE4EC,#FBD0DE);border:none">
+      <div style="font-family:var(--serif);font-weight:800;font-size:58px;color:#C9527A">1.4B</div>
+      <div style="color:var(--ink2);font-size:15px;font-weight:600;margin-top:8px;line-height:1.4">live with hypertension —<br>roughly half undiagnosed</div></div>
+      <div class="card col" style="flex:1;padding:34px;background:linear-gradient(135deg,#E9F2EC,#D8EADF);border:none">
+      <div style="font-family:var(--serif);font-weight:800;font-size:58px;color:#5E8A6E">50%</div>
+      <div style="color:var(--ink2);font-size:15px;font-weight:600;margin-top:8px;line-height:1.4">of diabetes in India<br>goes undetected</div></div>
+      <div class="card col" style="flex:1;padding:34px;background:linear-gradient(135deg,#E7F0F7,#D4E6F1);border:none">
+      <div style="font-family:var(--serif);font-weight:800;font-size:58px;color:#6C9BC0">1:1000+</div>
+      <div style="color:var(--ink2);font-size:15px;font-weight:600;margin-top:8px;line-height:1.4">doctor-to-patient gap<br>in rural regions</div></div>
+    </div>
+    <div class="glass flex center" style="margin-top:34px;padding:26px 36px">
+      <div style="font-size:18px;color:var(--ink2)">The bottleneck isn't the will to screen — it's <b class="grad-text" style="font-weight:800">access, speed, and trust.</b></div>
+    </div>
+  </div>
+  <div class="brand">MedicoScope · Aegis</div><div class="pagenum">02 / 15</div>
+</div>
+
+<div class="slide">
+  <div class="glow" style="left:900px;top:560px;width:360px;height:360px;background:#E9F2EC;opacity:0.5"></div>
+  <div class="pad col">
+    <div class="kicker">Why Most Health AI Fails</div>
+    <h1 style="font-size:46px;margin-top:12px">Confident — and unaccountable.</h1>
+    <div class="flex gap24" style="margin-top:34px">
+      <div class="card col" style="flex:1;padding:30px 34px">
+        <div class="chip" style="background:#FBE7E7;color:#C0392B">Typical health AI</div>
+        <div style="margin-top:10px"><div class="flex" style="align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--line)">
+      <div style="width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;background:#FBE7E7">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="[]" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+      <div style="font-size:15.5px;color:var(--ink);font-weight:500">Outputs a diagnosis with no calibrated doubt</div></div><div class="flex" style="align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--line)">
+      <div style="width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;background:#FBE7E7">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="[]" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+      <div style="font-size:15.5px;color:var(--ink);font-weight:500">Acts on a single, easily-wrong signal</div></div><div class="flex" style="align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--line)">
+      <div style="width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;background:#FBE7E7">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="[]" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+      <div style="font-size:15.5px;color:var(--ink);font-weight:500">No record of what it did or why</div></div><div class="flex" style="align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--line)">
+      <div style="width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;background:#FBE7E7">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="[]" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+      <div style="font-size:15.5px;color:var(--ink);font-weight:500">No human brake on serious actions</div></div></div>
+      </div>
+      <div class="card col" style="flex:1;padding:30px 34px;background:linear-gradient(135deg,#EAF4EE,#DCEEE3);border:none">
+        <div class="chip pill-live">MedicoScope Aegis</div>
+        <div style="margin-top:10px"><div class="flex" style="align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--line)">
+      <div style="width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;background:#E8F3EC">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="[]" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
+      <div style="font-size:15.5px;color:var(--ink);font-weight:500">Calibrated confidence — refuses to score noise</div></div><div class="flex" style="align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--line)">
+      <div style="width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;background:#E8F3EC">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="[]" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
+      <div style="font-size:15.5px;color:var(--ink);font-weight:500">Fuses independent modalities (concordance)</div></div><div class="flex" style="align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--line)">
+      <div style="width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;background:#E8F3EC">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="[]" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
+      <div style="font-size:15.5px;color:var(--ink);font-weight:500">Tamper-evident ledger on every decision</div></div><div class="flex" style="align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--line)">
+      <div style="width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;background:#E8F3EC">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="[]" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
+      <div style="font-size:15.5px;color:var(--ink);font-weight:500">Gate escalates anything serious to a human</div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="brand">MedicoScope · Aegis</div><div class="pagenum">03 / 15</div>
+</div>
+
+<div class="slide">
+  <div class="glow" style="left:1000px;top:-100px;width:380px;height:380px;background:#FAD3E0;opacity:0.6"></div>
+  <div class="petals"><div class="petal" style="left:60px;top:560px;width:52px;height:52px;color:#FBD0DE;opacity:0.5;transform:rotate(30deg)"><svg><use href="#blossom"/></svg></div><div class="petal" style="left:150px;top:610px;width:40px;height:40px;color:#F79CB4;opacity:0.5;transform:rotate(160deg)"><svg><use href="#blossom"/></svg></div></div>
+  <div class="pad col">
+    <div class="kicker">The Solution</div>
+    <h1 style="font-size:46px;margin-top:12px">An agent with a <span class="grad-text">safety gate</span> at its core.</h1>
+    <div class="flex gap24" style="margin-top:36px">
+      <div class="card col" style="flex:1;padding:28px;background:linear-gradient(135deg,#EAF6EE,#fff);position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:6px;background:#7EC08F"></div>
+      <div class="chip" style="background:#7EC08F;color:#fff;align-self:flex-start;margin-top:6px">GREEN</div>
+      <div style="font-family:var(--serif);font-weight:700;font-size:24px;margin-top:14px">Act</div>
+      <div style="color:var(--ink2);font-size:14.5px;margin-top:8px;line-height:1.5">Reversible, low-risk actions run autonomously.</div></div>
+      <div class="card col" style="flex:1;padding:28px;background:linear-gradient(135deg,#FCF1E0,#fff);position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:6px;background:#F0B45C"></div>
+      <div class="chip" style="background:#F0B45C;color:#fff;align-self:flex-start;margin-top:6px">AMBER</div>
+      <div style="font-family:var(--serif);font-weight:700;font-size:24px;margin-top:14px">Act + notify</div>
+      <div style="color:var(--ink2);font-size:14.5px;margin-top:8px;line-height:1.5">Run the safe half, alert the clinician.</div></div>
+      <div class="card col" style="flex:1;padding:28px;background:linear-gradient(135deg,#FBE9E9,#fff);position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:6px;background:#E26D6D"></div>
+      <div class="chip" style="background:#E26D6D;color:#fff;align-self:flex-start;margin-top:6px">RED</div>
+      <div style="font-family:var(--serif);font-weight:700;font-size:24px;margin-top:14px">Stop · escalate</div>
+      <div style="color:var(--ink2);font-size:14.5px;margin-top:8px;line-height:1.5">Block the action; open a human-gated case.</div></div>
+    </div>
+    <div class="glass flex center" style="margin-top:32px;padding:24px">
+      <div style="font-size:19px"><b style="font-family:var(--serif)">The agent proposes.</b> &nbsp;<b class="grad-text" style="font-family:var(--serif);font-weight:800">The gate disposes.</b> &nbsp;<span style="color:var(--ink2)">Every decision is provable.</span></div>
+    </div>
+  </div>
+  <div class="brand">MedicoScope · Aegis</div><div class="pagenum">04 / 15</div>
+</div>
+
+<div class="slide">
+  <div class="glow" style="left:620px;top:300px;width:520px;height:520px;background:#FBE0EA;opacity:0.45"></div>
+  <div class="pad col" style="padding:48px 72px">
+    <div class="kicker">Autonomous Agent Ecosystem</div>
+    <h1 style="font-size:40px;margin-top:8px">One orchestrator. Many specialised agents.</h1>
+    <div style="margin-top:2px"><svg width="1136" height="470" viewBox="0 0 1280 560"><line x1="640" y1="330" x2="640" y2="120" stroke="#5E8A6E" stroke-width="2.4"  opacity="0.7"/><line x1="640" y1="330" x2="895" y2="182" stroke="#6C9BC0" stroke-width="2.4"  opacity="0.7"/><line x1="640" y1="330" x2="1000" y2="330" stroke="#E8B46B" stroke-width="2.4"  opacity="0.7"/><line x1="640" y1="330" x2="895" y2="478" stroke="#E36B8E" stroke-width="2.4"  opacity="0.7"/><line x1="640" y1="330" x2="640" y2="540" stroke="#E6D4DC" stroke-width="1.6" stroke-dasharray="5 6" opacity="0.6"/><line x1="640" y1="330" x2="385" y2="478" stroke="#E6D4DC" stroke-width="1.6" stroke-dasharray="5 6" opacity="0.6"/><line x1="640" y1="330" x2="280" y2="330" stroke="#E6D4DC" stroke-width="1.6" stroke-dasharray="5 6" opacity="0.6"/><line x1="640" y1="330" x2="385" y2="182" stroke="#E6D4DC" stroke-width="1.6" stroke-dasharray="5 6" opacity="0.6"/><circle cx="640" cy="120" r="58" fill="#5E8A6E"/><circle cx="640" cy="120" r="58" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><text x="640" y="116" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#fff">Diagnosis</text><text x="640" y="135" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#ffffffcc">multi-modal</text><circle cx="895" cy="182" r="58" fill="#6C9BC0"/><circle cx="895" cy="182" r="58" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><text x="895" y="178" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#fff">Memory</text><text x="895" y="197" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#ffffffcc">episodic+LT</text><circle cx="1000" cy="330" r="58" fill="#E8B46B"/><circle cx="1000" cy="330" r="58" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><text x="1000" y="326" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#fff">Concordance</text><text x="1000" y="345" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#ffffffcc">evidence fusion</text><circle cx="895" cy="478" r="58" fill="#E36B8E"/><circle cx="895" cy="478" r="58" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><text x="895" y="474" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#fff">Triage</text><text x="895" y="493" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#ffffffcc">plan + route</text><circle cx="640" cy="540" r="56" fill="#F6EEF2" stroke="#9A8B91" stroke-width="2" stroke-dasharray="4 5"/><text x="640" y="536" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#6E6066">Treatment</text><text x="640" y="555" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#9A8B91">guideline-based</text><circle cx="385" cy="478" r="56" fill="#F6EEF2" stroke="#E26D6D" stroke-width="2" stroke-dasharray="4 5"/><text x="385" y="474" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#6E6066">Emergency</text><text x="385" y="493" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#9A8B91">red-flag SLA</text><circle cx="280" cy="330" r="56" fill="#F6EEF2" stroke="#9A8B91" stroke-width="2" stroke-dasharray="4 5"/><text x="280" y="326" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#6E6066">Predictive</text><text x="280" y="345" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#9A8B91">risk forecast</text><circle cx="385" cy="182" r="56" fill="#F6EEF2" stroke="#9A8B91" stroke-width="2" stroke-dasharray="4 5"/><text x="385" y="178" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#6E6066">AR Assist</text><text x="385" y="197" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#9A8B91">guided capture</text><circle cx="640" cy="330" r="86" fill="url(#hubg)"/><text x="640" y="322" text-anchor="middle" font-family="Playfair Display" font-weight="800" font-size="22" fill="#fff">AEGIS</text><text x="640" y="344" text-anchor="middle" font-family="Inter" font-size="12.5" fill="#ffffffdd">orchestrator</text><text x="640" y="362" text-anchor="middle" font-family="Inter" font-size="11" fill="#ffffffbb">gate · ledger</text><defs><radialGradient id="hubg"><stop offset="0%" stop-color="#E36B8E"/><stop offset="100%" stop-color="#C9527A"/></radialGradient></defs></svg></div>
+    <div class="flex center gap16" style="position:absolute;bottom:54px;left:0;right:0">
+      <div class="chip pill-live">● LIVE · built today</div>
+      <div class="chip pill-road">○ ROADMAP · designed</div>
+    </div>
+  </div>
+  <div class="brand">MedicoScope · Aegis</div><div class="pagenum">05 / 15</div>
+</div>
+
+<div class="slide">
+  <div class="petals"><div class="petal" style="left:1110px;top:60px;width:56px;height:56px;color:#FBD0DE;opacity:0.5;transform:rotate(15deg)"><svg><use href="#blossom"/></svg></div></div>
+  <div class="pad col" style="padding:50px 72px">
+    <div class="kicker">How an Agent Thinks</div>
+    <h1 style="font-size:42px;margin-top:8px">A closed loop — every cycle, <span class="grad-text">smarter</span>.</h1>
+    <div class="flex center" style="margin-top:6px"><svg width="1136" height="430" viewBox="0 0 1136 500"><line x1="568" y1="75" x2="734" y2="196" stroke="#FBD0DE" stroke-width="3"/><line x1="734" y1="196" x2="671" y2="392" stroke="#FBD0DE" stroke-width="3"/><line x1="671" y1="392" x2="465" y2="392" stroke="#FBD0DE" stroke-width="3"/><line x1="465" y1="392" x2="402" y2="196" stroke="#FBD0DE" stroke-width="3"/><line x1="402" y1="196" x2="568" y2="75" stroke="#FBD0DE" stroke-width="3"/><circle cx="568" cy="75" r="62" fill="#F79CB4"/><circle cx="568" cy="75" r="62" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><text x="568" y="72" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#fff">Observe</text><text x="568" y="91" text-anchor="middle" font-family="Inter" font-size="11" fill="#ffffffcc">capture signals</text><circle cx="734" cy="196" r="62" fill="#7EA68C"/><circle cx="734" cy="196" r="62" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><text x="734" y="193" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#fff">Reason</text><text x="734" y="212" text-anchor="middle" font-family="Inter" font-size="11" fill="#ffffffcc">fuse + classify</text><circle cx="671" cy="392" r="62" fill="#E8B46B"/><circle cx="671" cy="392" r="62" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><text x="671" y="389" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#fff">Decide</text><text x="671" y="408" text-anchor="middle" font-family="Inter" font-size="11" fill="#ffffffcc">gate verdict</text><circle cx="465" cy="392" r="62" fill="#8FB8D6"/><circle cx="465" cy="392" r="62" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><text x="465" y="389" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#fff">Act</text><text x="465" y="408" text-anchor="middle" font-family="Inter" font-size="11" fill="#ffffffcc">or escalate</text><circle cx="402" cy="196" r="62" fill="#E36B8E"/><circle cx="402" cy="196" r="62" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><text x="402" y="193" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#fff">Learn</text><text x="402" y="212" text-anchor="middle" font-family="Inter" font-size="11" fill="#ffffffcc">memory update</text><text x="568" y="244" text-anchor="middle" font-family="Inter" font-size="15" fill="#6E6066">continuous</text><text x="568" y="266" text-anchor="middle" font-family="Playfair Display" font-weight="800" font-size="20" fill="#C9527A">learning</text></svg></div>
+  </div>
+  <div class="brand">MedicoScope · Aegis</div><div class="pagenum">06 / 15</div>
+</div>
+
+<div class="slide">
+  <div class="glow" style="left:80px;top:600px;width:340px;height:340px;background:#FCE4EC;opacity:0.5"></div>
+  <div class="pad col">
+    <div class="kicker">End-to-End Journey</div>
+    <h1 style="font-size:42px;margin-top:10px">From a phone in hand to a clinician's queue.</h1>
+    <div class="flex" style="margin-top:40px;align-items:stretch">
+      <div class="card col" style="flex:1;padding:24px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:6px;background:#F79CB4"></div>
+      <div style="font-family:var(--serif);font-weight:700;font-size:21px;margin-top:6px">Patient</div>
+      <div style="color:var(--ink2);font-size:13.5px;margin-top:8px;line-height:1.5">Opens app · captures a screening</div></div><div class="flex center" style="width:40px"><svg width="30" height="22" viewBox="0 0 24 24" fill="none" stroke="#E36B8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="card col" style="flex:1;padding:24px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:6px;background:#7EA68C"></div>
+      <div style="font-family:var(--serif);font-weight:700;font-size:21px;margin-top:6px">Agent</div>
+      <div style="color:var(--ink2);font-size:13.5px;margin-top:8px;line-height:1.5">Plans · runs tools · fuses evidence</div></div><div class="flex center" style="width:40px"><svg width="30" height="22" viewBox="0 0 24 24" fill="none" stroke="#E36B8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="card col" style="flex:1;padding:24px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:6px;background:#E8B46B"></div>
+      <div style="font-family:var(--serif);font-weight:700;font-size:21px;margin-top:6px">Gate</div>
+      <div style="color:var(--ink2);font-size:13.5px;margin-top:8px;line-height:1.5">GREEN / AMBER / RED verdict</div></div><div class="flex center" style="width:40px"><svg width="30" height="22" viewBox="0 0 24 24" fill="none" stroke="#E36B8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="card col" style="flex:1;padding:24px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:6px;background:#8FB8D6"></div>
+      <div style="font-family:var(--serif);font-weight:700;font-size:21px;margin-top:6px">Outcome</div>
+      <div style="color:var(--ink2);font-size:13.5px;margin-top:8px;line-height:1.5">Result · doctor alert · or RED case</div></div>
+    </div>
+    <div class="glass col" style="margin-top:34px;padding:26px 34px">
+      <div class="kicker" style="font-size:12px">Every step is logged</div>
+      <div style="font-size:17px;margin-top:8px;color:var(--ink2)">Tamper-evident ledger + per-patient memory → <b style="color:var(--ink)">each visit makes the next one smarter and auditable.</b></div>
+    </div>
+  </div>
+  <div class="brand">MedicoScope · Aegis</div><div class="pagenum">07 / 15</div>
+</div>
+
+<div class="slide">
+  <div class="petals"><div class="petal" style="left:60px;top:70px;width:46px;height:46px;color:#FBD0DE;opacity:0.5;transform:rotate(200deg)"><svg><use href="#blossom"/></svg></div></div>
+  <div class="pad col">
+    <div class="kicker">Technical Architecture</div>
+    <h1 style="font-size:42px;margin-top:10px">Three layers. One governed envelope.</h1>
+    <div class="col gap16" style="margin-top:34px">
+      <div class="card flex" style="align-items:center;padding:22px 30px;background:linear-gradient(135deg,#FDEFF4,#fff);position:relative;overflow:hidden;gap:24px">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:7px;background:#F79CB4"></div>
+      <div style="font-family:var(--serif);font-weight:700;font-size:19px;width:230px;flex:none">Experience</div>
+      <div style="color:var(--ink2);font-size:14.5px;line-height:1.5">Flutter · iOS / Android / Web · on-device DSP · camera · mic · wearables</div></div>
+      <div class="card flex" style="align-items:center;padding:22px 30px;background:linear-gradient(135deg,#ECF4EF,#fff);position:relative;overflow:hidden;gap:24px">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:7px;background:#7EA68C"></div>
+      <div style="font-family:var(--serif);font-weight:700;font-size:19px;width:230px;flex:none">Intelligence</div>
+      <div style="color:var(--ink2);font-size:14.5px;line-height:1.5">Agent orchestrator (FastAPI) · Groq LLM · TFLite + MFCC · deterministic clinical rules</div></div>
+      <div class="card flex" style="align-items:center;padding:22px 30px;background:linear-gradient(135deg,#EAF1F7,#fff);position:relative;overflow:hidden;gap:24px">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:7px;background:#8FB8D6"></div>
+      <div style="font-family:var(--serif);font-weight:700;font-size:19px;width:230px;flex:none">Governance &amp; Data</div>
+      <div style="color:var(--ink2);font-size:14.5px;line-height:1.5">Aegis gate · classifier · hash-chained ledger · versioned KB · MongoDB</div></div>
+    </div>
+    <div class="flex" style="margin-top:26px;gap:10px;align-items:center">
+      <div class="chip">Standards as data</div>
+      <div style="color:var(--ink2);font-size:15px">ADA · WHO · AHA/ACC · ICMR — update guidelines without shipping code.</div>
+    </div>
+  </div>
+  <div class="brand">MedicoScope · Aegis</div><div class="pagenum">08 / 15</div>
+</div>
+
+<div class="slide">
+  <div class="glow" style="left:1000px;top:-80px;width:360px;height:360px;background:#FAD3E0;opacity:0.55"></div>
+  <div class="pad col">
+    <div class="kicker">AI Decision Flow</div>
+    <h1 style="font-size:44px;margin-top:10px">It knows when <span class="grad-text">not</span> to act.</h1>
+    <div class="flex center gap16" style="margin-top:34px">
+      <div class="card col" style="flex:1;padding:18px 16px;text-align:center;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:5px;background:#F79CB4"></div>
+      <div style="font-family:var(--serif);font-weight:700;font-size:17px;margin-top:4px">Evidence</div>
+      <div style="color:var(--ink3);font-size:12px;margin-top:5px">modalities</div></div><div class="flex center" style="width:40px"><svg width="30" height="22" viewBox="0 0 24 24" fill="none" stroke="#E36B8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14M13 6l6 6-6 6"/></svg></div><div class="card col" style="flex:1;padding:18px 16px;text-align:center;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:5px;background:#7EA68C"></div>
+      <div style="font-family:var(--serif);font-weight:700;font-size:17px;margin-top:4px">Red-flag scan</div>
+      <div style="color:var(--ink3);font-size:12px;margin-top:5px">KB rules</div></div><div class="flex center" style="width:40px"><svg width="30" height="22" viewBox="0 0 24 24" fill="none" stroke="#E36B8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14M13 6l6 6-6 6"/></svg></div><div class="card col" style="flex:1;padding:18px 16px;text-align:center;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:5px;background:#E8B46B"></div>
+      <div style="font-family:var(--serif);font-weight:700;font-size:17px;margin-top:4px">Classify</div>
+      <div style="color:var(--ink3);font-size:12px;margin-top:5px">risk × confidence</div></div><div class="flex center" style="width:40px"><svg width="30" height="22" viewBox="0 0 24 24" fill="none" stroke="#E36B8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14M13 6l6 6-6 6"/></svg></div><div class="card col" style="flex:1;padding:18px 16px;text-align:center;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:5px;background:#E36B8E"></div>
+      <div style="font-family:var(--serif);font-weight:700;font-size:17px;margin-top:4px">Verdict</div>
+      <div style="color:var(--ink3);font-size:12px;margin-top:5px">G / A / R</div></div>
+    </div>
+    <div class="flex gap16" style="margin-top:22px">
+      <div class="card flex center" style="flex:1;padding:16px;background:linear-gradient(135deg,#EAF6EE,#fff);font-weight:700;color:var(--ink);font-size:14.5px">GREEN → execute</div><div class="card flex center" style="flex:1;padding:16px;background:linear-gradient(135deg,#FCF1E0,#fff);font-weight:700;color:var(--ink);font-size:14.5px">AMBER → notify doctor</div><div class="card flex center" style="flex:1;padding:16px;background:linear-gradient(135deg,#FBE9E9,#fff);font-weight:700;color:var(--ink);font-size:14.5px">RED → block + clinician case</div>
+    </div>
+    <div class="flex center" style="margin-top:26px;padding:22px;border-radius:18px;background:#2A2025">
+      <span class="mono" style="color:#7EC08F;font-weight:600;font-size:14px">fail-closed:&nbsp;</span>
+      <span class="mono" style="color:#FBD0DE;font-size:13.5px">low confidence on a high-risk call escalates — never auto-approves.</span>
+    </div>
+  </div>
+  <div class="brand">MedicoScope · Aegis</div><div class="pagenum">09 / 15</div>
+</div>
+
+<div class="slide">
+  <div class="pad col">
+    <div class="kicker">Live Demo Flow</div>
+    <h1 style="font-size:40px;margin-top:10px">Governed autonomy — on stage, in 60 seconds.</h1>
+    <div class="flex gap16" style="margin-top:30px">
+      <div class="card col" style="flex:1;padding:22px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:6px;background:#F79CB4"></div>
+      <div style="font-family:var(--serif);font-weight:700;font-size:19px;margin-top:6px">1 · Trigger</div>
+      <div style="color:var(--ink2);font-size:13.5px;margin-top:7px;line-height:1.45">Crisis-language check-in submitted</div></div>
+      <div class="card col" style="flex:1;padding:22px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:6px;background:#E26D6D"></div>
+      <div style="font-family:var(--serif);font-weight:700;font-size:19px;margin-top:6px">2 · Gate</div>
+      <div style="color:var(--ink2);font-size:13.5px;margin-top:7px;line-height:1.45">Classifies → RED · BLOCK</div></div>
+      <div class="card col" style="flex:1;padding:22px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:6px;background:#F0B45C"></div>
+      <div style="font-family:var(--serif);font-weight:700;font-size:19px;margin-top:6px">3 · Escalate</div>
+      <div style="color:var(--ink2);font-size:13.5px;margin-top:7px;line-height:1.45">Clinician case opens for review</div></div>
+      <div class="card col" style="flex:1;padding:22px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:6px;background:#7EA68C"></div>
+      <div style="font-family:var(--serif);font-weight:700;font-size:19px;margin-top:6px">4 · Prove</div>
+      <div style="color:var(--ink2);font-size:13.5px;margin-top:7px;line-height:1.45">Ledger shows chain · INTACT</div></div>
+    </div>
+    <div style="margin-top:26px;border-radius:18px;background:#241B20;padding:26px 30px;box-shadow:var(--shadow)">
+      <div class="mono" style="color:#7EC08F;font-weight:600;font-size:14.5px">$ node aegis/demo-check.js</div>
+      <div class="mono" style="color:#FBD0DE;font-size:13px;margin-top:10px;line-height:1.85">
+        &nbsp;&nbsp;✓ KB has 8 red-flag rules &nbsp;&nbsp; ✓ Gate → RED/BLOCK on critical input<br>
+        &nbsp;&nbsp;✓ RED submission opened a ClinicianCase<br>
+        &nbsp;&nbsp;✓ Audit ledger wrote rows; hash chain INTACT</div>
+      <div class="mono" style="color:#7EC08F;font-weight:600;font-size:14.5px;margin-top:10px">&nbsp;&nbsp;✅ GO — agentic / gate path working end-to-end.</div>
+    </div>
+  </div>
+  <div class="brand">MedicoScope · Aegis</div><div class="pagenum">10 / 15</div>
+</div>
+
+<div class="slide">
+  <div class="petals"><div class="petal" style="left:1120px;top:50px;width:54px;height:54px;color:#FBD0DE;opacity:0.5;transform:rotate(40deg)"><svg><use href="#blossom"/></svg></div></div>
+  <div class="pad col">
+    <div class="kicker">Competitive Advantage</div>
+    <h1 style="font-size:44px;margin-top:10px">Where we stand apart.</h1>
+    <div class="card" style="padding:18px 22px;margin-top:30px"><div class="flex" style="gap:0"><div style="flex:1.6"></div><div class="flex center" style="flex:1;padding:14px 6px;text-align:center;font-weight:700;font-size:13.5px;border-radius:14px 14px 0 0;color:var(--ink2)">Symptom chatbots</div><div class="flex center" style="flex:1;padding:14px 6px;text-align:center;font-weight:700;font-size:13.5px;border-radius:14px 14px 0 0;color:var(--ink2)">Single-modal ML</div><div class="flex center" style="flex:1;padding:14px 6px;text-align:center;font-weight:700;font-size:13.5px;border-radius:14px 14px 0 0;background:linear-gradient(135deg,#E36B8E,#C9527A);color:#fff">MedicoScope Aegis</div></div><div class="flex" style="gap:0;align-items:stretch"><div class="flex" style="flex:1.6;align-items:center;font-weight:600;font-size:14.5px;padding:13px 4px;color:var(--ink)">Multi-modal evidence</div><div class="flex center" style="flex:1;padding:11px;border:1px solid var(--line);margin:2px;border-radius:10px"><span style="color:#C8B8BF;font-size:18px">—</span></div><div class="flex center" style="flex:1;padding:11px;border:1px solid var(--line);margin:2px;border-radius:10px"><span style="color:#C8B8BF;font-size:18px">—</span></div><div class="flex center" style="flex:1;padding:11px;background:#EAF4EE;border:1px solid var(--line);margin:2px;border-radius:10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5E8A6E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div></div><div class="flex" style="gap:0;align-items:stretch"><div class="flex" style="flex:1.6;align-items:center;font-weight:600;font-size:14.5px;padding:13px 4px;color:var(--ink)">Cross-modality concordance</div><div class="flex center" style="flex:1;padding:11px;border:1px solid var(--line);margin:2px;border-radius:10px"><span style="color:#C8B8BF;font-size:18px">—</span></div><div class="flex center" style="flex:1;padding:11px;border:1px solid var(--line);margin:2px;border-radius:10px"><span style="color:#C8B8BF;font-size:18px">—</span></div><div class="flex center" style="flex:1;padding:11px;background:#EAF4EE;border:1px solid var(--line);margin:2px;border-radius:10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5E8A6E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div></div><div class="flex" style="gap:0;align-items:stretch"><div class="flex" style="flex:1.6;align-items:center;font-weight:600;font-size:14.5px;padding:13px 4px;color:var(--ink)">Knows when NOT to act</div><div class="flex center" style="flex:1;padding:11px;border:1px solid var(--line);margin:2px;border-radius:10px"><span style="color:#C8B8BF;font-size:18px">—</span></div><div class="flex center" style="flex:1;padding:11px;border:1px solid var(--line);margin:2px;border-radius:10px"><span style="color:#C8B8BF;font-size:18px">—</span></div><div class="flex center" style="flex:1;padding:11px;background:#EAF4EE;border:1px solid var(--line);margin:2px;border-radius:10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5E8A6E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div></div><div class="flex" style="gap:0;align-items:stretch"><div class="flex" style="flex:1.6;align-items:center;font-weight:600;font-size:14.5px;padding:13px 4px;color:var(--ink)">Tamper-evident audit</div><div class="flex center" style="flex:1;padding:11px;border:1px solid var(--line);margin:2px;border-radius:10px"><span style="color:#C8B8BF;font-size:18px">—</span></div><div class="flex center" style="flex:1;padding:11px;border:1px solid var(--line);margin:2px;border-radius:10px"><span style="color:#C8B8BF;font-size:18px">—</span></div><div class="flex center" style="flex:1;padding:11px;background:#EAF4EE;border:1px solid var(--line);margin:2px;border-radius:10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5E8A6E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div></div><div class="flex" style="gap:0;align-items:stretch"><div class="flex" style="flex:1.6;align-items:center;font-weight:600;font-size:14.5px;padding:13px 4px;color:var(--ink)">Human-in-the-loop gate</div><div class="flex center" style="flex:1;padding:11px;border:1px solid var(--line);margin:2px;border-radius:10px"><span style="color:#C8B8BF;font-size:18px">—</span></div><div class="flex center" style="flex:1;padding:11px;border:1px solid var(--line);margin:2px;border-radius:10px"><span style="color:#C8B8BF;font-size:18px">—</span></div><div class="flex center" style="flex:1;padding:11px;background:#EAF4EE;border:1px solid var(--line);margin:2px;border-radius:10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5E8A6E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div></div><div class="flex" style="gap:0;align-items:stretch"><div class="flex" style="flex:1.6;align-items:center;font-weight:600;font-size:14.5px;padding:13px 4px;color:var(--ink)">Honest, calibrated confidence</div><div class="flex center" style="flex:1;padding:11px;border:1px solid var(--line);margin:2px;border-radius:10px"><span style="color:#C8B8BF;font-size:18px">—</span></div><div class="flex center" style="flex:1;padding:11px;border:1px solid var(--line);margin:2px;border-radius:10px"><span style="color:#C8B8BF;font-size:18px">—</span></div><div class="flex center" style="flex:1;padding:11px;background:#EAF4EE;border:1px solid var(--line);margin:2px;border-radius:10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5E8A6E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div></div></div>
+  </div>
+  <div class="brand">MedicoScope · Aegis</div><div class="pagenum">11 / 15</div>
+</div>
+
+<div class="slide">
+  <div class="glow" style="left:80px;top:80px;width:300px;height:300px;background:#FCE4EC;opacity:0.5"></div>
+  <div class="pad col">
+    <div class="kicker">Impact &amp; Scalability</div>
+    <h1 style="font-size:44px;margin-top:10px">Reach more people, without adding risk.</h1>
+    <div class="col gap16" style="margin-top:32px">
+      <div class="flex gap16"><div class="card flex" style="flex:1;align-items:flex-start;gap:18px;padding:26px">
+      <div class="iconbox" style="background:linear-gradient(135deg,#F79CB4,#fff)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg></div>
+      <div class="col"><div style="font-family:var(--serif);font-weight:700;font-size:19px">Rural &amp; tele-health</div>
+      <div style="color:var(--ink2);font-size:14px;margin-top:6px;line-height:1.45">First-line screening on one phone</div></div></div><div class="card flex" style="flex:1;align-items:flex-start;gap:18px;padding:26px">
+      <div class="iconbox" style="background:linear-gradient(135deg,#7EA68C,#fff)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 014 13c0-5 4-9 9-9 4 0 7 2 7 6a8 8 0 01-9 10zM11 20c0-5 2-9 6-11"/></svg></div>
+      <div class="col"><div style="font-family:var(--serif);font-weight:700;font-size:19px">Pluggable modalities</div>
+      <div style="color:var(--ink2);font-size:14px;margin-top:6px;line-height:1.45">Register a tool → the gate wraps it</div></div></div></div>
+      <div class="flex gap16"><div class="card flex" style="flex:1;align-items:flex-start;gap:18px;padding:26px">
+      <div class="iconbox" style="background:linear-gradient(135deg,#8FB8D6,#fff)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 8a3 3 0 00-3 3 3 3 0 000 4 3 3 0 003 3M15 8a3 3 0 013 3 3 3 0 010 4 3 3 0 01-3 3M9 8a3 3 0 013-3 3 3 0 013 3M9 19a3 3 0 003 1 3 3 0 003-1M12 5v15"/></svg></div>
+      <div class="col"><div style="font-family:var(--serif);font-weight:700;font-size:19px">Knowledge as data</div>
+      <div style="color:var(--ink2);font-size:14px;margin-top:6px;line-height:1.45">Versioned KB — update without code</div></div></div><div class="card flex" style="flex:1;align-items:flex-start;gap:18px;padding:26px">
+      <div class="iconbox" style="background:linear-gradient(135deg,#E8B46B,#fff)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/></svg></div>
+      <div class="col"><div style="font-family:var(--serif);font-weight:700;font-size:19px">Roadmap slots ready</div>
+      <div style="color:var(--ink2);font-size:14px;margin-top:6px;line-height:1.45">Radiology · ECG · genomics pre-wired</div></div></div></div>
+    </div>
+  </div>
+  <div class="brand">MedicoScope · Aegis</div><div class="pagenum">12 / 15</div>
+</div>
+
+<div class="slide">
+  <div class="petals"><div class="petal" style="left:60px;top:580px;width:48px;height:48px;color:#FBD0DE;opacity:0.5;transform:rotate(120deg)"><svg><use href="#blossom"/></svg></div></div>
+  <div class="pad col">
+    <div class="kicker">Engineering Quality</div>
+    <h1 style="font-size:44px;margin-top:10px">Verified. Audited. Honest about limits.</h1>
+    <div class="flex gap16" style="margin-top:34px">
+      <div class="card col center" style="flex:1;padding:26px 14px;text-align:center;background:linear-gradient(135deg,#EAF4EE,#fff)">
+      <div style="font-family:var(--serif);font-weight:800;font-size:46px;color:#5E8A6E">57</div>
+      <div style="color:var(--ink2);font-size:13px;margin-top:6px;font-weight:600">server tests passing</div></div>
+      <div class="card col center" style="flex:1;padding:26px 14px;text-align:center;background:linear-gradient(135deg,#FCE4EC,#fff)">
+      <div style="font-family:var(--serif);font-weight:800;font-size:46px;color:#C9527A">9</div>
+      <div style="color:var(--ink2);font-size:13px;margin-top:6px;font-weight:600">analyzer tests · honesty-checked</div></div>
+      <div class="card col center" style="flex:1;padding:26px 14px;text-align:center;background:linear-gradient(135deg,#EAF1F7,#fff)">
+      <div style="font-family:var(--serif);font-weight:800;font-size:46px;color:#6C9BC0">34</div>
+      <div style="color:var(--ink2);font-size:13px;margin-top:6px;font-weight:600">security + persistence fixes</div></div>
+      <div class="card col center" style="flex:1;padding:26px 14px;text-align:center;background:linear-gradient(135deg,#FCF3E4,#fff)">
+      <div style="font-family:var(--serif);font-weight:800;font-size:46px;color:#E8B46B">0</div>
+      <div style="color:var(--ink2);font-size:13px;margin-top:6px;font-weight:600">fabricated readings shipped</div></div>
+    </div>
+    <div class="glass col" style="margin-top:30px;padding:26px 32px">
+      <div class="kicker" style="font-size:12px">Hardened for the real world</div>
+      <div class="flex" style="flex-wrap:wrap;gap:10px;margin-top:14px">
+        <div class="chip">Adversarial security audit</div><div class="chip">Atomic hash-chained ledger</div><div class="chip">All data in MongoDB</div><div class="chip">Role-based access</div><div class="chip">Fail-closed gate</div><div class="chip">Refusable confidence</div>
+      </div>
+    </div>
+  </div>
+  <div class="brand">MedicoScope · Aegis</div><div class="pagenum">13 / 15</div>
+</div>
+
+<div class="slide">
+  <div class="glow" style="left:1000px;top:560px;width:340px;height:340px;background:#FCE4EC;opacity:0.5"></div>
+  <div class="pad col">
+    <div class="kicker">Roadmap</div>
+    <h1 style="font-size:44px;margin-top:10px">From screening agent to <span class="grad-text">clinical co-pilot</span>.</h1>
+    <div style="position:relative;margin-top:40px">
+      <div style="position:absolute;left:8%;right:8%;top:80px;height:3px;background:var(--line)"></div>
+      <div class="flex gap24" style="position:relative">
+        <div class="col center" style="flex:1;text-align:center">
+      <div class="chip pill-live" style="margin-bottom:10px">● LIVE</div>
+      <div style="font-family:var(--serif);font-weight:800;font-size:20px;color:#C9527A">NOW</div>
+      <div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#C9527A,#fff);margin:14px 0;box-shadow:0 0 0 5px #C9527A22"></div>
+      <div class="card" style="padding:18px;color:var(--ink2);font-size:13.5px;line-height:1.5">9 modalities · gate · ledger · concordance</div></div>
+        <div class="col center" style="flex:1;text-align:center">
+      <div style="height:34px"></div>
+      <div style="font-family:var(--serif);font-weight:800;font-size:20px;color:#F79CB4">NEXT</div>
+      <div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#F79CB4,#fff);margin:14px 0;box-shadow:0 0 0 5px #F79CB422"></div>
+      <div class="card" style="padding:18px;color:var(--ink2);font-size:13.5px;line-height:1.5">Trained models · device calibration</div></div>
+        <div class="col center" style="flex:1;text-align:center">
+      <div style="height:34px"></div>
+      <div style="font-family:var(--serif);font-weight:800;font-size:20px;color:#8FB8D6">THEN</div>
+      <div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#8FB8D6,#fff);margin:14px 0;box-shadow:0 0 0 5px #8FB8D622"></div>
+      <div class="card" style="padding:18px;color:var(--ink2);font-size:13.5px;line-height:1.5">Radiology · ECG · genomics agents</div></div>
+        <div class="col center" style="flex:1;text-align:center">
+      <div style="height:34px"></div>
+      <div style="font-family:var(--serif);font-weight:800;font-size:20px;color:#7EA68C">VISION</div>
+      <div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#7EA68C,#fff);margin:14px 0;box-shadow:0 0 0 5px #7EA68C22"></div>
+      <div class="card" style="padding:18px;color:var(--ink2);font-size:13.5px;line-height:1.5">Wearable streaming · clinician co-pilot</div></div>
+      </div>
+    </div>
+    <div class="flex center" style="margin-top:34px"><div style="font-size:17px;color:var(--ink)"><b>Autonomy grows. The safety envelope doesn't shrink.</b></div></div>
+  </div>
+  <div class="brand">MedicoScope · Aegis</div><div class="pagenum">14 / 15</div>
+</div>
+
+<div class="slide" style="background:linear-gradient(135deg,#FDEFF4,#FBD9E4)">
+  <div class="petals"><div class="petal" style="left:70px;top:70px;width:64px;height:64px;color:#FBD0DE;opacity:0.7;transform:rotate(10deg)"><svg><use href="#blossom"/></svg></div><div class="petal" style="left:170px;top:40px;width:42px;height:42px;color:#F79CB4;opacity:0.6;transform:rotate(150deg)"><svg><use href="#blossom"/></svg></div><div class="petal" style="left:1120px;top:560px;width:64px;height:64px;color:#FBD0DE;opacity:0.7;transform:rotate(30deg)"><svg><use href="#blossom"/></svg></div><div class="petal" style="left:1040px;top:620px;width:42px;height:42px;color:#F79CB4;opacity:0.6;transform:rotate(200deg)"><svg><use href="#blossom"/></svg></div><div class="petal" style="left:60px;top:600px;width:44px;height:44px;color:#FBD0DE;opacity:0.6;transform:rotate(90deg)"><svg><use href="#blossom"/></svg></div></div>
+  <div class="pad col center" style="text-align:center">
+    <h1 style="font-size:62px;margin-top:90px">Autonomy you can <span class="grad-text">trust.</span></h1>
+    <div class="lead" style="font-size:21px;margin-top:18px;max-width:760px">A multi-modal health agent that acts — <b style="color:var(--ink)">and knows when to stop.</b></div>
+    <div class="flex gap24" style="margin-top:44px;width:760px">
+      <div class="glass col center" style="flex:1;padding:26px;text-align:center">
+      <div style="font-family:var(--serif);font-weight:700;font-size:21px;color:#C9527A">Innovation</div>
+      <div style="color:var(--ink2);font-size:13.5px;margin-top:6px">governed autonomy</div></div>
+      <div class="glass col center" style="flex:1;padding:26px;text-align:center">
+      <div style="font-family:var(--serif);font-weight:700;font-size:21px;color:#5E8A6E">Trust</div>
+      <div style="color:var(--ink2);font-size:13.5px;margin-top:6px">tamper-evident</div></div>
+      <div class="glass col center" style="flex:1;padding:26px;text-align:center">
+      <div style="font-family:var(--serif);font-weight:700;font-size:21px;color:#6C9BC0">Impact</div>
+      <div style="color:var(--ink2);font-size:13.5px;margin-top:6px">screening at scale</div></div>
+    </div>
+    <div style="margin-top:42px;color:var(--ink2);font-weight:700;font-size:14px;letter-spacing:.04em">MedicoScope Aegis · the future of autonomous healthcare</div>
+    <div style="font-family:var(--serif);font-weight:700;font-size:20px;margin-top:14px">Thank you.</div>
+  </div>
+  <div class="brand">MedicoScope · Aegis</div><div class="pagenum">15 / 15</div>
+</div>
+</body>
+</html>

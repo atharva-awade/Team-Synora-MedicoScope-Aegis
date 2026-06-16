@@ -1,0 +1,119 @@
+<!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<title>MedicoScope · Aegis</title>
+<style>
+/* ───────────── DESIGN SYSTEM ───────────── */
+:root{
+  --ink:#332A2E; --ink2:#6E6066; --ink3:#9A8B91;
+  --bg:#FFFBFC; --panel:#FFFFFF;
+  --blossom:#F79CB4; --rose:#E36B8E; --rose-d:#C9527A;
+  --blush:#FCE4EC; --blush2:#FBD0DE; --blush3:#FDEFF4;
+  --leaf:#7EA68C; --leaf-d:#5E8A6E; --gold:#E8B46B; --sky:#8FB8D6; --sky-d:#6C9BC0;
+  --red:#E26D6D; --green:#7EC08F; --amber:#F0B45C;
+  --line:#F3DCE4;
+  --serif:'Playfair Display',Georgia,serif;
+  --sans:'Inter','Segoe UI',system-ui,sans-serif;
+  --mono:'JetBrains Mono','Consolas',monospace;
+  --shadow:0 24px 60px -18px rgba(199,82,122,.28), 0 8px 20px -10px rgba(51,42,46,.10);
+  --shadow-sm:0 10px 28px -12px rgba(199,82,122,.22);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+body{background:#15101280;font-family:var(--sans)}
+.slide{
+  position:relative;width:1280px;height:720px;overflow:hidden;
+  background:
+    radial-gradient(1100px 600px at 88% -8%, #FDEDF2 0%, transparent 55%),
+    radial-gradient(900px 700px at -5% 108%, #FCEFF4 0%, transparent 50%),
+    linear-gradient(135deg,#FFFFFF 0%, #FFF7FA 100%);
+  color:var(--ink);
+}
+/* full-bleed petals layer */
+.petals{position:absolute;inset:0;pointer-events:none}
+.petal{position:absolute;width:46px;height:46px;opacity:.5}
+.petal svg{width:100%;height:100%;display:block}
+/* layout helpers */
+.pad{position:absolute;inset:0;padding:64px 72px}
+.kicker{font-size:14px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--rose-d)}
+h1{font-family:var(--serif);font-weight:800;color:var(--ink);line-height:1.04;letter-spacing:-.5px}
+.lead{color:var(--ink2);font-size:19px;line-height:1.5;font-weight:500}
+.pagenum{position:absolute;right:34px;bottom:26px;font-size:12px;color:var(--ink3);font-weight:600;letter-spacing:.08em}
+.brand{position:absolute;left:48px;bottom:26px;font-size:12px;color:var(--ink3);font-weight:700;letter-spacing:.04em}
+.divider{height:4px;width:64px;border-radius:4px;background:linear-gradient(90deg,var(--rose),var(--blossom))}
+/* glass / cards */
+.glass{
+  background:rgba(255,255,255,.62);backdrop-filter:blur(18px) saturate(140%);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);
+  border:1px solid rgba(255,255,255,.7);border-radius:22px;box-shadow:var(--shadow);
+}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-sm)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;
+  font-size:12.5px;font-weight:700;background:var(--blush);color:var(--rose-d)}
+.pill-live{background:#E8F3EC;color:var(--leaf-d)}
+.pill-road{background:#F1ECEF;color:var(--ink3)}
+.grad-text{background:linear-gradient(120deg,var(--rose),var(--blossom));-webkit-background-clip:text;background-clip:text;color:transparent}
+.glow{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;pointer-events:none}
+.mono{font-family:var(--mono)}
+.flex{display:flex} .col{display:flex;flex-direction:column}
+.center{align-items:center;justify-content:center}
+.between{justify-content:space-between}
+.gap8{gap:8px}.gap16{gap:16px}.gap24{gap:24px}
+.iconbox{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm)}
+svg{display:block}
+</style>
+</head><body style="margin:0;background:#fff">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <symbol id="blossom" viewBox="0 0 100 100">
+    <g fill="currentColor">
+      <ellipse cx="50" cy="22" rx="15" ry="22"/>
+      <ellipse cx="50" cy="22" rx="15" ry="22" transform="rotate(72 50 50)"/>
+      <ellipse cx="50" cy="22" rx="15" ry="22" transform="rotate(144 50 50)"/>
+      <ellipse cx="50" cy="22" rx="15" ry="22" transform="rotate(216 50 50)"/>
+      <ellipse cx="50" cy="22" rx="15" ry="22" transform="rotate(288 50 50)"/>
+    </g>
+    <circle cx="50" cy="50" r="8" fill="#E8B46B"/>
+  </symbol>
+</defs></svg>
+<div class="slide">
+  <div class="glow" style="left:900px;top:560px;width:360px;height:360px;background:#E9F2EC;opacity:0.5"></div>
+  <div class="pad col">
+    <div class="kicker">Why Most Health AI Fails</div>
+    <h1 style="font-size:46px;margin-top:12px">Confident — and unaccountable.</h1>
+    <div class="flex gap24" style="margin-top:34px">
+      <div class="card col" style="flex:1;padding:30px 34px">
+        <div class="chip" style="background:#FBE7E7;color:#C0392B">Typical health AI</div>
+        <div style="margin-top:10px"><div class="flex" style="align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--line)">
+      <div style="width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;background:#FBE7E7">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="[]" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+      <div style="font-size:15.5px;color:var(--ink);font-weight:500">Outputs a diagnosis with no calibrated doubt</div></div><div class="flex" style="align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--line)">
+      <div style="width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;background:#FBE7E7">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="[]" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+      <div style="font-size:15.5px;color:var(--ink);font-weight:500">Acts on a single, easily-wrong signal</div></div><div class="flex" style="align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--line)">
+      <div style="width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;background:#FBE7E7">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="[]" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+      <div style="font-size:15.5px;color:var(--ink);font-weight:500">No record of what it did or why</div></div><div class="flex" style="align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--line)">
+      <div style="width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;background:#FBE7E7">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="[]" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+      <div style="font-size:15.5px;color:var(--ink);font-weight:500">No human brake on serious actions</div></div></div>
+      </div>
+      <div class="card col" style="flex:1;padding:30px 34px;background:linear-gradient(135deg,#EAF4EE,#DCEEE3);border:none">
+        <div class="chip pill-live">MedicoScope Aegis</div>
+        <div style="margin-top:10px"><div class="flex" style="align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--line)">
+      <div style="width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;background:#E8F3EC">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="[]" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
+      <div style="font-size:15.5px;color:var(--ink);font-weight:500">Calibrated confidence — refuses to score noise</div></div><div class="flex" style="align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--line)">
+      <div style="width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;background:#E8F3EC">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="[]" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
+      <div style="font-size:15.5px;color:var(--ink);font-weight:500">Fuses independent modalities (concordance)</div></div><div class="flex" style="align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--line)">
+      <div style="width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;background:#E8F3EC">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="[]" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
+      <div style="font-size:15.5px;color:var(--ink);font-weight:500">Tamper-evident ledger on every decision</div></div><div class="flex" style="align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--line)">
+      <div style="width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;background:#E8F3EC">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="[]" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
+      <div style="font-size:15.5px;color:var(--ink);font-weight:500">Gate escalates anything serious to a human</div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="brand">MedicoScope · Aegis</div><div class="pagenum">03 / 15</div>
+</div>
+</body></html>

@@ -8,7 +8,10 @@ plugins {
 android {
     namespace = "com.example.mobile_app"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // Plugins require NDK >= 27. NDK is backward-compatible, so we pin to
+    // 28.0.12674087 which is ALREADY installed locally (avoids a multi-GB
+    // download of 27.0.x on a near-full disk).
+    ndkVersion = "28.0.12674087"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

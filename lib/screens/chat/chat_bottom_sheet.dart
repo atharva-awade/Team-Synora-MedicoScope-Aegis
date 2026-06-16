@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:medicoscope/core/theme/app_theme.dart';
@@ -234,8 +236,8 @@ class _ChatBottomSheetState extends State<_ChatBottomSheet> {
       }
 
       // Streaming complete — move streamed text to messages list
+      final finalText = _streamingText;
       if (mounted) {
-        final finalText = _streamingText;
         setState(() {
           if (finalText.isNotEmpty) {
             _messages.add(_ChatMsg(text: finalText, isUser: false));
@@ -243,6 +245,16 @@ class _ChatBottomSheetState extends State<_ChatBottomSheet> {
           _streamingText = '';
           _isLoading = false;
         });
+      }
+
+      // Persist the exchange to MongoDB (durable chat history). Best-effort.
+      if (auth.token != null && finalText.isNotEmpty) {
+        unawaited(ChatService.saveMessageToDb(
+          token: auth.token!,
+          sessionId: sessionId,
+          userMessage: text,
+          assistantMessage: finalText,
+        ));
       }
 
       // Award chat coins
@@ -273,6 +285,15 @@ class _ChatBottomSheetState extends State<_ChatBottomSheet> {
           _messages.add(_ChatMsg(text: reply, isUser: false));
           _isLoading = false;
         });
+      }
+      // Persist the fallback exchange to MongoDB. Best-effort.
+      if (auth.token != null && reply.isNotEmpty) {
+        unawaited(ChatService.saveMessageToDb(
+          token: auth.token!,
+          sessionId: sessionId,
+          userMessage: text,
+          assistantMessage: reply,
+        ));
       }
       final coinsProvider = Provider.of<CoinsProvider>(context, listen: false);
       await coinsProvider.addChatCoins();
@@ -381,6 +402,7 @@ class _ChatBottomSheetState extends State<_ChatBottomSheet> {
         preferredSlot: slot,
         modality: 'general',
         reason: 'Requested via MedicoScope chat: "$text"',
+        authToken: auth.token,
       );
       if (!mounted) return;
       setState(() {

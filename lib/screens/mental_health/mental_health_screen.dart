@@ -8,6 +8,7 @@ import 'package:medicoscope/core/providers/auth_provider.dart';
 import 'package:medicoscope/core/providers/coins_provider.dart';
 import 'package:medicoscope/core/widgets/glass_card.dart';
 import 'package:medicoscope/services/mental_health_service.dart';
+import 'package:medicoscope/services/voice_biomarker_analyzer.dart';
 import 'package:medicoscope/services/api_service.dart';
 import 'package:medicoscope/core/constants/api_constants.dart';
 import 'package:medicoscope/screens/rewards/rewards_screen.dart';
@@ -38,6 +39,9 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
   bool _showCoins = false;
   String? _recordedPath;
   String _linkedDoctorId = '';
+  // Local, on-device voice acoustic-biomarker analysis (runs on the same
+  // recording; screening signal only, never a diagnosis).
+  VoiceBiomarkerResult? _voiceMarkers;
 
   // Pulse animation for mic button
   late AnimationController _pulseController;
@@ -101,11 +105,14 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
 
     try {
       final dir = await getTemporaryDirectory();
+      // WAV (not AAC/m4a) so the on-device voice-biomarker analyzer can decode
+      // the same recording. Whisper transcription on the backend accepts WAV
+      // fine; check-ins are short so the larger file size is negligible.
       final path =
-          '${dir.path}/mind_checkin_${DateTime.now().millisecondsSinceEpoch}.m4a';
+          '${dir.path}/mind_checkin_${DateTime.now().millisecondsSinceEpoch}.wav';
 
       await _recorder.start(
-        const RecordConfig(encoder: AudioEncoder.aacLc, numChannels: 1),
+        const RecordConfig(encoder: AudioEncoder.wav, numChannels: 1),
         path: path,
       );
 
@@ -116,6 +123,7 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
         _responseText = null;
         _showCoins = false;
         _recordedPath = path;
+        _voiceMarkers = null;
       });
 
       _pulseController.repeat();
@@ -194,6 +202,7 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
         patientId: user?.id ?? 'anonymous',
         patientName: user?.name ?? 'Unknown',
         doctorId: _linkedDoctorId,
+        authToken: authProvider.token,
       );
 
       final coins = result['coins_earned'] as int? ?? 0;
@@ -227,6 +236,17 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
           coinsEarned: coins,
           doctorId: _linkedDoctorId.isNotEmpty ? _linkedDoctorId : null,
         );
+      }
+
+      // On-device voice acoustic-biomarker pass on the SAME recording. Reuses
+      // audio we already captured; complements the transcript. Best-effort.
+      if (filePath.isNotEmpty) {
+        try {
+          final markers = await VoiceBiomarkerAnalyzer.analyzeWavFile(filePath);
+          if (mounted && markers.usable) {
+            setState(() => _voiceMarkers = markers);
+          }
+        } catch (_) {/* non-fatal — voice markers are supplementary */}
       }
     } catch (e) {
       _hourglassController.stop();
@@ -625,6 +645,14 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
                             .fadeIn(duration: 500.ms)
                             .slideY(begin: 0.1, end: 0),
 
+                      if (_voiceMarkers != null) ...[
+                        const SizedBox(height: 16),
+                        _buildVoiceMarkersCard(_voiceMarkers!, isDark)
+                            .animate()
+                            .fadeIn(delay: 200.ms, duration: 500.ms)
+                            .slideY(begin: 0.1, end: 0),
+                      ],
+
                       const SizedBox(height: 40),
                     ],
                   ),
@@ -636,4 +664,91 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
       ),
     );
   }
+
+  /// Supplementary, on-device voice acoustic-biomarker card. Honest framing:
+  /// a screening signal that complements the transcript, never a diagnosis.
+  Widget _buildVoiceMarkersCard(VoiceBiomarkerResult m, bool isDark) {
+    final pct = (m.markerScore * 100).round();
+    final conf = (m.confidence * 100).round();
+    final Color tone = m.markerScore >= 0.6
+        ? Colors.orange
+        : m.markerScore >= 0.4
+            ? Colors.amber
+            : Colors.green;
+    return GlassCard(
+      padding: const EdgeInsets.all(AppTheme.spacingLarge),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.graphic_eq, size: 18, color: tone),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Voice signal markers',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? AppTheme.darkTextLight : AppTheme.textDark,
+                  ),
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: tone.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text('marker $pct%',
+                    style: TextStyle(
+                        fontSize: 11, fontWeight: FontWeight.w700, color: tone)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(m.headline,
+              style: TextStyle(
+                  fontSize: 13,
+                  height: 1.4,
+                  color:
+                      isDark ? AppTheme.darkTextLight : AppTheme.textDark)),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              _chip('Speech rate ${m.speechRate}/s', isDark),
+              _chip('Pauses ${(m.pauseRatio * 100).round()}%', isDark),
+              _chip('Pitch var ${m.pitchVariability}', isDark),
+              _chip('Confidence $conf%', isDark),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Screening signal only — not a diagnosis. It complements what you shared, and how you actually feel matters most.',
+            style: TextStyle(
+              fontSize: 11,
+              fontStyle: FontStyle.italic,
+              color: (isDark ? AppTheme.darkTextLight : AppTheme.textDark)
+                  .withValues(alpha: 0.7),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _chip(String label, bool isDark) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(label,
+            style: TextStyle(
+                fontSize: 11,
+                color: isDark ? AppTheme.darkTextLight : AppTheme.textDark)),
+      );
 }

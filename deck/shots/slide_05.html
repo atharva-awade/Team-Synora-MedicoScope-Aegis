@@ -1,0 +1,90 @@
+<!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<title>MedicoScope · Aegis</title>
+<style>
+/* ───────────── DESIGN SYSTEM ───────────── */
+:root{
+  --ink:#332A2E; --ink2:#6E6066; --ink3:#9A8B91;
+  --bg:#FFFBFC; --panel:#FFFFFF;
+  --blossom:#F79CB4; --rose:#E36B8E; --rose-d:#C9527A;
+  --blush:#FCE4EC; --blush2:#FBD0DE; --blush3:#FDEFF4;
+  --leaf:#7EA68C; --leaf-d:#5E8A6E; --gold:#E8B46B; --sky:#8FB8D6; --sky-d:#6C9BC0;
+  --red:#E26D6D; --green:#7EC08F; --amber:#F0B45C;
+  --line:#F3DCE4;
+  --serif:'Playfair Display',Georgia,serif;
+  --sans:'Inter','Segoe UI',system-ui,sans-serif;
+  --mono:'JetBrains Mono','Consolas',monospace;
+  --shadow:0 24px 60px -18px rgba(199,82,122,.28), 0 8px 20px -10px rgba(51,42,46,.10);
+  --shadow-sm:0 10px 28px -12px rgba(199,82,122,.22);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+body{background:#15101280;font-family:var(--sans)}
+.slide{
+  position:relative;width:1280px;height:720px;overflow:hidden;
+  background:
+    radial-gradient(1100px 600px at 88% -8%, #FDEDF2 0%, transparent 55%),
+    radial-gradient(900px 700px at -5% 108%, #FCEFF4 0%, transparent 50%),
+    linear-gradient(135deg,#FFFFFF 0%, #FFF7FA 100%);
+  color:var(--ink);
+}
+/* full-bleed petals layer */
+.petals{position:absolute;inset:0;pointer-events:none}
+.petal{position:absolute;width:46px;height:46px;opacity:.5}
+.petal svg{width:100%;height:100%;display:block}
+/* layout helpers */
+.pad{position:absolute;inset:0;padding:64px 72px}
+.kicker{font-size:14px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--rose-d)}
+h1{font-family:var(--serif);font-weight:800;color:var(--ink);line-height:1.04;letter-spacing:-.5px}
+.lead{color:var(--ink2);font-size:19px;line-height:1.5;font-weight:500}
+.pagenum{position:absolute;right:34px;bottom:26px;font-size:12px;color:var(--ink3);font-weight:600;letter-spacing:.08em}
+.brand{position:absolute;left:48px;bottom:26px;font-size:12px;color:var(--ink3);font-weight:700;letter-spacing:.04em}
+.divider{height:4px;width:64px;border-radius:4px;background:linear-gradient(90deg,var(--rose),var(--blossom))}
+/* glass / cards */
+.glass{
+  background:rgba(255,255,255,.62);backdrop-filter:blur(18px) saturate(140%);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);
+  border:1px solid rgba(255,255,255,.7);border-radius:22px;box-shadow:var(--shadow);
+}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-sm)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;
+  font-size:12.5px;font-weight:700;background:var(--blush);color:var(--rose-d)}
+.pill-live{background:#E8F3EC;color:var(--leaf-d)}
+.pill-road{background:#F1ECEF;color:var(--ink3)}
+.grad-text{background:linear-gradient(120deg,var(--rose),var(--blossom));-webkit-background-clip:text;background-clip:text;color:transparent}
+.glow{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;pointer-events:none}
+.mono{font-family:var(--mono)}
+.flex{display:flex} .col{display:flex;flex-direction:column}
+.center{align-items:center;justify-content:center}
+.between{justify-content:space-between}
+.gap8{gap:8px}.gap16{gap:16px}.gap24{gap:24px}
+.iconbox{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm)}
+svg{display:block}
+</style>
+</head><body style="margin:0;background:#fff">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <symbol id="blossom" viewBox="0 0 100 100">
+    <g fill="currentColor">
+      <ellipse cx="50" cy="22" rx="15" ry="22"/>
+      <ellipse cx="50" cy="22" rx="15" ry="22" transform="rotate(72 50 50)"/>
+      <ellipse cx="50" cy="22" rx="15" ry="22" transform="rotate(144 50 50)"/>
+      <ellipse cx="50" cy="22" rx="15" ry="22" transform="rotate(216 50 50)"/>
+      <ellipse cx="50" cy="22" rx="15" ry="22" transform="rotate(288 50 50)"/>
+    </g>
+    <circle cx="50" cy="50" r="8" fill="#E8B46B"/>
+  </symbol>
+</defs></svg>
+<div class="slide">
+  <div class="glow" style="left:620px;top:300px;width:520px;height:520px;background:#FBE0EA;opacity:0.45"></div>
+  <div class="pad col" style="padding:48px 72px">
+    <div class="kicker">Autonomous Agent Ecosystem</div>
+    <h1 style="font-size:40px;margin-top:8px">One orchestrator. Many specialised agents.</h1>
+    <div style="margin-top:2px"><svg width="1136" height="470" viewBox="0 0 1280 560"><line x1="640" y1="330" x2="640" y2="120" stroke="#5E8A6E" stroke-width="2.4"  opacity="0.7"/><line x1="640" y1="330" x2="895" y2="182" stroke="#6C9BC0" stroke-width="2.4"  opacity="0.7"/><line x1="640" y1="330" x2="1000" y2="330" stroke="#E8B46B" stroke-width="2.4"  opacity="0.7"/><line x1="640" y1="330" x2="895" y2="478" stroke="#E36B8E" stroke-width="2.4"  opacity="0.7"/><line x1="640" y1="330" x2="640" y2="540" stroke="#E6D4DC" stroke-width="1.6" stroke-dasharray="5 6" opacity="0.6"/><line x1="640" y1="330" x2="385" y2="478" stroke="#E6D4DC" stroke-width="1.6" stroke-dasharray="5 6" opacity="0.6"/><line x1="640" y1="330" x2="280" y2="330" stroke="#E6D4DC" stroke-width="1.6" stroke-dasharray="5 6" opacity="0.6"/><line x1="640" y1="330" x2="385" y2="182" stroke="#E6D4DC" stroke-width="1.6" stroke-dasharray="5 6" opacity="0.6"/><circle cx="640" cy="120" r="58" fill="#5E8A6E"/><circle cx="640" cy="120" r="58" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><text x="640" y="116" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#fff">Diagnosis</text><text x="640" y="135" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#ffffffcc">multi-modal</text><circle cx="895" cy="182" r="58" fill="#6C9BC0"/><circle cx="895" cy="182" r="58" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><text x="895" y="178" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#fff">Memory</text><text x="895" y="197" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#ffffffcc">episodic+LT</text><circle cx="1000" cy="330" r="58" fill="#E8B46B"/><circle cx="1000" cy="330" r="58" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><text x="1000" y="326" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#fff">Concordance</text><text x="1000" y="345" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#ffffffcc">evidence fusion</text><circle cx="895" cy="478" r="58" fill="#E36B8E"/><circle cx="895" cy="478" r="58" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><text x="895" y="474" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#fff">Triage</text><text x="895" y="493" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#ffffffcc">plan + route</text><circle cx="640" cy="540" r="56" fill="#F6EEF2" stroke="#9A8B91" stroke-width="2" stroke-dasharray="4 5"/><text x="640" y="536" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#6E6066">Treatment</text><text x="640" y="555" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#9A8B91">guideline-based</text><circle cx="385" cy="478" r="56" fill="#F6EEF2" stroke="#E26D6D" stroke-width="2" stroke-dasharray="4 5"/><text x="385" y="474" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#6E6066">Emergency</text><text x="385" y="493" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#9A8B91">red-flag SLA</text><circle cx="280" cy="330" r="56" fill="#F6EEF2" stroke="#9A8B91" stroke-width="2" stroke-dasharray="4 5"/><text x="280" y="326" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#6E6066">Predictive</text><text x="280" y="345" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#9A8B91">risk forecast</text><circle cx="385" cy="182" r="56" fill="#F6EEF2" stroke="#9A8B91" stroke-width="2" stroke-dasharray="4 5"/><text x="385" y="178" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#6E6066">AR Assist</text><text x="385" y="197" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#9A8B91">guided capture</text><circle cx="640" cy="330" r="86" fill="url(#hubg)"/><text x="640" y="322" text-anchor="middle" font-family="Playfair Display" font-weight="800" font-size="22" fill="#fff">AEGIS</text><text x="640" y="344" text-anchor="middle" font-family="Inter" font-size="12.5" fill="#ffffffdd">orchestrator</text><text x="640" y="362" text-anchor="middle" font-family="Inter" font-size="11" fill="#ffffffbb">gate · ledger</text><defs><radialGradient id="hubg"><stop offset="0%" stop-color="#E36B8E"/><stop offset="100%" stop-color="#C9527A"/></radialGradient></defs></svg></div>
+    <div class="flex center gap16" style="position:absolute;bottom:54px;left:0;right:0">
+      <div class="chip pill-live">● LIVE · built today</div>
+      <div class="chip pill-road">○ ROADMAP · designed</div>
+    </div>
+  </div>
+  <div class="brand">MedicoScope · Aegis</div><div class="pagenum">05 / 15</div>
+</div>
+</body></html>

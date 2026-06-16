@@ -82,7 +82,10 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     final userId = authProvider.user?.id ?? '';
 
     try {
-      final alerts = await VitalsService.getDoctorAlerts(doctorId: userId);
+      final alerts = await VitalsService.getDoctorAlerts(
+        doctorId: userId,
+        authToken: authProvider.token,
+      );
       if (!mounted) return;
       setState(() {
         _vitalsAlerts = alerts;
@@ -114,7 +117,8 @@ class _NotificationsScreenState extends State<NotificationsScreen>
 
   Future<void> _markVitalsAsRead(String id) async {
     try {
-      await VitalsService.markAlertRead(alertId: id);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      await VitalsService.markAlertRead(alertId: id, authToken: authProvider.token);
       setState(() {
         for (final a in _vitalsAlerts) {
           if (a['id'] == id) {
@@ -128,7 +132,8 @@ class _NotificationsScreenState extends State<NotificationsScreen>
 
   Future<void> _deleteVitalsAlert(String id) async {
     try {
-      await VitalsService.deleteAlert(alertId: id);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      await VitalsService.deleteAlert(alertId: id, authToken: authProvider.token);
       setState(() {
         _vitalsAlerts.removeWhere((a) => a['id'] == id);
       });

@@ -1,0 +1,86 @@
+<!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<title>MedicoScope · Aegis</title>
+<style>
+/* ───────────── DESIGN SYSTEM ───────────── */
+:root{
+  --ink:#332A2E; --ink2:#6E6066; --ink3:#9A8B91;
+  --bg:#FFFBFC; --panel:#FFFFFF;
+  --blossom:#F79CB4; --rose:#E36B8E; --rose-d:#C9527A;
+  --blush:#FCE4EC; --blush2:#FBD0DE; --blush3:#FDEFF4;
+  --leaf:#7EA68C; --leaf-d:#5E8A6E; --gold:#E8B46B; --sky:#8FB8D6; --sky-d:#6C9BC0;
+  --red:#E26D6D; --green:#7EC08F; --amber:#F0B45C;
+  --line:#F3DCE4;
+  --serif:'Playfair Display',Georgia,serif;
+  --sans:'Inter','Segoe UI',system-ui,sans-serif;
+  --mono:'JetBrains Mono','Consolas',monospace;
+  --shadow:0 24px 60px -18px rgba(199,82,122,.28), 0 8px 20px -10px rgba(51,42,46,.10);
+  --shadow-sm:0 10px 28px -12px rgba(199,82,122,.22);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+body{background:#15101280;font-family:var(--sans)}
+.slide{
+  position:relative;width:1280px;height:720px;overflow:hidden;
+  background:
+    radial-gradient(1100px 600px at 88% -8%, #FDEDF2 0%, transparent 55%),
+    radial-gradient(900px 700px at -5% 108%, #FCEFF4 0%, transparent 50%),
+    linear-gradient(135deg,#FFFFFF 0%, #FFF7FA 100%);
+  color:var(--ink);
+}
+/* full-bleed petals layer */
+.petals{position:absolute;inset:0;pointer-events:none}
+.petal{position:absolute;width:46px;height:46px;opacity:.5}
+.petal svg{width:100%;height:100%;display:block}
+/* layout helpers */
+.pad{position:absolute;inset:0;padding:64px 72px}
+.kicker{font-size:14px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--rose-d)}
+h1{font-family:var(--serif);font-weight:800;color:var(--ink);line-height:1.04;letter-spacing:-.5px}
+.lead{color:var(--ink2);font-size:19px;line-height:1.5;font-weight:500}
+.pagenum{position:absolute;right:34px;bottom:26px;font-size:12px;color:var(--ink3);font-weight:600;letter-spacing:.08em}
+.brand{position:absolute;left:48px;bottom:26px;font-size:12px;color:var(--ink3);font-weight:700;letter-spacing:.04em}
+.divider{height:4px;width:64px;border-radius:4px;background:linear-gradient(90deg,var(--rose),var(--blossom))}
+/* glass / cards */
+.glass{
+  background:rgba(255,255,255,.62);backdrop-filter:blur(18px) saturate(140%);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);
+  border:1px solid rgba(255,255,255,.7);border-radius:22px;box-shadow:var(--shadow);
+}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-sm)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;
+  font-size:12.5px;font-weight:700;background:var(--blush);color:var(--rose-d)}
+.pill-live{background:#E8F3EC;color:var(--leaf-d)}
+.pill-road{background:#F1ECEF;color:var(--ink3)}
+.grad-text{background:linear-gradient(120deg,var(--rose),var(--blossom));-webkit-background-clip:text;background-clip:text;color:transparent}
+.glow{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;pointer-events:none}
+.mono{font-family:var(--mono)}
+.flex{display:flex} .col{display:flex;flex-direction:column}
+.center{align-items:center;justify-content:center}
+.between{justify-content:space-between}
+.gap8{gap:8px}.gap16{gap:16px}.gap24{gap:24px}
+.iconbox{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm)}
+svg{display:block}
+</style>
+</head><body style="margin:0;background:#fff">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <symbol id="blossom" viewBox="0 0 100 100">
+    <g fill="currentColor">
+      <ellipse cx="50" cy="22" rx="15" ry="22"/>
+      <ellipse cx="50" cy="22" rx="15" ry="22" transform="rotate(72 50 50)"/>
+      <ellipse cx="50" cy="22" rx="15" ry="22" transform="rotate(144 50 50)"/>
+      <ellipse cx="50" cy="22" rx="15" ry="22" transform="rotate(216 50 50)"/>
+      <ellipse cx="50" cy="22" rx="15" ry="22" transform="rotate(288 50 50)"/>
+    </g>
+    <circle cx="50" cy="50" r="8" fill="#E8B46B"/>
+  </symbol>
+</defs></svg>
+<div class="slide">
+  <div class="petals"><div class="petal" style="left:1110px;top:60px;width:56px;height:56px;color:#FBD0DE;opacity:0.5;transform:rotate(15deg)"><svg><use href="#blossom"/></svg></div></div>
+  <div class="pad col" style="padding:50px 72px">
+    <div class="kicker">How an Agent Thinks</div>
+    <h1 style="font-size:42px;margin-top:8px">A closed loop — every cycle, <span class="grad-text">smarter</span>.</h1>
+    <div class="flex center" style="margin-top:6px"><svg width="1136" height="430" viewBox="0 0 1136 500"><line x1="568" y1="75" x2="734" y2="196" stroke="#FBD0DE" stroke-width="3"/><line x1="734" y1="196" x2="671" y2="392" stroke="#FBD0DE" stroke-width="3"/><line x1="671" y1="392" x2="465" y2="392" stroke="#FBD0DE" stroke-width="3"/><line x1="465" y1="392" x2="402" y2="196" stroke="#FBD0DE" stroke-width="3"/><line x1="402" y1="196" x2="568" y2="75" stroke="#FBD0DE" stroke-width="3"/><circle cx="568" cy="75" r="62" fill="#F79CB4"/><circle cx="568" cy="75" r="62" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><text x="568" y="72" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#fff">Observe</text><text x="568" y="91" text-anchor="middle" font-family="Inter" font-size="11" fill="#ffffffcc">capture signals</text><circle cx="734" cy="196" r="62" fill="#7EA68C"/><circle cx="734" cy="196" r="62" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><text x="734" y="193" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#fff">Reason</text><text x="734" y="212" text-anchor="middle" font-family="Inter" font-size="11" fill="#ffffffcc">fuse + classify</text><circle cx="671" cy="392" r="62" fill="#E8B46B"/><circle cx="671" cy="392" r="62" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><text x="671" y="389" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#fff">Decide</text><text x="671" y="408" text-anchor="middle" font-family="Inter" font-size="11" fill="#ffffffcc">gate verdict</text><circle cx="465" cy="392" r="62" fill="#8FB8D6"/><circle cx="465" cy="392" r="62" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><text x="465" y="389" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#fff">Act</text><text x="465" y="408" text-anchor="middle" font-family="Inter" font-size="11" fill="#ffffffcc">or escalate</text><circle cx="402" cy="196" r="62" fill="#E36B8E"/><circle cx="402" cy="196" r="62" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><text x="402" y="193" text-anchor="middle" font-family="Inter" font-weight="700" font-size="16" fill="#fff">Learn</text><text x="402" y="212" text-anchor="middle" font-family="Inter" font-size="11" fill="#ffffffcc">memory update</text><text x="568" y="244" text-anchor="middle" font-family="Inter" font-size="15" fill="#6E6066">continuous</text><text x="568" y="266" text-anchor="middle" font-family="Playfair Display" font-weight="800" font-size="20" fill="#C9527A">learning</text></svg></div>
+  </div>
+  <div class="brand">MedicoScope · Aegis</div><div class="pagenum">06 / 15</div>
+</div>
+</body></html>
