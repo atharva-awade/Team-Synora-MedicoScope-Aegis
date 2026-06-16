@@ -118,8 +118,14 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
           case 'triage_result':
             final suspected = (e.data['suspected'] as List?)?.join(', ') ?? '';
             final acuity = e.data['acuity'] ?? 'routine';
-            _add(_TraceItem('Triage Agent', 'Triaged complaint',
-                'Suspected: $suspected · acuity: $acuity',
+            final reasoning = e.data['reasoning']?.toString() ?? '';
+            final llm = e.data['planner'] == 'llm';
+            _add(_TraceItem(
+                llm ? 'Triage Agent · Llama' : 'Triage Agent',
+                'Triaged complaint',
+                reasoning.isNotEmpty
+                    ? '$reasoning\nSuspected: $suspected · acuity: $acuity'
+                    : 'Suspected: $suspected · acuity: $acuity',
                 const Color(0xFFE36B8E), Icons.alt_route));
             break;
           case 'plan_published':
