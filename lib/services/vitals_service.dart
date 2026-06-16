@@ -85,8 +85,8 @@ class VitalsService {
     await http.delete(url).timeout(const Duration(seconds: 10));
   }
 
-  // Vitals alerts are read from the Node backend (MongoDB) — the durable source
-  // of truth that survives chatbot restarts — so these require the user's auth
+  // Vitals alerts are read from the Node backend (MongoDB) - the durable source
+  // of truth that survives chatbot restarts - so these require the user's auth
   // token. The response shape matches the chatbot's original alert JSON.
   static Future<List<Map<String, dynamic>>> getDoctorAlerts({
     required String doctorId,

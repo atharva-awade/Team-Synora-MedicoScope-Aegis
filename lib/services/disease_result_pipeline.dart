@@ -69,7 +69,7 @@ class DiseaseResultPipeline {
       await coins.addDetectionCoins(modality: modality, amount: 10);
     } catch (_) {}
 
-    // Fire alert for high/critical — best effort, won't throw.
+    // Fire alert for high/critical - best effort, won't throw.
     final user = auth.user;
     if (user == null) return;
     final patientId = user.id;
@@ -100,6 +100,6 @@ class DiseaseResultPipeline {
     }
   }
 
-  /// Unused import guard — keeps DiseaseRegistry available for callers.
+  /// Unused import guard - keeps DiseaseRegistry available for callers.
   static String diseaseTitle(DiseaseType d) => DiseaseRegistry.of(d).title;
 }

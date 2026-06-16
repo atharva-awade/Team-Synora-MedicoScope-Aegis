@@ -1,7 +1,7 @@
 class ApiConstants {
   static const String baseUrl = 'https://medicoscope-api-lbto.onrender.com/api';
 
-  // Chatbot — the redeployed service that has the Aegis consult route.
+  // Chatbot - the redeployed service that has the Aegis consult route.
   static const String chatbotBaseUrl =
       'https://medicoscope-chatbot-lbto.onrender.com';
 

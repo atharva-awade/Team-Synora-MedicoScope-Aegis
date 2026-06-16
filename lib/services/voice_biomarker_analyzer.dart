@@ -12,8 +12,8 @@ class VoiceBiomarkerResult {
   final double pauseRatio; // fraction of the clip that is silence
   final double pitchVariability; // normalised F0 spread (monotone ↓)
   final double energyVariability; // loudness dynamics
-  final double markerScore; // 0..1 — elevated affective-marker load
-  final double confidence; // 0..1 — honest signal-quality confidence
+  final double markerScore; // 0..1 - elevated affective-marker load
+  final double confidence; // 0..1 - honest signal-quality confidence
   final List<String> notes;
 
   const VoiceBiomarkerResult({
@@ -47,7 +47,7 @@ class VoiceBiomarkerResult {
 /// (speech rate, pausing, pitch/energy dynamics) that the affective-computing
 /// literature associates with low mood / psychomotor slowing (e.g. Cummins
 /// 2015, Mundt 2007). It is a SCREENING SIGNAL, never a diagnosis of
-/// depression — and it complements (does not replace) the existing transcript
+/// depression - and it complements (does not replace) the existing transcript
 /// analysis. Reduced pitch variability ("monotone"), slow speech, and long
 /// pauses are the classic markers; we surface them with an honest confidence.
 class VoiceBiomarkerAnalyzer {
@@ -62,12 +62,12 @@ class VoiceBiomarkerAnalyzer {
     if (durationSec < 3) {
       return const VoiceBiomarkerResult(
         usable: false,
-        headline: 'Recording too short — please speak for at least 5 seconds.',
-        notes: ['Tap record and talk naturally for 5–15 seconds.'],
+        headline: 'Recording too short - please speak for at least 5 seconds.',
+        notes: ['Tap record and talk naturally for 5-15 seconds.'],
       );
     }
 
-    // 1. Frame the signal into 25 ms windows (10 ms hop) — standard for speech.
+    // 1. Frame the signal into 25 ms windows (10 ms hop) - standard for speech.
     final frameLen = (sampleRate * 0.025).round();
     final hop = (sampleRate * 0.010).round();
     if (frameLen < 8) {
@@ -133,7 +133,7 @@ class VoiceBiomarkerAnalyzer {
         ? _coefficientOfVariation(voicedE).clamp(0.0, 3.0)
         : 0.0;
 
-    // 6. Confidence — honest signal quality. Needs enough speech, a decent
+    // 6. Confidence - honest signal quality. Needs enough speech, a decent
     //    SNR (peak vs noise floor), and adequate duration.
     final snr = peakE / math.max(noiseFloor, 1e-9);
     final snrQ = (math.log(snr + 1) / math.log(50)).clamp(0.0, 1.0);
@@ -152,7 +152,7 @@ class VoiceBiomarkerAnalyzer {
       );
     }
 
-    // 7. Marker score — combine the three classic low-mood acoustic markers.
+    // 7. Marker score - combine the three classic low-mood acoustic markers.
     //    Slow speech, high pausing, and LOW pitch variability (monotone) all
     //    push the score up. Each term is bounded; the score is screening-grade.
     final slowness = (1.0 - (speechRate / 2.0)).clamp(0.0, 1.0); // <2 onsets/s
@@ -166,7 +166,7 @@ class VoiceBiomarkerAnalyzer {
       headline =
           'Voice shows several low-mood acoustic markers (slow, monotone, long pauses).';
     } else if (markerScore >= 0.4) {
-      headline = 'Some voice markers of low mood present — worth a check-in.';
+      headline = 'Some voice markers of low mood present - worth a check-in.';
     } else {
       headline = 'Voice acoustics within an expressive, typical range.';
     }
@@ -181,10 +181,10 @@ class VoiceBiomarkerAnalyzer {
       markerScore: double.parse(markerScore.toStringAsFixed(2)),
       confidence: double.parse(confidence.toStringAsFixed(2)),
       notes: [
-        'Screening signal only — NOT a diagnosis of depression.',
+        'Screening signal only - NOT a diagnosis of depression.',
         'Complements the transcript analysis; combine with how you actually feel.',
         if (markerScore >= 0.6 && confidence >= 0.4)
-          'If low mood persists, please talk to someone — your linked doctor can help.',
+          'If low mood persists, please talk to someone - your linked doctor can help.',
       ],
     );
   }

@@ -38,7 +38,7 @@ class _DashboardTileState extends State<DashboardTile> {
       onTapUp: (_) => setState(() => _pressed = false),
       onTapCancel: () => setState(() => _pressed = false),
       child: AnimatedScale(
-        // Tactile press feedback — the single biggest "premium feel" upgrade.
+        // Tactile press feedback - the single biggest "premium feel" upgrade.
         scale: _pressed ? 0.97 : 1.0,
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOut,

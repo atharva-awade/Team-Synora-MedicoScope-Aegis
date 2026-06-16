@@ -10,7 +10,7 @@ import 'package:medicoscope/core/locale/locale_provider.dart';
 import 'package:medicoscope/core/locale/app_strings.dart';
 import 'package:medicoscope/core/constants/disease_constants.dart';
 import 'package:medicoscope/core/providers/coins_provider.dart';
-import 'package:medicoscope/screens/chat/chat_bottom_sheet.dart';
+import 'package:medicoscope/screens/chat/chat_screen.dart';
 import 'package:medicoscope/screens/diseases/disease_deck_screen.dart';
 import 'package:medicoscope/screens/diseases/unified_risk_dashboard.dart';
 import 'package:medicoscope/screens/mental_health/mental_health_screen.dart';
@@ -81,7 +81,7 @@ class PatientDashboardScreen extends StatelessWidget {
         ),
         child: FloatingActionButton(
           heroTag: null,
-          onPressed: () => showChatBottomSheet(context),
+          onPressed: () => openChatScreen(context),
           backgroundColor: Colors.transparent,
           elevation: 0,
           child: const Icon(Icons.chat_rounded, color: Colors.white),
@@ -264,7 +264,7 @@ class PatientDashboardScreen extends StatelessWidget {
 
                     const SizedBox(height: AppTheme.spacingMedium),
 
-                    // AI Consult tile — the autonomous Aegis agent (hero feature).
+                    // AI Consult tile - the autonomous Aegis agent (hero feature).
                     DashboardTile(
                       icon: Icons.auto_awesome,
                       title: 'AI Consult · Aegis',
@@ -441,7 +441,7 @@ class PatientDashboardScreen extends StatelessWidget {
 
                     const SizedBox(height: AppTheme.spacingMedium),
 
-                    // Respiratory screening tile — on-device breath/cough
+                    // Respiratory screening tile - on-device breath/cough
                     // acoustic analysis (screening-grade).
                     DashboardTile(
                       icon: Icons.air_outlined,
@@ -480,7 +480,7 @@ class PatientDashboardScreen extends StatelessWidget {
 
                     const SizedBox(height: AppTheme.spacingMedium),
 
-                    // My Appointments tile — tracks doctor confirmations
+                    // My Appointments tile - tracks doctor confirmations
                     // and reschedule proposals.
                     DashboardTile(
                       icon: Icons.event_available_outlined,

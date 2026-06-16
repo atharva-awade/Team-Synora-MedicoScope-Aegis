@@ -85,7 +85,7 @@ class AppointmentResponse {
 ///
 /// Uses the existing `/mental-health/notifications` endpoint as a generic
 /// notification bus by flipping the `doctorId` field to the *patient's*
-/// user id (the field is a recipient id — not strictly a doctor).
+/// user id (the field is a recipient id - not strictly a doctor).
 /// Downstream, the Node backend stores one notification keyed by the
 /// recipient; the patient's app polls their own id to pick it up.
 class AppointmentResponseService {
@@ -158,7 +158,7 @@ class AppointmentResponseService {
             body: jsonEncode({
               // The recipient of this notification is the patient. We keep
               // the field name `doctorId` because that's what the backend
-              // schema still calls it — it's the *routing id*, not a role.
+              // schema still calls it - it's the *routing id*, not a role.
               'doctorId': recipientId,
               'patientId': doctorId,
               'patientName': patientName,
@@ -170,11 +170,11 @@ class AppointmentResponseService {
           )
           .timeout(const Duration(seconds: 12));
     } catch (_) {
-      // Offline-tolerant — the backend will retry on next poll.
+      // Offline-tolerant - the backend will retry on next poll.
     }
   }
 
-  // ── Patient side — local cache + read tracking ──────────────────────────
+  // ── Patient side - local cache + read tracking ──────────────────────────
 
   static const _key = 'appointment_responses_local';
 

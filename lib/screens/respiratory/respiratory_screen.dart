@@ -9,7 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:record/record.dart';
 
-/// Respiratory acoustic screening — record ~15 s of breathing/coughing, then
+/// Respiratory acoustic screening - record ~15 s of breathing/coughing, then
 /// run the on-device [RespiratoryAnalyzer]. Real signal only: nothing is
 /// fabricated, and a noisy/short clip is honestly rejected rather than scored.
 class RespiratoryScreen extends StatefulWidget {

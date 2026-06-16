@@ -57,7 +57,7 @@ class Appointment {
       );
 }
 
-/// AppointmentService — books an appointment with the patient's linked doctor.
+/// AppointmentService - books an appointment with the patient's linked doctor.
 ///
 /// Backend strategy: we reuse the existing `/mental-health/notifications`
 /// endpoint (already wired for disease alerts) with `source: 'appointment_request'`
@@ -120,7 +120,7 @@ class AppointmentService {
         }
       }
     } catch (_) {
-      // Offline-friendly — local copy below is the fallback.
+      // Offline-friendly - local copy below is the fallback.
     }
 
     await _persistLocally(appt);

@@ -103,6 +103,9 @@ dependencies:
   latlong2: ^0.9.1
   fftea: ^1.5.0+1
 
+  # Markdown rendering for the medical-assistant chat (bold, lists, headings)
+  flutter_markdown: ^0.7.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

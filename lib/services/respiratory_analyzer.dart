@@ -10,8 +10,8 @@ class RespiratoryResult {
   final double breathingRate; // breaths per minute (envelope-derived)
   final int coughCount; // sharp energy transients in the clip
   final double wheezeBandRatio; // hi-freq energy fraction (wheeze proxy)
-  final double distressScore; // 0..1 — elevated respiratory-distress markers
-  final double confidence; // 0..1 — honest signal-quality confidence
+  final double distressScore; // 0..1 - elevated respiratory-distress markers
+  final double confidence; // 0..1 - honest signal-quality confidence
   final List<String> notes;
 
   const RespiratoryResult({
@@ -40,15 +40,15 @@ class RespiratoryResult {
 /// Respiratory acoustic-screening analyzer.
 ///
 /// HONESTY NOTE: this extracts REAL audio features from a breathing/cough
-/// recording — breathing rate (from the low-frequency amplitude envelope),
+/// recording - breathing rate (from the low-frequency amplitude envelope),
 /// cough-burst count (sharp energy transients), and a high-frequency energy
 /// ratio used as a coarse wheeze proxy. These are screening signals associated
 /// with respiratory distress in the acoustic literature (e.g. ResAppDx, cough
 /// classification studies). It is NOT a diagnosis of asthma, COPD, or
-/// pneumonia — it flags patterns worth a clinician's attention, with an honest
+/// pneumonia - it flags patterns worth a clinician's attention, with an honest
 /// confidence. Reuses the same WAV decoder as the heart-sound pipeline.
 class RespiratoryAnalyzer {
-  // Resting adult breathing rate ≈ 12–20 bpm; > 20 = tachypnea (a distress sign).
+  // Resting adult breathing rate ≈ 12-20 bpm; > 20 = tachypnea (a distress sign).
   static const _tachypneaBpm = 20.0;
 
   static Future<RespiratoryResult> analyzeWavFile(String path) async {
@@ -61,7 +61,7 @@ class RespiratoryAnalyzer {
     if (durationSec < 8) {
       return const RespiratoryResult(
         usable: false,
-        headline: 'Recording too short — breathe near the mic for ~15 seconds.',
+        headline: 'Recording too short - breathe near the mic for ~15 seconds.',
         notes: ['We need at least two full breaths to estimate a rate.'],
       );
     }
@@ -110,7 +110,7 @@ class RespiratoryAnalyzer {
       );
     }
 
-    // 3. Smooth the envelope to the breathing band (~0.1–0.7 Hz) with a long
+    // 3. Smooth the envelope to the breathing band (~0.1-0.7 Hz) with a long
     //    moving average, then count breath cycles as threshold up-crossings.
     final smoothWin = (framesPerSec * 0.7).round().clamp(3, 200);
     final breathEnv = _movingAverage(env, smoothWin);
@@ -132,7 +132,7 @@ class RespiratoryAnalyzer {
     }
     final breathingRate = crossings / durationSec * 60.0;
 
-    // 4. Cough detection: sharp energy transients — a frame whose energy jumps
+    // 4. Cough detection: sharp energy transients - a frame whose energy jumps
     //    far above the local envelope, separated by a refractory gap.
     int coughCount = 0;
     int lastCough = -1000;
@@ -168,7 +168,7 @@ class RespiratoryAnalyzer {
       );
     }
 
-    // 7. Distress score — tachypnea, frequent coughing, and elevated
+    // 7. Distress score - tachypnea, frequent coughing, and elevated
     //    high-frequency (wheeze-band) energy each push the score up.
     final tachy = ((breathingRate - _tachypneaBpm) / 12.0).clamp(0.0, 1.0);
     final coughing = (coughCount / 5.0).clamp(0.0, 1.0);
@@ -181,7 +181,7 @@ class RespiratoryAnalyzer {
       headline =
           'Several respiratory-distress markers (fast/laboured breathing, coughing).';
     } else if (distressScore >= 0.4) {
-      headline = 'Some respiratory markers present — worth monitoring.';
+      headline = 'Some respiratory markers present - worth monitoring.';
     } else {
       headline = 'Breathing pattern within a typical resting range.';
     }
@@ -195,7 +195,7 @@ class RespiratoryAnalyzer {
       distressScore: double.parse(distressScore.toStringAsFixed(2)),
       confidence: double.parse(confidence.toStringAsFixed(2)),
       notes: [
-        'Screening signal only — NOT a diagnosis of asthma, COPD, or pneumonia.',
+        'Screening signal only - NOT a diagnosis of asthma, COPD, or pneumonia.',
         if (breathingRate > _tachypneaBpm)
           'Breathing rate ${breathingRate.toStringAsFixed(0)}/min is above the typical resting range.',
         if (distressScore >= 0.6 && confidence >= 0.4)

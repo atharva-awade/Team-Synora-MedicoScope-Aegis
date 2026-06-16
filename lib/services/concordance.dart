@@ -1,10 +1,10 @@
 import 'package:medicoscope/core/constants/disease_constants.dart';
 import 'package:medicoscope/models/disease_risk_result.dart';
 
-/// Cross-modality concordance for one disease — how strongly INDEPENDENT
+/// Cross-modality concordance for one disease - how strongly INDEPENDENT
 /// detection methods agree. The headline differentiator of a multi-modal app:
 /// a single screening can be wrong, but when several distinct modalities point
-/// the same way, the finding is far more trustworthy — and we quantify that
+/// the same way, the finding is far more trustworthy - and we quantify that
 /// honestly instead of just taking the loudest signal.
 class DiseaseConcordance {
   final DiseaseType disease;
@@ -28,7 +28,7 @@ class DiseaseConcordance {
       : modalityCount >= 2
           ? 'Mixed signals across $modalityCount methods'
           : modalityCount == 1
-              ? 'Single method only — not yet corroborated'
+              ? 'Single method only - not yet corroborated'
               : 'No screenings yet';
 }
 
@@ -78,7 +78,7 @@ class Concordance {
       final meanScore =
           elevated.map((r) => r.score).reduce((a, b) => a + b) / elevated.length;
       // Reward breadth of agreement AND evidence strength. A lone modality
-      // scores 0 by design — no corroboration is claimed for single signals.
+      // scores 0 by design - no corroboration is claimed for single signals.
       score = (agreeFrac * (0.5 + 0.5 * meanScore)).clamp(0.0, 1.0);
     }
 

@@ -397,7 +397,7 @@ class _PatientAppointmentsScreenState
             ),
             const SizedBox(height: 6),
             Text(
-              'Book one from any disease deck or the chatbot — confirmations will show up here.',
+              'Book one from any disease deck or the chatbot - confirmations will show up here.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,

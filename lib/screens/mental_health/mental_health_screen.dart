@@ -74,7 +74,7 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
         });
       }
     } catch (_) {
-      // Patient may not have linked a doctor yet — that's ok
+      // Patient may not have linked a doctor yet - that's ok
     }
   }
 
@@ -88,7 +88,7 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
   }
 
   Future<void> _startRecording() async {
-    // Explicit permission request — `record` will prompt on first use.
+    // Explicit permission request - `record` will prompt on first use.
     final granted = await _recorder.hasPermission();
     if (!granted) {
       if (!mounted) return;
@@ -176,7 +176,7 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
       if (mounted) {
         setState(() {
           _responseText =
-              'Recording failed — the audio file could not be saved. Please try again.';
+              'Recording failed - the audio file could not be saved. Please try again.';
           _isProcessing = false;
         });
       }
@@ -188,7 +188,7 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
         if (mounted) {
           setState(() {
             _responseText =
-                'Recording was too short — please speak for at least a few seconds before stopping.';
+                'Recording was too short - please speak for at least a few seconds before stopping.';
             _isProcessing = false;
           });
         }
@@ -246,7 +246,7 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
           if (mounted && markers.usable) {
             setState(() => _voiceMarkers = markers);
           }
-        } catch (_) {/* non-fatal — voice markers are supplementary */}
+        } catch (_) {/* non-fatal - voice markers are supplementary */}
       }
     } catch (e) {
       _hourglassController.stop();
@@ -255,11 +255,11 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
       String displayMsg;
       if (errorMsg.contains('warming up') || errorMsg.contains('503')) {
         displayMsg =
-            'The MindSpace service is warming up — please try again in a moment.';
+            'The MindSpace service is warming up - please try again in a moment.';
       } else if (errorMsg.contains('TimeoutException') ||
           errorMsg.contains('timed out')) {
         displayMsg =
-            'The analysis took too long. The server may be cold-starting — try again in ~30 seconds.';
+            'The analysis took too long. The server may be cold-starting - try again in ~30 seconds.';
       } else if (errorMsg.contains('429') ||
           errorMsg.toLowerCase().contains('rate limit')) {
         displayMsg =
@@ -346,7 +346,7 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
                         ],
                       ),
                     ),
-                    // Coins display — tappable to open rewards
+                    // Coins display - tappable to open rewards
                     GestureDetector(
                       onTap: () => Navigator.of(context).push(
                         MaterialPageRoute(
@@ -727,7 +727,7 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
           ),
           const SizedBox(height: 10),
           Text(
-            'Screening signal only — not a diagnosis. It complements what you shared, and how you actually feel matters most.',
+            'Screening signal only - not a diagnosis. It complements what you shared, and how you actually feel matters most.',
             style: TextStyle(
               fontSize: 11,
               fontStyle: FontStyle.italic,

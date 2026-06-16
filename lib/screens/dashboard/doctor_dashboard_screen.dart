@@ -302,7 +302,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                     const SizedBox(height: AppTheme.spacingMedium),
 
                     // My Patients tile
-                    // Aegis Console — RED cases the gate blocked & escalated.
+                    // Aegis Console - RED cases the gate blocked & escalated.
                     DashboardTile(
                       icon: Icons.shield_outlined,
                       title: 'Aegis Console',
@@ -335,7 +335,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
 
                     const SizedBox(height: AppTheme.spacingMedium),
 
-                    // My Appointments tile — doctor can see every pending
+                    // My Appointments tile - doctor can see every pending
                     // appointment request + confirm / reschedule history.
                     DashboardTile(
                       icon: Icons.event_available_outlined,

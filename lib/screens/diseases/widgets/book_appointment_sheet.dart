@@ -83,7 +83,7 @@ class _BookAppointmentSheetState extends State<_BookAppointmentSheet> {
       setState(() {
         _busy = false;
         _error =
-            'No doctor linked yet. Use the "Link Doctor" screen first — the appointment needs a recipient.';
+            'No doctor linked yet. Use the "Link Doctor" screen first - the appointment needs a recipient.';
       });
       return;
     }

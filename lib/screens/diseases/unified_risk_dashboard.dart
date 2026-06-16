@@ -106,7 +106,7 @@ class _UnifiedRiskDashboardState extends State<UnifiedRiskDashboard> {
     );
   }
 
-  /// Cross-modality concordance — the multi-modal differentiator. Shows, per
+  /// Cross-modality concordance - the multi-modal differentiator. Shows, per
   /// disease, how many INDEPENDENT methods corroborate the finding. Only
   /// renders when at least one disease has 2+ contributing methods (otherwise
   /// there's nothing to corroborate yet, and we don't overstate).
@@ -117,7 +117,7 @@ class _UnifiedRiskDashboardState extends State<UnifiedRiskDashboard> {
       if (c.modalityCount >= 2) scored.add(c);
     }
     // Empty-state hint: when no disease has 2+ methods yet, still show the
-    // feature so users (and judges) know it exists and how to unlock it —
+    // feature so users (and judges) know it exists and how to unlock it -
     // rather than hiding it entirely.
     if (scored.isEmpty) {
       return GlassCard(
@@ -180,7 +180,7 @@ class _UnifiedRiskDashboardState extends State<UnifiedRiskDashboard> {
           ),
           const SizedBox(height: 4),
           Text(
-            'How strongly independent methods agree — more agreement, more trust.',
+            'How strongly independent methods agree - more agreement, more trust.',
             style: TextStyle(
               fontSize: 12,
               color: (isDark ? AppTheme.darkTextLight : AppTheme.textDark)
@@ -265,7 +265,7 @@ class _UnifiedRiskDashboardState extends State<UnifiedRiskDashboard> {
                     color: Color(0xFFFF5252)),
                 title: const Text('Load high-risk patient'),
                 subtitle: const Text(
-                    'Seed HbA1c 8.1 / BP 154/96 / Hb 11.2 — jury showcase'),
+                    'Seed HbA1c 8.1 / BP 154/96 / Hb 11.2 - jury showcase'),
                 onTap: () async {
                   await DemoModeService.loadHighRiskProfile();
                   if (!mounted) return;
@@ -278,7 +278,7 @@ class _UnifiedRiskDashboardState extends State<UnifiedRiskDashboard> {
                     color: Color(0xFF4CAF50)),
                 title: const Text('Load healthy patient'),
                 subtitle:
-                    const Text('All markers normal — calm baseline'),
+                    const Text('All markers normal - calm baseline'),
                 onTap: () async {
                   await DemoModeService.loadHealthyProfile();
                   if (!mounted) return;
@@ -358,7 +358,7 @@ class _UnifiedRiskDashboardState extends State<UnifiedRiskDashboard> {
   }
 
   Widget _overallGauge(bool isDark) {
-    // Compose an overall wellness score — 100 = healthy, 0 = critical.
+    // Compose an overall wellness score - 100 = healthy, 0 = critical.
     final scores = <double>[];
     for (final r in _latest.values) {
       if (r != null) scores.add((1 - r.score.clamp(0, 1)) * 100);
@@ -412,7 +412,7 @@ class _UnifiedRiskDashboardState extends State<UnifiedRiskDashboard> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      hasData ? wellness.toStringAsFixed(0) : '—',
+                      hasData ? wellness.toStringAsFixed(0) : '-',
                       style: TextStyle(
                         fontSize: 34,
                         fontWeight: FontWeight.w900,
@@ -537,7 +537,7 @@ class _UnifiedRiskDashboardState extends State<UnifiedRiskDashboard> {
           Text(
             '🇮🇳 India: 101M diabetics • 315M hypertensive • 57% women anaemic (NFHS-5, ICMR-INDIAB).\n'
             '🇺🇸 USA: 37M diabetics • 122M hypertensive (CDC, AHA).\n'
-            'MedicoScope screens all three in under 2 minutes — no clinic visit required.',
+            'MedicoScope screens all three in under 2 minutes - no clinic visit required.',
             style: TextStyle(
               fontSize: 11.5,
               height: 1.55,
@@ -600,7 +600,7 @@ class _UnifiedRiskDashboardState extends State<UnifiedRiskDashboard> {
                         const SizedBox(height: 2),
                         Text(
                           latest == null
-                              ? 'No screenings yet — tap to start'
+                              ? 'No screenings yet - tap to start'
                               : 'Latest via ${MethodRegistry.of(latest.method).title}',
                           style: TextStyle(
                             fontSize: 11,
