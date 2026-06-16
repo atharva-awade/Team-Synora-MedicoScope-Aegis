@@ -26,7 +26,7 @@ import httpx
 from pydantic import BaseModel
 
 # ── Config ────────────────────────────────────────────────────────────────────
-NODE_API = os.getenv("BACKEND_URL", "https://medicoscope-server.onrender.com/api")
+NODE_API = os.getenv("BACKEND_URL", "https://medicoscope-api-lbto.onrender.com/api")
 
 # The agent's PLANNER uses Groq/Llama (same provider as the rest of the app).
 # It only refines triage/planning — it NEVER decides safety (that's the
@@ -265,6 +265,7 @@ async def run_consult(req: ConsultRequest) -> AsyncGenerator[str, None]:
                 "index": i, "tool": tool_id,
                 "fidelity": result.get("fidelity"), "risk": result.get("risk"),
                 "confidence": result.get("confidence"), "status": result.get("status"),
+                "error": result.get("error"),
             })
 
         # Fuse + contradiction check (re-plan a tiebreaker if needed)

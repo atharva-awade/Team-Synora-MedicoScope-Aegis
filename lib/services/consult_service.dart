@@ -27,24 +27,53 @@ class ConsultService {
     Map<String, dynamic> captures = const {},
   }) async* {
     final uri = Uri.parse('${ApiConstants.chatbotBaseUrl}/aegis/consult');
-    final req = http.Request('POST', uri)
-      ..headers['Content-Type'] = 'application/json'
-      ..headers['Accept'] = 'text/event-stream'
-      ..body = jsonEncode({
-        'patient_id': patientId,
-        'patient_name': patientName,
-        'doctor_id': doctorId,
-        'complaint': complaint,
-        'auth_token': authToken,
-        'captures': captures,
-      });
+    final body = jsonEncode({
+      'patient_id': patientId,
+      'patient_name': patientName,
+      'doctor_id': doctorId,
+      'complaint': complaint,
+      'auth_token': authToken,
+      'captures': captures,
+    });
 
     final client = http.Client();
     try {
-      final resp = await client.send(req).timeout(const Duration(seconds: 120));
-      if (resp.statusCode != 200) {
-        yield ConsultEvent('consult_error',
-            {'error': 'Consult failed (${resp.statusCode})'});
+      // Cold-start resilience: the chatbot runs on Render's free tier, which
+      // sleeps when idle and can 502/503 or drop the first connection while it
+      // wakes. Try once, then retry a single time after a short delay.
+      http.StreamedResponse? resp;
+      for (var attempt = 0; attempt < 2; attempt++) {
+        try {
+          final req = http.Request('POST', uri)
+            ..headers['Content-Type'] = 'application/json'
+            ..headers['Accept'] = 'text/event-stream'
+            ..body = body;
+          resp = await client.send(req).timeout(const Duration(seconds: 120));
+        } catch (e) {
+          if (attempt == 0) {
+            await Future.delayed(const Duration(seconds: 3));
+            continue;
+          }
+          yield ConsultEvent('consult_error',
+              {'error': 'Could not reach the consult service. $e'});
+          return;
+        }
+        // Waking-up responses are worth one retry; other statuses are final.
+        if ((resp.statusCode == 502 || resp.statusCode == 503) && attempt == 0) {
+          await Future.delayed(const Duration(seconds: 3));
+          continue;
+        }
+        break;
+      }
+
+      final r = resp!;
+      if (r.statusCode != 200) {
+        String detail = '';
+        try {
+          detail = (await r.stream.bytesToString()).trim();
+        } catch (_) {}
+        yield ConsultEvent(
+            'consult_error', {'error': _describeError(r.statusCode, detail)});
         return;
       }
 
@@ -52,7 +81,7 @@ class ConsultService {
       // "event:" line and a "data:" line.
       String? curEvent;
       final buf = StringBuffer();
-      await for (final chunk in resp.stream.transform(utf8.decoder).transform(const LineSplitter())) {
+      await for (final chunk in r.stream.transform(utf8.decoder).transform(const LineSplitter())) {
         if (chunk.startsWith('event:')) {
           curEvent = chunk.substring(6).trim();
         } else if (chunk.startsWith('data:')) {
@@ -74,6 +103,23 @@ class ConsultService {
       yield ConsultEvent('consult_error', {'error': e.toString()});
     } finally {
       client.close();
+    }
+  }
+
+  /// Turns an HTTP status into a message a patient/clinician can act on.
+  static String _describeError(int code, String detail) {
+    final extra = detail.isNotEmpty ? ' ($detail)' : '';
+    switch (code) {
+      case 404:
+        return 'Consult endpoint not found (404). The service may be redeploying, please try again shortly.$extra';
+      case 401:
+      case 403:
+        return 'Session not authorized ($code). Please sign in again and retry.$extra';
+      case 502:
+      case 503:
+        return 'The consult service is waking up ($code). Please try again in a moment.$extra';
+      default:
+        return 'Consult failed ($code).$extra';
     }
   }
 }
