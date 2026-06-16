@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:medicoscope/core/theme/app_theme.dart';
 import 'package:medicoscope/core/theme/theme_provider.dart';
@@ -332,6 +333,39 @@ class _CaseDetailSheet extends StatelessWidget {
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
                     color: isDark ? AppTheme.darkTextLight : AppTheme.textDark)),
+
+            // Patient live location (for outreach on a RED case)
+            if ((caseData['mapsUrl']?.toString().isNotEmpty ?? false) ||
+                (caseData['locationLabel']?.toString().isNotEmpty ?? false)) ...[
+              const SizedBox(height: 12),
+              Row(children: [
+                const Icon(Icons.location_on, size: 16, color: Color(0xFFE26D6D)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    (caseData['locationLabel']?.toString().isNotEmpty ?? false)
+                        ? caseData['locationLabel'].toString()
+                        : 'Location shared',
+                    style: TextStyle(
+                        fontSize: 13,
+                        color:
+                            isDark ? AppTheme.darkTextLight : AppTheme.textDark),
+                  ),
+                ),
+                if (caseData['mapsUrl']?.toString().isNotEmpty ?? false)
+                  GestureDetector(
+                    onTap: () => launchUrl(
+                        Uri.parse(caseData['mapsUrl'].toString()),
+                        mode: LaunchMode.externalApplication),
+                    child: const Text('Open in Maps',
+                        style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF667EEA),
+                            decoration: TextDecoration.underline)),
+                  ),
+              ]),
+            ],
 
             // WHY panel (reasoning transparency)
             if (reasons.isNotEmpty) ...[

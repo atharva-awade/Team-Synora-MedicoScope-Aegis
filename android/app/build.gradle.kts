@@ -38,6 +38,11 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            // R8 strips TFLite GPU delegate classes (GpuDelegateFactory$Options)
+            // and fails the build. Disable shrinking for now; a production build
+            // should instead add keep rules for org.tensorflow.lite.gpu.**.
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:medicoscope/core/constants/api_constants.dart';
 import 'package:medicoscope/services/api_service.dart';
+import 'package:medicoscope/services/location_service.dart';
 
 class MentalHealthService {
   static Future<Map<String, dynamic>> uploadAudio({
@@ -24,6 +25,16 @@ class MentalHealthService {
       ..files.add(await http.MultipartFile.fromPath('audio', filePath));
     if (authToken != null) {
       request.fields['auth_token'] = authToken;
+    }
+
+    // Attach the patient's live location so a high-urgency check-in reaches the
+    // doctor with a map link. Best-effort; omitted when unavailable.
+    final fix = await LocationService.getFix();
+    if (fix.hasFix) {
+      request.fields['latitude'] = fix.latitude.toString();
+      request.fields['longitude'] = fix.longitude.toString();
+      request.fields['location_label'] = fix.label;
+      request.fields['maps_url'] = fix.mapsUrl;
     }
 
     // Render free-tier cold start + Whisper transcription can take up to

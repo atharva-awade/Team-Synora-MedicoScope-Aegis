@@ -7,6 +7,7 @@ import 'package:medicoscope/core/theme/theme_provider.dart';
 import 'package:medicoscope/core/providers/auth_provider.dart';
 import 'package:medicoscope/core/widgets/glass_card.dart';
 import 'package:medicoscope/services/consult_service.dart';
+import 'package:medicoscope/services/location_service.dart';
 
 /// Live Agent Consult — the autonomous loop, on screen. Streams the Aegis
 /// decision-trace (triage -> plan -> tool calls -> fusion -> gate verdict) and
@@ -39,6 +40,7 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
   bool _done = false;
   String? _error;
   String _verdict = '';
+  String _dataBasis = ''; // measured | symptom_only | insufficient
 
   @override
   void initState() {
@@ -71,6 +73,19 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
     }
   }
 
+  String _basisLabel(String basis) {
+    switch (basis) {
+      case 'measured':
+        return 'Based on your real screening data';
+      case 'symptom_only':
+        return 'Symptom-based triage only, not a diagnosis. Run a screening (lab, photo or vitals) for a real assessment.';
+      case 'insufficient':
+        return 'No screening data yet, not a diagnosis. Run a screening to get a real assessment.';
+      default:
+        return 'modalities agree';
+    }
+  }
+
   void _add(_TraceItem t) {
     setState(() => _trace.add(t));
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -97,14 +112,23 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
       _done = false;
       _error = null;
       _verdict = '';
+      _dataBasis = '';
       _trace.clear();
     });
+
+    // Attach the patient's live location so a gate-raised alert reaches the
+    // doctor with a map link. Best-effort; the consult runs regardless.
+    final fix = await LocationService.getFix();
 
     final stream = ConsultService.run(
       patientId: user.id,
       patientName: user.name,
       complaint: _complaintCtrl.text.trim(),
       authToken: auth.token!,
+      latitude: fix.latitude,
+      longitude: fix.longitude,
+      locationLabel: fix.label,
+      mapsUrl: fix.mapsUrl,
     );
 
     try {
@@ -134,33 +158,62 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
                 '${plan.length} tool steps queued',
                 const Color(0xFF8FB8D6), Icons.list_alt));
             break;
+          case 'saved_evidence':
+            final count = e.data['count'] ?? 0;
+            final mods = (e.data['modalities'] as List?)?.join(', ') ?? '';
+            _add(_TraceItem(
+                'Evidence',
+                'Loaded $count saved screening${count == 1 ? '' : 's'}',
+                mods.isNotEmpty ? 'From your records: $mods' : 'From your records',
+                const Color(0xFF7EA68C), Icons.folder_shared_outlined));
+            break;
           case 'tool_call':
             _add(_TraceItem('Diagnosis Agent', 'Calling ${e.data['tool']}',
                 'for ${e.data['disease']}', const Color(0xFF7EA68C),
                 Icons.biotech_outlined));
             break;
           case 'tool_result':
+            final status = e.data['status']?.toString() ?? '';
             final risk = e.data['risk']?.toString();
             final conf = e.data['confidence'];
-            final status = e.data['status']?.toString() ?? '';
-            _add(_TraceItem(
-                'Diagnosis Agent',
-                '${e.data['tool']} → ${risk ?? status}',
-                conf != null ? 'confidence ${conf.toString()}' : status,
-                _riskColor(risk), Icons.check_circle_outline,
-                verdict: risk));
+            if (status == 'skipped_no_data' || status == 'unavailable') {
+              // Honest: no data for this modality, so it is NOT counted.
+              _add(_TraceItem(
+                  'Diagnosis Agent',
+                  '${e.data['tool']} → not assessed',
+                  'No data provided for this modality',
+                  const Color(0xFF9AA4B2), Icons.remove_circle_outline));
+            } else if (status == 'error') {
+              _add(_TraceItem(
+                  'Diagnosis Agent',
+                  '${e.data['tool']} → unavailable',
+                  'tool error, not counted',
+                  const Color(0xFF9AA4B2), Icons.error_outline));
+            } else {
+              _add(_TraceItem(
+                  'Diagnosis Agent',
+                  '${e.data['tool']} → ${risk ?? status}',
+                  conf != null ? 'confidence ${conf.toString()}' : status,
+                  _riskColor(risk), Icons.check_circle_outline,
+                  verdict: risk));
+            }
             break;
           case 'diagnostic_result':
             final overall = e.data['overall_risk']?.toString();
+            _dataBasis = e.data['data_basis']?.toString() ?? '';
             final conflicts = (e.data['conflicts'] as List?) ?? [];
+            final notAssessed = overall == 'not_assessed';
             _add(_TraceItem(
                 'Concordance Agent',
-                'Evidence fused → overall ${overall ?? ''}',
-                conflicts.isEmpty
-                    ? 'modalities agree'
-                    : 'contradiction: ${conflicts.join(', ')}',
-                const Color(0xFFE8B46B), Icons.hub_outlined,
-                verdict: overall));
+                notAssessed ? 'Not assessed' : 'Evidence fused → overall $overall',
+                notAssessed
+                    ? _basisLabel(_dataBasis)
+                    : (conflicts.isEmpty
+                        ? _basisLabel(_dataBasis)
+                        : 'contradiction: ${conflicts.join(', ')}'),
+                notAssessed ? const Color(0xFF9AA4B2) : const Color(0xFFE8B46B),
+                Icons.hub_outlined,
+                verdict: notAssessed ? null : overall));
             break;
           case 'plan_replan':
             _add(_TraceItem('Planner', 'Re-planning',
@@ -215,6 +268,8 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
               if (!_running && _trace.isEmpty) _inputArea(isDark),
               if (_error != null) _errorBar(_error!, isDark),
               Expanded(child: _traceList(isDark)),
+              if (_done && _dataBasis.isNotEmpty && _dataBasis != 'measured')
+                _basisBanner(isDark),
               if (_done) _verdictBar(isDark),
             ],
           ),
@@ -454,6 +509,37 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
           ).animate().fadeIn(duration: 350.ms).slideX(begin: 0.06, end: 0);
         },
       );
+
+  Widget _basisBanner(bool isDark) {
+    final insufficient = _dataBasis == 'insufficient';
+    final c = const Color(0xFF8FB8D6);
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(
+          AppTheme.spacingLarge, 0, AppTheme.spacingLarge, 8),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: c.withValues(alpha: .12),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: c.withValues(alpha: .35)),
+      ),
+      child: Row(children: [
+        Icon(insufficient ? Icons.info_outline : Icons.science_outlined,
+            color: c, size: 20),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            _basisLabel(_dataBasis),
+            style: TextStyle(
+                fontSize: 12.5,
+                height: 1.4,
+                fontWeight: FontWeight.w600,
+                color: isDark ? AppTheme.darkTextLight : AppTheme.textDark),
+          ),
+        ),
+      ]),
+    );
+  }
 
   Widget _verdictBar(bool isDark) {
     final c = _riskColor(_verdict);

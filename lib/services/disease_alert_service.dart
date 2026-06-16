@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:medicoscope/core/constants/api_constants.dart';
 import 'package:medicoscope/core/constants/disease_constants.dart';
 import 'package:medicoscope/models/disease_risk_result.dart';
+import 'package:medicoscope/services/location_service.dart';
 
 class DiseaseAlert {
   final String id;
@@ -118,6 +119,9 @@ class DiseaseAlertService {
     if (doctorId != null && doctorId.isNotEmpty && authToken != null) {
       try {
         final clinical = _buildClinicalReport(result);
+        // Attach the patient's live location so the doctor can locate them for
+        // a high/critical finding. Best-effort: null when unavailable.
+        final fix = await LocationService.getFix();
         await http
             .post(
               Uri.parse('${ApiConstants.baseUrl}/mental-health/notifications'),
@@ -134,6 +138,7 @@ class DiseaseAlertService {
                 'transcript':
                     '[Auto] ${DiseaseRegistry.of(result.disease).title} screening via ${MethodRegistry.of(result.method).title}',
                 'source': 'disease_screening_${result.disease.name}',
+                ...fix.toJson(),
               }),
             )
             .timeout(const Duration(seconds: 10));
@@ -223,13 +228,18 @@ class DiseaseAlertService {
     required String clinicalReport,
     required String urgency,
     required String source,
+    String? authToken,
   }) async {
-    if (doctorId.isEmpty) return;
+    if (doctorId.isEmpty || authToken == null) return;
     try {
+      final fix = await LocationService.getFix();
       await http
           .post(
             Uri.parse('${ApiConstants.baseUrl}/mental-health/notifications'),
-            headers: {'Content-Type': 'application/json'},
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $authToken',
+            },
             body: jsonEncode({
               'doctorId': doctorId,
               'patientId': patientId,
@@ -238,6 +248,7 @@ class DiseaseAlertService {
               'urgency': urgency,
               'transcript': '[Auto] MedicoScope screening — $source',
               'source': source,
+              ...fix.toJson(),
             }),
           )
           .timeout(const Duration(seconds: 10));
