@@ -1,8 +1,10 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:medicoscope/core/constants/disease_constants.dart';
 import 'package:medicoscope/services/voice_biomarker_analyzer.dart';
 import 'package:medicoscope/services/respiratory_analyzer.dart';
+import 'package:medicoscope/services/respiratory_signal.dart';
 
 /// Synthetic-waveform unit tests for the on-device acoustic analyzers. These
 /// verify the HONEST-by-construction behaviour: garbage in → rejected (not
@@ -83,42 +85,48 @@ void main() {
     });
   });
 
-  group('RespiratoryAnalyzer', () {
+  group('RespiratorySignal / RespiratoryAnalyzer', () {
     const sr = 16000;
 
     test('rejects a too-short clip', () {
-      final r = RespiratoryAnalyzer.analyze(_breathingLike(sr, 4.0), sr);
-      expect(r.usable, isFalse);
+      final f = RespiratorySignal.extract(
+          samples: _breathingLike(sr, 4.0), sampleRate: sr);
+      expect(f.usable, isFalse);
     });
 
     test('rejects near-silence rather than scoring it', () {
-      final r = RespiratoryAnalyzer.analyze(_noise(sr * 15, amp: 0.0005), sr);
-      expect(r.usable, isFalse);
-      expect(r.distressScore, 0);
+      final f = RespiratorySignal.extract(
+          samples: _noise(sr * 15, amp: 0.0005), sampleRate: sr);
+      expect(f.usable, isFalse);
     });
 
-    test('produces a usable, bounded result for breathing-like audio', () {
-      final r = RespiratoryAnalyzer.analyze(_breathingLike(sr, 16.0), sr);
-      expect(r.usable, isTrue);
-      expect(r.distressScore, inInclusiveRange(0.0, 1.0));
-      expect(r.confidence, inInclusiveRange(0.0, 1.0));
-      expect(r.breathingRate, greaterThan(0));
-      expect(r.coughCount, greaterThanOrEqualTo(0));
-      expect(r.wheezeBandRatio, inInclusiveRange(0.0, 1.0));
+    test('usable, bounded, plausible features for breathing-like audio', () {
+      final f = RespiratorySignal.extract(
+          samples: _breathingLike(sr, 16.0), sampleRate: sr);
+      expect(f.usable, isTrue);
+      expect(f.breathingRate, greaterThan(0));
+      expect(f.breathingRate, lessThan(60));
+      expect(f.wheezeRatio, inInclusiveRange(0.0, 1.0));
+      expect(f.sqi, inInclusiveRange(0.0, 1.0));
+      expect(f.breathingRate.isFinite, isTrue);
     });
 
-    test('breathing rate is physiologically plausible (< 60/min)', () {
-      final r = RespiratoryAnalyzer.analyze(_breathingLike(sr, 16.0), sr);
-      if (r.usable) {
-        expect(r.breathingRate, lessThan(60));
-      }
+    test('analyzer maps usable features to a respiratory DiseaseRiskResult', () {
+      final f = RespiratorySignal.extract(
+          samples: _breathingLike(sr, 16.0), sampleRate: sr);
+      final r = RespiratoryAnalyzer.analyze(features: f);
+      expect(r.disease, DiseaseType.respiratory);
+      expect(r.method, DetectionMethod.respiratoryAcoustic);
+      expect(r.findings, isNotEmpty);
+      expect(r.score, inInclusiveRange(0.0, 1.0));
     });
 
-    test('all metrics are finite', () {
-      final r = RespiratoryAnalyzer.analyze(_breathingLike(sr, 16.0), sr);
-      expect(r.distressScore.isFinite, isTrue);
-      expect(r.confidence.isFinite, isTrue);
-      expect(r.breathingRate.isFinite, isTrue);
+    test('poor signal yields an empty (non-scored) result', () {
+      final f = RespiratorySignal.extract(
+          samples: _noise(sr * 15, amp: 0.0005), sampleRate: sr);
+      final r = RespiratoryAnalyzer.analyze(features: f);
+      expect(r.findings, isEmpty);
+      expect(r.score, 0);
     });
   });
 }
