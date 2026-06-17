@@ -33,14 +33,14 @@ app.add_middleware(
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 llm = ChatGroq(
-    model="llama-3.3-70b-versatile",
+    model=os.getenv("GROQ_MODEL", "openai/gpt-oss-120b"),
     api_key=os.getenv("GROQ_API_KEY"),
     temperature=0.7,
     max_tokens=1024,
 )
 
 llm_streaming = ChatGroq(
-    model="llama-3.1-8b-instant",
+    model=os.getenv("GROQ_MODEL", "openai/gpt-oss-120b"),
     api_key=os.getenv("GROQ_API_KEY"),
     temperature=0.7,
     max_tokens=1024,

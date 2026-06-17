@@ -33,7 +33,7 @@ NODE_API = os.getenv("BACKEND_URL", "https://medicoscope-api-lbto.onrender.com/a
 # deterministic Aegis gate) and never executes actions. If Groq is unavailable
 # the deterministic keyword planner runs instead, so the consult never breaks.
 GROQ_KEY = os.getenv("GROQ_API_KEY")
-GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 
 _groq_client = None
 def _groq():
