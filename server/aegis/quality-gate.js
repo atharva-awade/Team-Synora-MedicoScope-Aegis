@@ -1,119 +1,77 @@
+'use strict';
 /**
- * Aegis Repeatable Quality Gate Engine (Server-side)
+ * DEPRECATED SHIM -- kept only so nothing that imported this path breaks.
  *
- * Enforces standardized 5-point quality validation on all clinical reports,
- * consultation summaries, and agentic outputs before finalizing decisions or
- * writing to the immutable audit ledger.
+ * The original version of this file was a 119-line hand-rolled scorer that
+ * shipped with three defects worth naming, because they are the exact traps this
+ * rewrite exists to avoid:
+ *
+ *   1. It was never imported by any route. It was dead code, so no verdict it
+ *      produced ever reached a user.
+ *   2. Its audit hash folded `Date.now()` into the hashed input, so the same
+ *      content produced a different hash every call. A hash that cannot be
+ *      recomputed proves nothing -- which makes "repeatable" false at the
+ *      cryptographic level, not just the semantic one.
+ *   3. Its rules diverged from the client-side Dart copy (QG-SERVER-2026.2 vs
+ *      QG-CLINICAL-2026.2), so phone and server disagreed about the same report.
+ *
+ * The real engine now lives in server/quality/ -- one rules-as-data pack, one
+ * pure evaluator, a golden corpus, and a Dart port held to byte-parity by a
+ * generated vector file.
+ *
+ * Prefer:  const qg = require('../quality');
  */
-const crypto = require('crypto');
+const qg = require('../quality');
 
-const RULES_VERSION = 'QG-SERVER-2026.2';
+const RULES_VERSION = 'QG-SERVER-2026.2-DEPRECATED';
 
 /**
- * 5-Dimension Quality Assessment
- * @param {Object} content { text, title, category, findings, riskLevel, confidence, recommendations, doctorNotes }
- * @returns {Object} { overallScore, status, dimensions, auditHash, rulesVersion, passed }
+ * Legacy adapter. Maps the old loose `content` shape onto the v3 engine and
+ * returns the old response shape, so old callers keep working while new code
+ * uses the engine directly.
+ *
+ * @deprecated use require('../quality').evaluate({ content, pack, profile })
  */
 function evaluateQualityGate(content = {}) {
-  const text = (content.text || content.doctorNotes || '').trim();
-  const findings = content.findings || [];
-  const riskLevel = (content.riskLevel || 'low').toLowerCase();
-  const confidence = content.confidence ?? 1.0;
-  const recommendations = content.recommendations || [];
-
-  // 1. Structure & Completeness
-  let structScore = 1.0;
-  const structPassed = [];
-  const structWarn = [];
-  const structCrit = [];
-
-  if (content.title || content.category) {
-    structPassed.push('Condition / Specialty classification intact');
-  } else {
-    structWarn.push('Missing category or specialty header');
-    structScore -= 0.2;
-  }
-
-  if (findings.length > 0 || text.length > 20) {
-    structPassed.push('Quantitative findings / clinical text present');
-  } else {
-    structCrit.push('Empty clinical content body');
-    structScore -= 0.6;
-  }
-
-  // 2. Readability & Jargon Check
-  let readScore = 0.95;
-  const readPassed = ['Structured paragraph and point hierarchy verified'];
-  const readWarn = [];
-  if (text.length > 500 && !text.includes('\n')) {
-    readWarn.push('Long unformatted text block detected - split into sections');
-    readScore -= 0.15;
-  }
-
-  // 3. Clinical Safety & Guardrails
-  let safetyScore = 1.0;
-  const safetyPassed = ['Screening safety disclaimer validated'];
-  const safetyWarn = [];
-  const safetyCrit = [];
-
-  if (riskLevel === 'high' || riskLevel === 'critical') {
-    const hasEscalation = text.toLowerCase().includes('urgent') ||
-      text.toLowerCase().includes('emergency') ||
-      text.toLowerCase().includes('physician') ||
-      text.toLowerCase().includes('doctor') ||
-      recommendations.some(r => typeof r === 'string' && (r.toLowerCase().includes('urgent') || r.toLowerCase().includes('clinician')));
-
-    if (hasEscalation) {
-      safetyPassed.push('High-risk escalation pathway explicitly stated');
-    } else {
-      safetyWarn.push('High-risk output missing clear urgent clinician escalation directive');
-      safetyScore -= 0.25;
-    }
-  }
-
-  // 4. Actionability
-  let actionScore = 0.95;
-  const actionPassed = ['Clinical next steps identified'];
-  const actionWarn = [];
-  if (recommendations.length === 0 && !text.includes('1.') && !text.includes('-')) {
-    actionWarn.push('Add enumerated next steps or specialist referral timeframe');
-    actionScore -= 0.2;
-  }
-
-  // 5. Evidence Grounding & Calibration
-  let groundScore = 1.0;
-  const groundPassed = ['Evidence calibrated against confidence thresholds'];
-  const groundWarn = [];
-  if (confidence < 0.45 && (riskLevel === 'high' || riskLevel === 'critical')) {
-    groundWarn.push('Low confidence signal with high risk - mandatory clinical confirmation required');
-    groundScore -= 0.2;
-  }
-
-  const dimensions = [
-    { type: 'structure', title: 'Structure & Completeness', score: Math.max(0, structScore), passedChecks: structPassed, warnings: structWarn, criticalIssues: structCrit },
-    { type: 'readability', title: 'Readability & Patient Accessibility', score: Math.max(0, readScore), passedChecks: readPassed, warnings: readWarn, criticalIssues: [] },
-    { type: 'safety', title: 'Clinical Safety & Guardrails', score: Math.max(0, safetyScore), passedChecks: safetyPassed, warnings: safetyWarn, criticalIssues: safetyCrit },
-    { type: 'actionability', title: 'Actionability & Next Steps', score: Math.max(0, actionScore), passedChecks: actionPassed, warnings: actionWarn, criticalIssues: [] },
-    { type: 'grounding', title: 'Evidence Grounding & Calibration', score: Math.max(0, groundScore), passedChecks: groundPassed, warnings: groundWarn, criticalIssues: [] },
-  ];
-
-  const overall = dimensions.reduce((acc, d) => acc + d.score, 0) / dimensions.length;
-  const status = (overall >= 0.85 && structCrit.length === 0 && safetyCrit.length === 0) ? 'PASSED'
-    : (overall >= 0.60 && structCrit.length === 0 && safetyCrit.length === 0) ? 'WARNING'
-    : 'BLOCKED';
-
-  const hashInput = `${text}|${overall.toFixed(2)}|${RULES_VERSION}|${Date.now()}`;
-  const auditHash = crypto.createHash('sha256').update(hashInput).digest('hex').substring(0, 16).toUpperCase();
+  const pack = qg.pack('medical');
+  const profile = content.profile || 'clinician_report';
+  const v = qg.evaluate({
+    content: {
+      title: content.title || content.finding || content.category || '',
+      category: content.category || '',
+      riskLevel: content.riskLevel || 'low',
+      score: content.score,
+      confidence: content.confidence,
+      body: content.text || content.doctorNotes || '',
+      recommendations: content.recommendations || [],
+      disclaimer: content.disclaimer || '',
+      evidence: content.evidence || [],
+    },
+    pack,
+    profile,
+  });
 
   return {
-    overallScore: Math.round(overall * 100),
-    status,
-    passed: status !== 'BLOCKED',
-    dimensions,
-    auditHash,
-    rulesVersion: RULES_VERSION,
+    overallScore: v.scorePercent,
+    status: v.status === 'PASS' ? 'PASSED' : v.status === 'WARN' ? 'WARNING' : 'BLOCKED',
+    passed: v.status !== 'BLOCK',
+    dimensions: v.dimensions.map((d) => ({
+      type: d.id,
+      title: d.title,
+      score: d.score,
+      passedChecks: v.checks.filter((c) => c.dimension === d.id && c.ok).map((c) => c.message),
+      warnings: v.checks.filter((c) => c.dimension === d.id && !c.ok && c.severity !== 'critical').map((c) => c.detail),
+      criticalIssues: v.checks.filter((c) => c.dimension === d.id && !c.ok && c.severity === 'critical').map((c) => c.detail),
+    })),
+    // NOTE: unlike the old implementation this is stable for identical content.
+    auditHash: v.certificateId.replace('-', ''),
+    certificateId: v.certificateId,
+    verdictDigest: v.verdictDigest,
+    rulesVersion: `${v.packId}@${v.packVersion}`,
+    engineVersion: v.engineVersion,
     evaluatedAt: new Date().toISOString(),
+    verdict: v,
   };
 }
 
-module.exports = { evaluateQualityGate, RULES_VERSION };
+module.exports = { evaluateQualityGate, RULES_VERSION, engine: qg };

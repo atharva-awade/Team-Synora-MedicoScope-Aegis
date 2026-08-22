@@ -32,6 +32,9 @@ const decisionAuditSchema = new mongoose.Schema({
       'action_blocked',        // RED - action withheld pending human
       'clinician_decision',    // APPROVE / MODIFY / OVERRIDE / ESCALATE
       'followup_scheduled',
+      'quality_gate',          // a Quality Gate verdict was issued (certificate)
+      'quality_gate_final',    // content was finalized through the gate
+      'quality_gate_override', // a BLOCKED verdict was finalized by a named clinician
     ],
   },
 
