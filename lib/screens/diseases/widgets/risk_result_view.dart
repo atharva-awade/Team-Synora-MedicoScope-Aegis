@@ -60,8 +60,41 @@ class RiskResultView extends StatelessWidget {
     }
   }
 
+  /// Ask the server engine for an authoritative verdict + certificate.
+  ///
+  /// If the gate is unreachable we return the PROVISIONAL pre-flight result
+  /// unchanged and say so. We do not silently upgrade it: an offline device must
+  /// not be able to manufacture a certification, because that is precisely the
+  /// bypass an audit trail has to be immune to.
+  Future<QualityGateResult> _certify(
+    ScaffoldMessengerState messenger,
+    QualityGateResult provisional,
+  ) async {
+    try {
+      return await QualityGateService.certifyScreeningResult(result);
+    } catch (_) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Quality Gate unreachable — showing the provisional pre-flight. '
+              'Nothing has been certified.'),
+          backgroundColor: Color(0xFFF39C12),
+        ),
+      );
+      return provisional;
+    }
+  }
+
+  /// Renders the ACTUAL state of a dimension.
+  ///
+  /// The previous version took a `passed` flag and ignored it, hard-coding a
+  /// green tick and a green border for every pill. Five green ticks appeared
+  /// whatever the content was, which made the row decorative rather than
+  /// informative -- and decorative safety indicators are worse than none,
+  /// because people believe them.
   Widget _miniDimPill(String label, bool passed, bool isDark) {
-    const color = Color(0xFF2ECC71);
+    final Color color =
+        passed ? const Color(0xFF2ECC71) : const Color(0xFFE74C3C);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
@@ -72,7 +105,8 @@ class RiskResultView extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.check_circle_rounded, size: 11, color: color),
+          Icon(passed ? Icons.check_circle_rounded : Icons.cancel_rounded,
+              size: 11, color: color),
           const SizedBox(width: 4),
           Text(
             label,
@@ -467,7 +501,9 @@ class RiskResultView extends StatelessWidget {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      'Aegis Quality Gate Certified',
+                                      qg.isProvisional
+                                          ? 'Quality Gate — not yet run'
+                                          : 'Aegis Quality Gate ${qg.statusLabel}',
                                       style: TextStyle(
                                         fontSize: 13.5,
                                         fontWeight: FontWeight.w900,
@@ -483,7 +519,9 @@ class RiskResultView extends StatelessWidget {
                                       border: Border.all(color: qgColor.withOpacity(0.4)),
                                     ),
                                     child: Text(
-                                      '${qg.overallScorePercent}% VERIFIED',
+                                      qg.isProvisional
+                                          ? 'PROVISIONAL'
+                                          : '${qg.overallScorePercent}% · ${qg.certificateId}',
                                       style: TextStyle(
                                         fontSize: 10.5,
                                         fontWeight: FontWeight.w900,
@@ -496,7 +534,15 @@ class RiskResultView extends StatelessWidget {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Deterministic 5-Dimension Clinical Audit Passed • Seal #${qg.auditHash}',
+                                qg.isProvisional
+                                    // Nothing has been certified yet, so the
+                                    // card says so instead of showing a seal.
+                                    ? 'Local pre-flight only. Tap Certify to have the '
+                                        'server engine judge this against the evidence '
+                                        'and issue a reproducible certificate.'
+                                    : 'Judged by ${qg.packRef} • '
+                                        '${qg.boundClaimCount}/${qg.claimCount} claims bound to evidence • '
+                                        'seal ${qg.certificateId}',
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: isDark ? AppTheme.darkTextGray : AppTheme.textGray,
@@ -514,11 +560,21 @@ class RiskResultView extends StatelessWidget {
                       spacing: 6,
                       runSpacing: 4,
                       children: [
-                        _miniDimPill('Structure', true, isDark),
-                        _miniDimPill('Readability (${qg.readingGradeLevel})', true, isDark),
-                        _miniDimPill('Clinical Safety', true, isDark),
-                        _miniDimPill('Actionability', true, isDark),
-                        _miniDimPill('Grounding', true, isDark),
+                        // Driven by the verdict, not by a literal `true`.
+                        // A dimension the pre-flight could not evaluate is not
+                        // shown at all rather than shown as passing.
+                        ...qg.dimensions.map((d) => _miniDimPill(
+                              '${d.title} ${d.scorePercent}%',
+                              d.status != QualityGateStatus.blocked &&
+                                  d.warnings.isEmpty &&
+                                  d.criticalIssues.isEmpty,
+                              isDark,
+                            )),
+                        _miniDimPill(
+                          'Reading ${qg.readingGradeLevel}',
+                          !qg.isProvisional,
+                          isDark,
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -530,11 +586,17 @@ class RiskResultView extends StatelessWidget {
                       children: [
                         Expanded(
                           child: OutlinedButton.icon(
-                            onPressed: () {
+                            onPressed: () async {
+                              final messenger = ScaffoldMessenger.of(ctx);
                               final auth = Provider.of<AuthProvider>(ctx, listen: false);
+                              final certified = await _certify(messenger, qg);
                               final realPatientName = (auth.user?.name != null && auth.user!.name.trim().isNotEmpty)
                                   ? auth.user!.name.trim()
-                                  : 'Kunal Ramdas Jadhav';
+                                  // A real person's name was hard-coded here as
+                                  // the fallback. On any account without a name
+                                  // set, that name was printed onto a clinical
+                                  // PDF for a different patient.
+                                  : 'Patient';
                               final patientCode = auth.user?.uniqueCode ?? auth.user?.id ?? 'MS-PAT-2026';
                               final scanTime = result.timestamp;
 
@@ -552,13 +614,20 @@ class RiskResultView extends StatelessWidget {
                               CertifiedReportPdfService.generateAndSave(
                                 record: dummyRecord,
                                 patientName: realPatientName,
-                                qualityResult: qg,
+                                qualityResult: certified,
                                 doctorNotes: result.recommendations.join('\n• '),
                               );
-                              ScaffoldMessenger.of(ctx).showSnackBar(
+                              messenger.showSnackBar(
                                 SnackBar(
-                                  content: Text('📄 Certified PDF generated for $realPatientName'),
-                                  backgroundColor: const Color(0xFF2ECC71),
+                                  content: Text(certified.isCertified
+                                      ? 'PDF exported for $realPatientName — '
+                                          'seal ${certified.certificateId} '
+                                          '(${certified.statusLabel})'
+                                      : 'PDF exported for $realPatientName — '
+                                          'PROVISIONAL, no certificate issued'),
+                                  backgroundColor: certified.isBlocked
+                                      ? const Color(0xFFE74C3C)
+                                      : const Color(0xFF2ECC71),
                                 ),
                               );
                             },
@@ -574,11 +643,17 @@ class RiskResultView extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: ElevatedButton.icon(
-                            onPressed: () {
+                            onPressed: () async {
+                              final messenger = ScaffoldMessenger.of(ctx);
                               final auth = Provider.of<AuthProvider>(ctx, listen: false);
+                              final certified = await _certify(messenger, qg);
                               final realPatientName = (auth.user?.name != null && auth.user!.name.trim().isNotEmpty)
                                   ? auth.user!.name.trim()
-                                  : 'Kunal Ramdas Jadhav';
+                                  // A real person's name was hard-coded here as
+                                  // the fallback. On any account without a name
+                                  // set, that name was printed onto a clinical
+                                  // PDF for a different patient.
+                                  : 'Patient';
                               final patientCode = auth.user?.uniqueCode ?? auth.user?.id ?? 'MS-PAT-2026';
                               final scanTime = result.timestamp;
 
@@ -593,17 +668,18 @@ class RiskResultView extends StatelessWidget {
                                 description: result.headline,
                                 timestamp: scanTime,
                               );
+                              // ignore: use_build_context_synchronously
                               QualityGateSheet.show(
                                 ctx,
-                                result: qg,
+                                result: certified,
                                 record: dummyRecord,
                                 patientName: realPatientName,
                                 doctorNotes: result.recommendations.join('\n• '),
-                                title: 'Patient Quality Gate Audit',
+                                title: 'Aegis Quality Gate Certificate',
                               );
                             },
                             icon: const Icon(Icons.shield_outlined, size: 15),
-                            label: const Text('Inspect Audit', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                            label: const Text('Certify & Inspect', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               backgroundColor: qgColor,

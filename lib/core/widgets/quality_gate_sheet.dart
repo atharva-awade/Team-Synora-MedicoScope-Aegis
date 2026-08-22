@@ -138,6 +138,14 @@ class _QualityGateSheetState extends State<QualityGateSheet> with SingleTickerPr
     );
   }
 
+  /// Short display form of a digest. Length-safe: the old code sliced a fixed
+  /// 12 characters out of the audit hash, which threw a RangeError the moment
+  /// the hash was shorter than that -- e.g. for any provisional result.
+  static String _digestChip(String digest, [int n = 16]) {
+    if (digest.isEmpty) return 'none';
+    return digest.length <= n ? digest : '${digest.substring(0, n)}...';
+  }
+
   Color _statusColor(QualityGateStatus status) {
     switch (status) {
       case QualityGateStatus.passed:
@@ -833,37 +841,62 @@ class _QualityGateSheetState extends State<QualityGateSheet> with SingleTickerPr
                       ),
                       const SizedBox(height: 10),
 
-                      // Merkle Provenance Blocks
+                      // PROVENANCE CHAIN -- the four real inputs to the
+                      // certificate, in the order they compose.
+                      //
+                      // This panel used to slice the audit hash into four
+                      // decorative "blocks" with hard-coded statuses
+                      // (VERIFIED / STABLE / PASSED / IMMUTABLE) that were
+                      // printed no matter what the gate had said. Now every row
+                      // shows an actual digest and an actual state, so the chain
+                      // can be followed -- and can disagree with you.
                       _merkleBlock(
                         blockIndex: 1,
-                        title: 'Sensor & Input Capture',
-                        hash: 'B1-${r.auditHash.substring(0, 4)}',
-                        status: 'VERIFIED',
-                        details: 'PPG / Acoustic signal resampled & filtered.',
+                        title: 'Content digest',
+                        hash: _digestChip(r.contentDigest),
+                        status: r.isProvisional ? 'LOCAL' : 'SEALED',
+                        details: 'sha256 over the normalized content. Whitespace, '
+                            'line endings and key order are normalized first, so '
+                            'cosmetic edits cannot mint a new identity.',
                         isDark: isDark,
                       ),
                       _merkleBlock(
                         blockIndex: 2,
-                        title: 'TFLite Model Inference',
-                        hash: 'B2-${r.auditHash.substring(4, 8)}',
-                        status: 'STABLE',
-                        details: 'On-device neural classifier output anchored.',
+                        title: 'Policy pack digest',
+                        hash: r.packRef.isEmpty ? 'not evaluated' : r.packRef,
+                        status: r.isProvisional ? 'PENDING' : 'PINNED',
+                        details: 'Which rules judged this. Pinning the pack digest '
+                            'is what lets a score change be attributed to the '
+                            'content rather than to a quietly loosened rule.',
                         isDark: isDark,
                       ),
                       _merkleBlock(
                         blockIndex: 3,
-                        title: '5-Dimension Deterministic Gate',
-                        hash: 'B3-${r.auditHash.substring(8, 12)}',
-                        status: 'PASSED',
-                        details: 'Readability score: ${r.readingGradeLevel} ($_selectedLang)',
+                        title: 'Verdict digest',
+                        hash: _digestChip(r.verdictDigest),
+                        status: r.isProvisional ? 'NONE' : r.statusLabel,
+                        details: r.isProvisional
+                            ? 'No verdict has been issued yet. '
+                                'Reading level ${r.readingGradeLevel}.'
+                            : 'Covers every check id, outcome and severity. '
+                                '${r.boundClaimCount}/${r.claimCount} numeric claims '
+                                'bound to evidence. Reading level ${r.readingGradeLevel}.',
                         isDark: isDark,
                       ),
                       _merkleBlock(
                         blockIndex: 4,
-                        title: 'Cryptographic SHA-256 Ledger Seal',
-                        hash: '#${r.auditHash}',
-                        status: 'IMMUTABLE',
-                        details: 'Tamper-evident governance proof recorded.',
+                        title: 'Certificate',
+                        hash: r.isProvisional ? 'not issued' : r.certificateId,
+                        status: r.isProvisional
+                            ? 'PROVISIONAL'
+                            : (r.finalized ? 'FINALIZED' : 'ISSUED'),
+                        details: r.isProvisional
+                            ? 'A pre-flight issues no certificate. Run the gate to '
+                                'get one.'
+                            : 'Reproducible from blocks 1 and 2 alone: the issuing '
+                                'timestamp is deliberately outside the hash, so '
+                                'anyone can recompute this id and check it.'
+                                '${r.verifyUrl == null ? '' : '\n${r.verifyUrl}'}',
                         isDark: isDark,
                         isLast: true,
                       ),

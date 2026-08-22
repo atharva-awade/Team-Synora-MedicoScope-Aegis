@@ -32,6 +32,7 @@ class ReportDetailScreen extends StatefulWidget {
 class _ReportDetailScreenState extends State<ReportDetailScreen> {
   final TextEditingController _notesCtrl = TextEditingController();
   bool _isFinalized = false;
+  bool _isFinalizing = false;
   QualityGateResult? _finalizedGateResult;
 
   String get _storageKey =>
@@ -52,6 +53,10 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
         _notesCtrl.text = savedNotes;
       }
       if (isFinal && mounted) {
+        // Restored from the local cache. This is a PROVISIONAL reconstruction,
+        // not the certificate that was issued -- so it renders as provisional
+        // until the gate is asked again. The device does not get to remember
+        // that it once passed.
         final qg = _evaluateCurrentQuality();
         setState(() {
           _isFinalized = true;
@@ -229,16 +234,139 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     );
 
     if (finalized == true && mounted) {
-      final updatedQg = _evaluateCurrentQuality();
+      await _finalizeThroughGate();
+    }
+  }
+
+  /// Sign the report THROUGH THE SERVER GATE.
+  ///
+  /// The old flow set a local boolean and wrote it to SharedPreferences, which
+  /// meant the record of whether a report had passed review lived on the device
+  /// of the person being reviewed, and no verdict was ever checked. Now the
+  /// server re-evaluates the notes it is sent and refuses to finalize a BLOCK.
+  /// The device cannot argue with it, and it cannot go around it by going
+  /// offline: with no gate, there is no signature.
+  Future<void> _finalizeThroughGate({String? overrideReason}) async {
+    setState(() => _isFinalizing = true);
+    try {
+      final certified = await QualityGateService.finalizeDetectionRecord(
+        record: widget.record,
+        patientName: widget.patientName,
+        doctorNotes: _notesCtrl.text,
+        overrideReason: overrideReason,
+      );
+      if (!mounted) return;
       setState(() {
         _isFinalized = true;
-        _finalizedGateResult = updatedQg;
+        _finalizedGateResult = certified;
+        _isFinalizing = false;
       });
       await _persistFinalizedState();
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('✅ Report signed and sealed (#${updatedQg.auditHash})'),
-          backgroundColor: const Color(0xFF2ECC71),
+          content: Text(overrideReason == null
+              ? 'Signed. Certificate ${certified.certificateId} '
+                  '(${certified.statusLabel} ${certified.overallScorePercent}%) '
+                  '— verifiable at ${certified.verifyUrl ?? "the gate endpoint"}'
+              : 'Signed OVER A BLOCK. The override and your identity are now in '
+                  'the append-only ledger. Certificate ${certified.certificateId}'),
+          backgroundColor: overrideReason == null
+              ? const Color(0xFF2ECC71)
+              : const Color(0xFFF39C12),
+          duration: const Duration(seconds: 6),
+        ),
+      );
+    } on QgBlockedException catch (blocked) {
+      if (!mounted) return;
+      setState(() => _isFinalizing = false);
+      await _showBlockedDialog(blocked);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isFinalizing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Quality Gate unreachable, so nothing was signed. '
+              'A report cannot be certified without a verdict. ($e)'),
+          backgroundColor: const Color(0xFFE74C3C),
+          duration: const Duration(seconds: 6),
+        ),
+      );
+    }
+  }
+
+  /// Show exactly what has to change, and offer the one sanctioned way past it.
+  Future<void> _showBlockedDialog(QgBlockedException blocked) async {
+    final v = blocked.verdict;
+    final overrideCtrl = TextEditingController();
+    final proceed = await showDialog<bool>(
+      context: context,
+      builder: (dctx) => AlertDialog(
+        title: Text('Quality Gate BLOCKED (${v.scorePercent}%)'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('${v.blocking.length} critical check(s) failed. '
+                  'Judged by ${v.packId}@${v.packVersion}.'),
+              const SizedBox(height: 12),
+              ...v.mustFix.map((m) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('${m['severity']} · ${m['message']}',
+                            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5)),
+                        Text('${m['detail']}', style: const TextStyle(fontSize: 11.5)),
+                        if ((m['remedy'] ?? '').toString().isNotEmpty)
+                          Text('Fix: ${m['remedy']}',
+                              style: const TextStyle(fontSize: 11.5, fontStyle: FontStyle.italic)),
+                      ],
+                    ),
+                  )),
+              const Divider(),
+              const Text(
+                'A clinician may sign anyway. The reason below, and your '
+                'identity, are written into the append-only audit ledger and '
+                'printed on the certificate.',
+                style: TextStyle(fontSize: 11.5),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: overrideCtrl,
+                minLines: 2,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  labelText: 'Clinical justification for overriding',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dctx).pop(false),
+            child: const Text('Fix the report'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dctx).pop(true),
+            child: const Text('Override and sign'),
+          ),
+        ],
+      ),
+    );
+    final reason = overrideCtrl.text.trim();
+    overrideCtrl.dispose();
+    if (proceed == true && reason.isNotEmpty) {
+      await _finalizeThroughGate(overrideReason: reason);
+    } else if (proceed == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('An override needs a written clinical justification. '
+              'Nothing was signed.'),
+          backgroundColor: Color(0xFFE74C3C),
         ),
       );
     }
@@ -705,13 +833,18 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
-                              onPressed: _openQualityGateSheet,
+                              onPressed:
+                                  _isFinalizing ? null : _openQualityGateSheet,
                               icon: Icon(
                                 _isFinalized ? Icons.fact_check_rounded : Icons.verified_user_outlined,
                                 size: 18,
                               ),
                               label: Text(
-                                _isFinalized ? 'View Certified Quality Gate Audit' : 'Run Quality Gate & Sign Report',
+                                _isFinalizing
+                                    ? 'Asking the Quality Gate...'
+                                    : _isFinalized
+                                        ? 'View Quality Gate Certificate'
+                                        : 'Run Quality Gate & Sign Report',
                               ),
                               style: ElevatedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(vertical: 14),

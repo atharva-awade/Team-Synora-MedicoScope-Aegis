@@ -10,6 +10,9 @@ import 'package:medicoscope/models/quality_gate_result.dart';
 /// Generates an official, publication-ready MedicoScope-Aegis Certified Clinical PDF Report
 /// with embedded Repeatable Quality Gate Seal, SHA-256 Audit Trail, and Doctor Assessment.
 class CertifiedReportPdfService {
+  static String _shortHash(String digest, [int n = 12]) =>
+      digest.isEmpty ? '(none)' : (digest.length <= n ? digest : digest.substring(0, n));
+
   static Future<File> generateAndSave({
     required DetectionRecord record,
     required String patientName,
@@ -65,25 +68,63 @@ class CertifiedReportPdfService {
     y += 18;
 
     // Quality Gate Seal Banner (Green Box)
-    final sealBoxRect = Rect.fromLTWH(0, y, size.width, 54);
+    // The banner states the ACTUAL verdict.
+    //
+    // The previous version printed "VERIFIED & CERTIFIED" and "Status: PASSED"
+    // as string literals, on every PDF, whatever the gate had said -- including
+    // on a report that failed. A document that always claims to have passed is
+    // not a certificate; it is a sticker. If this seal is going to be worth
+    // anything on a printout, it has to be capable of saying no.
+    final PdfColor sealColor = qualityResult.isProvisional
+        ? PdfColor(243, 156, 18)
+        : qualityResult.isBlocked
+            ? PdfColor(231, 76, 60)
+            : qualityResult.hasWarnings
+                ? PdfColor(243, 156, 18)
+                : successColor;
+    final String sealTitle = qualityResult.isProvisional
+        ? '[AEGIS QUALITY GATE -- PROVISIONAL PRE-FLIGHT, NOT CERTIFIED]'
+        : qualityResult.isBlocked
+            ? '[AEGIS QUALITY GATE -- BLOCKED. NOT FIT FOR CLINICAL USE]'
+            : qualityResult.hasWarnings
+                ? '[AEGIS QUALITY GATE -- PASSED WITH REMARKS]'
+                : '[AEGIS QUALITY GATE -- PASSED]';
+
+    final sealBoxRect = Rect.fromLTWH(0, y, size.width, 66);
     graphics.drawRectangle(
       brush: PdfSolidBrush(cardBgColor),
-      pen: PdfPen(successColor, width: 1.5),
+      pen: PdfPen(sealColor, width: 1.5),
       bounds: sealBoxRect,
     );
 
     graphics.drawString(
-      '[AEGIS REPEATABLE QUALITY GATE -- VERIFIED & CERTIFIED]',
+      sealTitle,
       boldBodyFont,
-      brush: PdfSolidBrush(successColor),
-      bounds: Rect.fromLTWH(12, y + 8, size.width - 24, 14),
+      brush: PdfSolidBrush(sealColor),
+      bounds: Rect.fromLTWH(12, y + 6, size.width - 24, 14),
     );
 
-    final scoreStr = 'Quality Score: ${qualityResult.overallScorePercent}% | Status: PASSED';
-    final auditStr = 'Audit Seal: #${qualityResult.auditHash} | Ruleset: ${qualityResult.rulesVersion} | Timestamp: ${qualityResult.evaluatedAt.toUtc().toIso8601String().substring(0, 19)}Z';
-    graphics.drawString(scoreStr, boldBodyFont, brush: PdfSolidBrush(darkTextColor), bounds: Rect.fromLTWH(12, y + 23, size.width - 24, 12));
-    graphics.drawString(auditStr, codeFont, brush: PdfSolidBrush(grayTextColor), bounds: Rect.fromLTWH(12, y + 36, size.width - 24, 12));
-    y += 68;
+    final String blockingSuffix = qualityResult.blockingCheckIds.isEmpty
+        ? ''
+        : '  |  Blocking: ${qualityResult.blockingCheckIds.join(', ')}';
+    final scoreStr = qualityResult.isProvisional
+        ? 'No verdict issued. This is an offline pre-flight of text-only checks; '
+            'safety and evidence grounding were not evaluated.'
+        : 'Verdict: ${qualityResult.statusLabel} at ${qualityResult.overallScorePercent}%'
+            '  |  Evidence grounding: ${qualityResult.boundClaimCount}/${qualityResult.claimCount} '
+            'numeric claims bound$blockingSuffix';
+    final auditStr = qualityResult.isProvisional
+        ? 'Certificate: none'
+        : 'Certificate ${qualityResult.certificateId}  |  judged by ${qualityResult.packRef}, '
+            'engine ${qualityResult.engineVersion}  |  content ${_shortHash(qualityResult.contentDigest)}';
+    final verifyStr = qualityResult.verifyUrl == null
+        ? 'Recompute the certificate id from the content digest and the policy pack to verify offline.'
+        : 'Verify independently: ${qualityResult.verifyUrl}';
+
+    graphics.drawString(scoreStr, boldBodyFont, brush: PdfSolidBrush(darkTextColor), bounds: Rect.fromLTWH(12, y + 21, size.width - 24, 24));
+    graphics.drawString(auditStr, codeFont, brush: PdfSolidBrush(grayTextColor), bounds: Rect.fromLTWH(12, y + 43, size.width - 24, 11));
+    graphics.drawString(verifyStr, smallFont, brush: PdfSolidBrush(grayTextColor), bounds: Rect.fromLTWH(12, y + 54, size.width - 24, 11));
+    y += 80;
 
     // Section 1: Patient & Encounter Metadata Table
     graphics.drawString('1. ENCOUNTER & PATIENT METADATA', headerFont, brush: PdfSolidBrush(primaryColor), bounds: Rect.fromLTWH(0, y, size.width, 16));
@@ -100,7 +141,12 @@ class CertifiedReportPdfService {
     r1.cells[0].value = 'Patient Name:';
     r1.cells[1].value = _cleanAscii(patientName);
     r1.cells[2].value = 'Report ID:';
-    r1.cells[3].value = record.id?.substring(0, 12).toUpperCase() ?? 'MS-ENC-2026';
+    // Length-safe: a short generated id (e.g. "REC-1234567") made this throw a
+    // RangeError on the export path.
+    final String rawId = record.id ?? '';
+    r1.cells[3].value = rawId.isEmpty
+        ? 'MS-ENC-2026'
+        : (rawId.length <= 12 ? rawId.toUpperCase() : rawId.substring(0, 12).toUpperCase());
 
     final r2 = metaTable.rows.add();
     r2.cells[0].value = 'Specialty:';
@@ -205,8 +251,20 @@ class CertifiedReportPdfService {
     y = qgLayout.bounds.bottom + 16;
 
     // Footer with Disclaimers & Governance Notice
+    final String overrideNote = (qualityResult.overrideReason ?? '').isEmpty
+        ? '.'
+        : ', including the clinician override recorded against it.';
     graphics.drawString(
-      'GOVERNANCE & COMPLIANCE NOTICE: This document was processed through the MedicoScope-Aegis Repeatable Quality Gate Engine. Cryptographic hash #${qualityResult.auditHash} is permanently stored in the Aegis immutable clinical audit ledger.',
+      qualityResult.isProvisional
+          ? 'GOVERNANCE NOTICE: This document has NOT been through the Quality Gate. '
+              'The panel above is an offline pre-flight of text-only checks. No certificate '
+              'was issued and nothing was written to the audit ledger.'
+          : 'GOVERNANCE NOTICE: Judged by policy pack ${qualityResult.packRef} on engine '
+              '${qualityResult.engineVersion}. Certificate ${qualityResult.certificateId} is a pure '
+              'function of the content digest, the pack digest and the engine version -- the '
+              'issuing timestamp is deliberately excluded, so the id can be recomputed and '
+              'checked by anyone holding this content and that pack. The verdict is appended to '
+              'the hash-chained Aegis decision ledger$overrideNote',
       smallFont,
       brush: PdfSolidBrush(grayTextColor),
       bounds: Rect.fromLTWH(0, size.height - 24, size.width, 20),
@@ -246,7 +304,9 @@ class CertifiedReportPdfService {
     try {
       await Share.shareXFiles(
         [XFile(savedFile.path, name: fileName, mimeType: 'application/pdf')],
-        subject: 'Aegis Certified Clinical Report #${qualityResult.auditHash}',
+        subject: qualityResult.isCertified
+            ? 'Aegis Quality Gate ${qualityResult.statusLabel} -- certificate ${qualityResult.certificateId}'
+            : 'Aegis clinical report (PROVISIONAL -- not certified)',
       );
     } catch (_) {
       // Fallback to url launcher
