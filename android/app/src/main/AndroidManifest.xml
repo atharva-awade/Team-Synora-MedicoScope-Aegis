@@ -102,6 +102,21 @@
             </intent-filter>
         </activity>
 
+        <!-- Android 14+ (API 34+): Health Connect moved into the framework and
+             requires this activity-alias so the system can verify that the app
+             handles its own permission-rationale screen. Without it, HC shows
+             "Needs updating" and silently blocks permission grants. -->
+        <activity-alias
+            android:name="ViewPermissionUsageActivity"
+            android:exported="true"
+            android:targetActivity=".MainActivity"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+            </intent-filter>
+        </activity-alias>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
