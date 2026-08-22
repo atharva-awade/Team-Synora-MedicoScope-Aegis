@@ -150,6 +150,25 @@ class QualityGateResult {
   final String readingGradeLevel;
   final RepeatabilityProof? repeatabilityProof;
 
+  // ── Server-issued certificate fields ────────────────────────────────────
+  // Empty on a PROVISIONAL (local pre-flight) result and populated only when
+  // the server engine has actually judged the content. `isProvisional` defaults
+  // to true precisely so that a result nobody certified can never render as a
+  // certification: the honest state is the default state.
+  final String certificateId;
+  final String verdictDigest;
+  final String contentDigest;
+  final String packRef;        // e.g. "medical@3.0.0#c0c39fcc"
+  final String engineVersion;
+  final String? verifyUrl;     // public seal-check URL (what the QR encodes)
+  final bool isProvisional;
+  final List<String> blockingCheckIds;
+  final double groundingCoverage;
+  final int claimCount;
+  final int boundClaimCount;
+  final bool finalized;
+  final String? overrideReason;
+
   const QualityGateResult({
     required this.overallScore,
     required this.status,
@@ -165,7 +184,40 @@ class QualityGateResult {
     this.gateVersion = 'Aegis-QGate-v2.6.0',
     this.readingGradeLevel = 'Grade 7.4 (Patient Accessible)',
     this.repeatabilityProof,
+    this.certificateId = '',
+    this.verdictDigest = '',
+    this.contentDigest = '',
+    this.packRef = '',
+    this.engineVersion = '',
+    this.verifyUrl,
+    this.isProvisional = true,
+    this.blockingCheckIds = const [],
+    this.groundingCoverage = 1.0,
+    this.claimCount = 0,
+    this.boundClaimCount = 0,
+    this.finalized = false,
+    this.overrideReason,
   });
+
+  /// True only when a server-issued certificate backs this result.
+  bool get isCertified => !isProvisional && certificateId.isNotEmpty;
+
+  /// One line safe to print on a report footer or read aloud on stage.
+  String get sealLine => isCertified
+      ? 'AEGIS QUALITY GATE  |  $statusLabel  |  $overallScorePercent%  |  '
+          'cert $certificateId  |  $packRef  |  engine $engineVersion'
+      : 'PROVISIONAL PRE-FLIGHT  |  not certified  |  no certificate issued';
+
+  String get statusLabel {
+    switch (status) {
+      case QualityGateStatus.passed:
+        return 'PASS';
+      case QualityGateStatus.warning:
+        return 'WARN';
+      case QualityGateStatus.blocked:
+        return 'BLOCK';
+    }
+  }
 
   int get overallScorePercent => (overallScore * 100).round();
   bool get isPassed => status == QualityGateStatus.passed;
@@ -178,6 +230,8 @@ class QualityGateResult {
     double? overallScore,
     QualityGateStatus? status,
     QualityPerspective? perspective,
+    bool? finalized,
+    String? overrideReason,
   }) {
     return QualityGateResult(
       overallScore: overallScore ?? this.overallScore,
@@ -194,9 +248,32 @@ class QualityGateResult {
       gateVersion: gateVersion,
       readingGradeLevel: readingGradeLevel,
       repeatabilityProof: repeatabilityProof ?? this.repeatabilityProof,
+      certificateId: certificateId,
+      verdictDigest: verdictDigest,
+      contentDigest: contentDigest,
+      packRef: packRef,
+      engineVersion: engineVersion,
+      verifyUrl: verifyUrl,
+      isProvisional: isProvisional,
+      blockingCheckIds: blockingCheckIds,
+      groundingCoverage: groundingCoverage,
+      claimCount: claimCount,
+      boundClaimCount: boundClaimCount,
+      finalized: finalized ?? this.finalized,
+      overrideReason: overrideReason ?? this.overrideReason,
     );
   }
 
+  /// A locally computed digest over the raw text. Retained for backward
+  /// compatibility only.
+  ///
+  /// It is NOT a certificate and must never be displayed as one. A hash computed
+  /// on the device says nothing about whether the content passed a gate -- the
+  /// device is controlled by the person being audited, and this function does
+  /// not look at the rules, the evidence, or the verdict. The real, reproducible
+  /// identity is `certificateId`, derived server-side from
+  /// (contentDigest, packDigest, engineVersion).
+  @Deprecated('Use the server-issued certificateId. This is a text digest, not a certificate.')
   static String generateAuditHash({
     required String rawContent,
     required double score,
@@ -222,6 +299,19 @@ class QualityGateResult {
         'gateVersion': gateVersion,
         'readingGradeLevel': readingGradeLevel,
         'repeatabilityProof': repeatabilityProof?.toJson(),
+        'certificateId': certificateId,
+        'verdictDigest': verdictDigest,
+        'contentDigest': contentDigest,
+        'packRef': packRef,
+        'engineVersion': engineVersion,
+        'verifyUrl': verifyUrl,
+        'isProvisional': isProvisional,
+        'blockingCheckIds': blockingCheckIds,
+        'groundingCoverage': groundingCoverage,
+        'claimCount': claimCount,
+        'boundClaimCount': boundClaimCount,
+        'finalized': finalized,
+        'overrideReason': overrideReason,
       };
 
   factory QualityGateResult.fromJson(Map<String, dynamic> j) =>
@@ -249,5 +339,18 @@ class QualityGateResult {
         evaluatedAt: DateTime.tryParse(j['evaluatedAt'] ?? '') ?? DateTime.now(),
         gateVersion: j['gateVersion'] ?? 'Aegis-QGate-v2.6.0',
         readingGradeLevel: j['readingGradeLevel'] ?? 'Grade 7.4 (Patient Accessible)',
+        certificateId: j['certificateId'] ?? '',
+        verdictDigest: j['verdictDigest'] ?? '',
+        contentDigest: j['contentDigest'] ?? '',
+        packRef: j['packRef'] ?? '',
+        engineVersion: j['engineVersion'] ?? '',
+        verifyUrl: j['verifyUrl'],
+        isProvisional: j['isProvisional'] ?? true,
+        blockingCheckIds: List<String>.from(j['blockingCheckIds'] ?? const []),
+        groundingCoverage: (j['groundingCoverage'] as num?)?.toDouble() ?? 1.0,
+        claimCount: (j['claimCount'] as num?)?.toInt() ?? 0,
+        boundClaimCount: (j['boundClaimCount'] as num?)?.toInt() ?? 0,
+        finalized: j['finalized'] ?? false,
+        overrideReason: j['overrideReason'],
       );
 }

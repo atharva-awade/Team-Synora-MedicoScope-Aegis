@@ -74,4 +74,18 @@ class ApiConstants {
   // Nearby Doctors (patient search)
   static const String nearbyDoctorsSearch = '/nearby-doctors/search';
   static const String nearbyDoctorsSpecializations = '/nearby-doctors/specializations';
+
+  // ── Aegis Quality Gate (server-side engine is the single source of truth) ──
+  // The rules live in server/quality/packs/*.json and are executed only by
+  // server/quality/lib/engine.js. The app calls these endpoints; it does not
+  // re-implement the rules, because two implementations of a quality rule are
+  // two definitions of quality.
+  static const String qualityGatePacks = '/quality-gate/packs';
+  static const String qualityGateEvaluate = '/quality-gate/evaluate';
+  static const String qualityGateCertify = '/quality-gate/certify';
+  static const String qualityGateFinalize = '/quality-gate/finalize';
+  static const String qualityGateVerify = '/quality-gate/verify';
+  static const String qualityGateCertificate = '/quality-gate/certificate';
+  static const String qualityGateRewriteCheck = '/quality-gate/rewrite/check';
+  static const String qualityGateCritiqueCompile = '/quality-gate/critique/compile';
 }
