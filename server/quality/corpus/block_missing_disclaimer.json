@@ -1,0 +1,53 @@
+{
+  "id": "block_missing_disclaimer",
+  "note": "No screening-scope disclosure anywhere.",
+  "pack": "medical",
+  "profile": "patient_report",
+  "expect": {
+    "status": "BLOCK",
+    "mustBlock": [
+      "SAF_DISCLAIMER"
+    ],
+    "mustFail": [
+      "SAF_DISCLAIMER"
+    ]
+  },
+  "content": {
+    "title": "Raised blood pressure",
+    "category": "hypertension",
+    "riskLevel": "high",
+    "score": 0.71,
+    "confidence": 0.62,
+    "body": "Your blood pressure was estimated at 128/84 mmHg and your heart rate was around 72 bpm. A normal range sits below 120 over 80, so your pressure is raised. Please see a doctor within 7 days and ask them to check it with a cuff so you know where you stand.",
+    "recommendations": [
+      "See a doctor within 7 days for a cuff reading.",
+      "Track your readings each morning."
+    ],
+    "disclaimer": "",
+    "evidence": [
+      {
+        "toolId": "ppg_bp",
+        "modality": "ppg",
+        "fidelity": "heuristic",
+        "label": "systolic",
+        "value": 128,
+        "unit": "mmHg",
+        "provenance": {
+          "source": "camera_ppg_v2"
+        },
+        "findings": [
+          {
+            "label": "diastolic",
+            "value": 84,
+            "unit": "mmHg"
+          },
+          {
+            "label": "heart_rate",
+            "value": 72,
+            "unit": "bpm"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "id": "block_risk_label_contradiction",
+  "note": "Says low risk over a 0.82 score. Not a wording defect: a wrong document.",
+  "pack": "medical",
+  "profile": "patient_report",
+  "expect": {
+    "status": "BLOCK",
+    "mustBlock": [
+      "GRD_RISK_LABEL_CONSISTENT"
+    ],
+    "mustFail": [
+      "GRD_RISK_LABEL_CONSISTENT"
+    ]
+  },
+  "content": {
+    "title": "Retinal screening result",
+    "category": "diabetic_retinopathy",
+    "riskLevel": "low",
+    "score": 0.82,
+    "confidence": 0.74,
+    "body": "The eye scan model scored 0.78 out of 1 and found 6 tiny bulges in the small vessels at the back of your eye. This is a screening test and not a diagnosis. Please book an eye doctor visit within 14 days so a specialist can look at your eye and confirm what the scan found.",
+    "recommendations": [
+      "Book an eye doctor visit within 14 days.",
+      "Bring recent blood sugar results."
+    ],
+    "disclaimer": "Screening result requiring clinical confirmation.",
+    "evidence": [
+      {
+        "toolId": "retina_tflite",
+        "modality": "retinal_fundus",
+        "fidelity": "real",
+        "label": "dr_score",
+        "value": 0.78,
+        "unit": "ratio",
+        "provenance": {
+          "model": "eye_float16.tflite@1.2"
+        },
+        "findings": [
+          {
+            "label": "microaneurysm_count",
+            "value": 6,
+            "unit": null
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "id": "generic_block_unsourced_figure",
+  "note": "Same failure class as an invented vital sign, in a finance note.",
+  "pack": "generic",
+  "profile": "document",
+  "expect": {
+    "status": "BLOCK",
+    "mustBlock": [
+      "GEN_NO_UNSOURCED_FIGURES"
+    ],
+    "mustFail": [
+      "GEN_NO_UNSOURCED_FIGURES"
+    ]
+  },
+  "content": {
+    "title": "Q3 infrastructure spend review",
+    "body": "Cloud spend landed at 41200 usd for the quarter, under the budget of 45000 usd. Support ticket volume fell to 318 tickets, which is the lowest this year. The spend figure comes from the billing export attached to this note. This is a draft for discussion.",
+    "recommendations": [
+      "Review the reserved-instance plan with finance within 10 days."
+    ],
+    "riskLevel": "low",
+    "score": 0.1,
+    "evidence": [
+      {
+        "toolId": "billing_export",
+        "fidelity": "real",
+        "label": "cloud spend",
+        "value": 41200,
+        "unit": "usd",
+        "provenance": {
+          "source": "aws_cur"
+        },
+        "findings": []
+      }
+    ]
+  }
+}

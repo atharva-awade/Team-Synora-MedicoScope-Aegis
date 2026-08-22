@@ -1,0 +1,53 @@
+{
+  "id": "block_placeholder_left",
+  "note": "Generation scaffolding shipped to a patient.",
+  "pack": "medical",
+  "profile": "patient_report",
+  "expect": {
+    "status": "BLOCK",
+    "mustBlock": [
+      "STR_NO_PLACEHOLDERS"
+    ],
+    "mustFail": [
+      "STR_NO_PLACEHOLDERS"
+    ]
+  },
+  "content": {
+    "title": "Raised blood pressure estimate",
+    "category": "hypertension",
+    "riskLevel": "high",
+    "score": 0.71,
+    "confidence": 0.62,
+    "body": "Your blood pressure was estimated at 128/84 mmHg with a heart rate of around 72 bpm. A normal range sits below 120 over 80. This is a screening signal and not a diagnosis. Please see a doctor within 7 days. TODO: add the lifestyle guidance section here before sending.",
+    "recommendations": [
+      "Book a cuff check within 7 days.",
+      "Repeat the scan each morning for a week."
+    ],
+    "disclaimer": "Screening-grade estimate.",
+    "evidence": [
+      {
+        "toolId": "ppg_bp",
+        "modality": "ppg",
+        "fidelity": "heuristic",
+        "label": "systolic",
+        "value": 128,
+        "unit": "mmHg",
+        "provenance": {
+          "source": "camera_ppg_v2"
+        },
+        "findings": [
+          {
+            "label": "diastolic",
+            "value": 84,
+            "unit": "mmHg"
+          },
+          {
+            "label": "heart_rate",
+            "value": 72,
+            "unit": "bpm"
+          }
+        ]
+      }
+    ]
+  }
+}

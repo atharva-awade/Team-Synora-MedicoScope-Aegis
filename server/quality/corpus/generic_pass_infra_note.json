@@ -1,0 +1,41 @@
+{
+  "id": "generic_pass_infra_note",
+  "note": "Same engine, non-clinical pack, clean deliverable.",
+  "pack": "generic",
+  "profile": "document",
+  "expect": {
+    "status": "PASS",
+    "mustBlock": [],
+    "mustFail": [
+      "GEN_DISCLOSURE"
+    ]
+  },
+  "content": {
+    "title": "Q3 infrastructure spend review",
+    "body": "Cloud spend landed at 41200 usd for the quarter, under the budget of 45000 usd. The 95th percentile latency held at 220 ms across the window. Both figures come from the billing export and the latency dashboard attached to this note. Nothing here is final until finance signs off.",
+    "recommendations": [
+      "Review the reserved-instance plan with finance within 10 days."
+    ],
+    "riskLevel": "low",
+    "score": 0.1,
+    "evidence": [
+      {
+        "toolId": "billing_export",
+        "fidelity": "real",
+        "label": "cloud spend",
+        "value": 41200,
+        "unit": "usd",
+        "provenance": {
+          "source": "aws_cur"
+        },
+        "findings": [
+          {
+            "label": "p95 latency",
+            "value": 220,
+            "unit": "ms"
+          }
+        ]
+      }
+    ]
+  }
+}

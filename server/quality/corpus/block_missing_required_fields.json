@@ -1,0 +1,50 @@
+{
+  "id": "block_missing_required_fields",
+  "note": "No risk level and no body. Cannot be signed.",
+  "pack": "medical",
+  "profile": "patient_report",
+  "expect": {
+    "status": "BLOCK",
+    "mustBlock": [
+      "STR_REQUIRED_FIELDS"
+    ],
+    "mustFail": [
+      "STR_REQUIRED_FIELDS"
+    ]
+  },
+  "content": {
+    "title": "Screening result",
+    "category": "hypertension",
+    "riskLevel": "",
+    "score": null,
+    "confidence": null,
+    "body": "",
+    "recommendations": [],
+    "disclaimer": "",
+    "evidence": [
+      {
+        "toolId": "ppg_bp",
+        "modality": "ppg",
+        "fidelity": "heuristic",
+        "label": "systolic",
+        "value": 128,
+        "unit": "mmHg",
+        "provenance": {
+          "source": "camera_ppg_v2"
+        },
+        "findings": [
+          {
+            "label": "diastolic",
+            "value": 84,
+            "unit": "mmHg"
+          },
+          {
+            "label": "heart_rate",
+            "value": 72,
+            "unit": "bpm"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "id": "block_invented_haemoglobin",
+  "note": "THE headline failure: a haemoglobin value no sensor produced. Fluent, readable, fabricated.",
+  "pack": "medical",
+  "profile": "patient_report",
+  "expect": {
+    "status": "BLOCK",
+    "mustBlock": [
+      "GRD_NO_UNGROUNDED_CLAIMS"
+    ],
+    "mustFail": [
+      "GRD_NO_UNGROUNDED_CLAIMS"
+    ]
+  },
+  "content": {
+    "title": "Blood pressure and anaemia screen",
+    "category": "hypertension",
+    "riskLevel": "high",
+    "score": 0.7,
+    "confidence": 0.6,
+    "body": "Your blood pressure was estimated at 128/84 mmHg. Your haemoglobin is 7.4 g/dL, which is low. This is a screening signal and not a diagnosis. A normal range sits below 120 over 80. Please see a doctor within 7 days to confirm both readings with proper equipment and a blood test.",
+    "recommendations": [
+      "Book a blood test within 7 days.",
+      "Ask your doctor for a cuff blood pressure reading."
+    ],
+    "disclaimer": "Screening-grade estimate requiring clinical confirmation.",
+    "evidence": [
+      {
+        "toolId": "ppg_bp",
+        "modality": "ppg",
+        "fidelity": "heuristic",
+        "label": "systolic",
+        "value": 128,
+        "unit": "mmHg",
+        "provenance": {
+          "source": "camera_ppg_v2"
+        },
+        "findings": [
+          {
+            "label": "diastolic",
+            "value": 84,
+            "unit": "mmHg"
+          },
+          {
+            "label": "heart_rate",
+            "value": 72,
+            "unit": "bpm"
+          }
+        ]
+      }
+    ]
+  }
+}

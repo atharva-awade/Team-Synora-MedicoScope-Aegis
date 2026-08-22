@@ -1,0 +1,53 @@
+{
+  "id": "block_high_risk_no_escalation",
+  "note": "High risk with no instruction to see anyone. The most dangerous output the product can emit.",
+  "pack": "medical",
+  "profile": "patient_report",
+  "expect": {
+    "status": "BLOCK",
+    "mustBlock": [
+      "SAF_ESCALATION_PATH"
+    ],
+    "mustFail": [
+      "SAF_ESCALATION_PATH"
+    ]
+  },
+  "content": {
+    "title": "Raised blood pressure estimate",
+    "category": "hypertension",
+    "riskLevel": "high",
+    "score": 0.71,
+    "confidence": 0.62,
+    "body": "Your blood pressure was estimated at 128/84 mmHg and your heart rate was around 72 bpm. A normal range sits below 120 over 80. This is a screening signal and not a diagnosis. Keep an eye on it and try to cut down on salty food over the next few weeks.",
+    "recommendations": [
+      "Reduce salt in your meals over the next 2 weeks.",
+      "Repeat the scan each morning for a week."
+    ],
+    "disclaimer": "Screening-grade estimate, not a diagnosis.",
+    "evidence": [
+      {
+        "toolId": "ppg_bp",
+        "modality": "ppg",
+        "fidelity": "heuristic",
+        "label": "systolic",
+        "value": 128,
+        "unit": "mmHg",
+        "provenance": {
+          "source": "camera_ppg_v2"
+        },
+        "findings": [
+          {
+            "label": "diastolic",
+            "value": 84,
+            "unit": "mmHg"
+          },
+          {
+            "label": "heart_rate",
+            "value": 72,
+            "unit": "bpm"
+          }
+        ]
+      }
+    ]
+  }
+}

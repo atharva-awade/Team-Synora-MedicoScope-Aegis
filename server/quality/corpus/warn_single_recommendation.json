@@ -1,0 +1,50 @@
+{
+  "id": "warn_single_recommendation",
+  "note": "One vague next step where the profile asks for two concrete ones.",
+  "pack": "medical",
+  "profile": "patient_report",
+  "expect": {
+    "status": "WARN",
+    "mustBlock": [],
+    "mustFail": [
+      "ACT_RECOMMENDATIONS"
+    ]
+  },
+  "content": {
+    "title": "Raised blood pressure estimate",
+    "category": "hypertension",
+    "riskLevel": "high",
+    "score": 0.71,
+    "confidence": 0.62,
+    "body": "Your blood pressure was estimated at 128/84 mmHg with a heart rate of around 72 bpm. A normal range sits below 120 over 80. This is a screening signal and not a diagnosis. Please see a doctor within 7 days so they can confirm the reading with a proper cuff.",
+    "recommendations": [
+      "Something should be done about the blood pressure soon."
+    ],
+    "disclaimer": "Screening-grade estimate.",
+    "evidence": [
+      {
+        "toolId": "ppg_bp",
+        "modality": "ppg",
+        "fidelity": "heuristic",
+        "label": "systolic",
+        "value": 128,
+        "unit": "mmHg",
+        "provenance": {
+          "source": "camera_ppg_v2"
+        },
+        "findings": [
+          {
+            "label": "diastolic",
+            "value": 84,
+            "unit": "mmHg"
+          },
+          {
+            "label": "heart_rate",
+            "value": 72,
+            "unit": "bpm"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "id": "pass_retina_ai_explanation",
+  "note": "LLM-written patient explanation under the strictest profile.",
+  "pack": "medical",
+  "profile": "ai_explanation",
+  "expect": {
+    "status": "PASS",
+    "mustBlock": [],
+    "mustFail": []
+  },
+  "content": {
+    "title": "Signs of retinal damage",
+    "category": "diabetic_retinopathy",
+    "riskLevel": "high",
+    "score": 0.78,
+    "confidence": 0.74,
+    "body": "The eye scan model scored 0.78 on a scale of 0 to 1. It found 6 tiny bulges in the small blood vessels at the back of your eye. That pattern points to damage to the retina, which is the light sensing layer of the eye. This is a screening test, not a diagnosis. An eye doctor needs to look at your eye to be sure. Please book that visit within 14 days.",
+    "recommendations": [
+      "Book an eye doctor visit within 14 days.",
+      "Bring your last blood sugar results to that visit."
+    ],
+    "disclaimer": "Screening result. Requires clinical confirmation by an eye specialist.",
+    "evidence": [
+      {
+        "toolId": "retina_tflite",
+        "modality": "retinal_fundus",
+        "fidelity": "real",
+        "label": "dr_score",
+        "value": 0.78,
+        "unit": "ratio",
+        "provenance": {
+          "model": "eye_float16.tflite@1.2"
+        },
+        "findings": [
+          {
+            "label": "microaneurysm_count",
+            "value": 6,
+            "unit": null
+          }
+        ]
+      }
+    ]
+  }
+}

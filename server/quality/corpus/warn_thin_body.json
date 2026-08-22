@@ -1,0 +1,51 @@
+{
+  "id": "warn_thin_body",
+  "note": "Technically complete, substantively empty.",
+  "pack": "medical",
+  "profile": "patient_report",
+  "expect": {
+    "status": "WARN",
+    "mustBlock": [],
+    "mustFail": [
+      "STR_BODY_SUBSTANCE"
+    ]
+  },
+  "content": {
+    "title": "Raised blood pressure estimate",
+    "category": "hypertension",
+    "riskLevel": "high",
+    "score": 0.71,
+    "confidence": 0.62,
+    "body": "Estimated at 128/84 mmHg. Screening signal, not a diagnosis. See a doctor within 7 days.",
+    "recommendations": [
+      "Book a cuff check with your doctor within 7 days.",
+      "Repeat the scan each morning."
+    ],
+    "disclaimer": "Screening-grade estimate.",
+    "evidence": [
+      {
+        "toolId": "ppg_bp",
+        "modality": "ppg",
+        "fidelity": "heuristic",
+        "label": "systolic",
+        "value": 128,
+        "unit": "mmHg",
+        "provenance": {
+          "source": "camera_ppg_v2"
+        },
+        "findings": [
+          {
+            "label": "diastolic",
+            "value": 84,
+            "unit": "mmHg"
+          },
+          {
+            "label": "heart_rate",
+            "value": 72,
+            "unit": "bpm"
+          }
+        ]
+      }
+    ]
+  }
+}

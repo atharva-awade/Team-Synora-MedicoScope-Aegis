@@ -5,7 +5,16 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "gate:verify": "node quality/harness/verify.js",
+    "gate:bench": "node quality/harness/bench.js 400",
+    "gate:fuzz": "node quality/harness/fuzz.js",
+    "gate:parity": "node quality/harness/parity.js",
+    "gate:api": "node quality/harness/route-smoke.js",
+    "gate:promote": "node quality/harness/promote.js",
+    "gate": "npm run gate:verify && npm run gate:bench && npm run gate:fuzz && npm run gate:api && node quality/harness/parity.js --check",
+    "test": "npm run test:aegis && npm run gate",
+    "test:aegis": "node --test 'aegis/__tests__/*.test.js'"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

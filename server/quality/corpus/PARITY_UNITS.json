@@ -1,0 +1,463 @@
+{
+  "generatedBy": "server/quality/harness/parity.js",
+  "engineVersion": "3.0.0",
+  "canonical": [
+    {
+      "input": null,
+      "canonical": "null",
+      "digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "shortId": "E9478-XKHNY"
+    },
+    {
+      "input": true,
+      "canonical": "true",
+      "digest": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "shortId": "PAQXN-82QDS"
+    },
+    {
+      "input": false,
+      "canonical": "false",
+      "digest": "fcbcf165908dd18a9e49f7ff27810176db8e9f63b4352213741664245224f8aa",
+      "shortId": "YSQSY-2DAJ1"
+    },
+    {
+      "input": 0,
+      "canonical": "0.0",
+      "digest": "8aed642bf5118b9d3c859bd4be35ecac75b6e873cce34e7b6f554b06f75550d7",
+      "shortId": "HNWVD-95PYB"
+    },
+    {
+      "input": 0,
+      "canonical": "0.0",
+      "digest": "8aed642bf5118b9d3c859bd4be35ecac75b6e873cce34e7b6f554b06f75550d7",
+      "shortId": "HNWVD-95PYB"
+    },
+    {
+      "input": 1,
+      "canonical": "1.0",
+      "digest": "d0ff5974b6aa52cf562bea5921840c032a860a91a3512f7fe8f768f6bbe005f6",
+      "shortId": "T0ZYA-KF8PD"
+    },
+    {
+      "input": 1.5,
+      "canonical": "1.5",
+      "digest": "9f29a130438b81170b92a42650f9a94291ecad60bd47af2a3886e75f7f728725",
+      "shortId": "JZ4KN-36196"
+    },
+    {
+      "input": 0.30000000000000004,
+      "canonical": "0.3",
+      "digest": "221764976efe04132774d96b0253cc31434c5261737469324f222621baf34b20",
+      "shortId": "542ED-9JFDW"
+    },
+    {
+      "input": 1e-7,
+      "canonical": "0.0",
+      "digest": "8aed642bf5118b9d3c859bd4be35ecac75b6e873cce34e7b6f554b06f75550d7",
+      "shortId": "HNWVD-95PYB"
+    },
+    {
+      "input": -3.25,
+      "canonical": "-3.25",
+      "digest": "79615ef5649ea6557eef066359bbae7867f83935ff3a6bdc9bc2850883d2da24",
+      "shortId": "FJC2B-XZAC9"
+    },
+    {
+      "input": "plain",
+      "canonical": "\"plain\"",
+      "digest": "945603a8f587786b463c3f94fce115c0fae88fac2728cc96ddf5981cf7f61741",
+      "shortId": "J9BC0-7MGZA"
+    },
+    {
+      "input": "quote\"inside",
+      "canonical": "\"quote\\\"inside\"",
+      "digest": "4b1c2dcfce66fa15857402c404ebb1d6018ff2c4d467220d53873c5fe45e61cb",
+      "shortId": "8P3R5-VRZSW"
+    },
+    {
+      "input": "tab\tnewline\n",
+      "canonical": "\"tab\\tnewline\\n\"",
+      "digest": "48f6eb5d8ea0997039f9632f7d3d5a5f1804c09c104ca8e9934f6b277e7264c7",
+      "shortId": "8GZDX-PBVHX"
+    },
+    {
+      "input": [
+        1,
+        "a",
+        null,
+        [
+          2,
+          3
+        ]
+      ],
+      "canonical": "[1.0,\"a\",null,[2.0,3.0]]",
+      "digest": "d8217d6b58a77fb651e621a145b34551b9fbee036f61121181f238ea19c32ffd",
+      "shortId": "TH53F-TDQAG"
+    },
+    {
+      "input": {
+        "b": 1,
+        "a": 2
+      },
+      "canonical": "{\"a\":2.0,\"b\":1.0}",
+      "digest": "660255f573b5270b587684d9ec87f0a22f6c286d5611433641ab99ed46f3e61f",
+      "shortId": "DD05A-BZAF6"
+    },
+    {
+      "input": {
+        "z": {
+          "y": [
+            1,
+            2
+          ]
+        },
+        "a": "x",
+        "n": null
+      },
+      "canonical": "{\"a\":\"x\",\"n\":null,\"z\":{\"y\":[1.0,2.0]}}",
+      "digest": "8987107c6248cfc3b11748c47d6fc3691eadd7ef68ff8c8a308ecdd1c7de2fc2",
+      "shortId": "GJGF2-1FSD5"
+    },
+    {
+      "input": {
+        "score": 0.8573494,
+        "arr": [
+          0.1,
+          0.2,
+          0.3
+        ]
+      },
+      "canonical": "{\"arr\":[0.1,0.2,0.3],\"score\":0.857349}",
+      "digest": "f6d04f8b5975be6ed09bb7bf63c6482970dbefd461c4ba88cbab40e16ca96b72",
+      "shortId": "ZDV08-YHPBK"
+    }
+  ],
+  "score4": [
+    {
+      "input": 0.857349,
+      "output": 0.8573
+    },
+    {
+      "input": 0.8573,
+      "output": 0.8573
+    },
+    {
+      "input": 1,
+      "output": 1
+    },
+    {
+      "input": 0,
+      "output": 0
+    },
+    {
+      "input": 0.99995,
+      "output": 1
+    },
+    {
+      "input": 0.123456789,
+      "output": 0.1235
+    }
+  ],
+  "syllables": [
+    {
+      "word": "a",
+      "syllables": 1
+    },
+    {
+      "word": "the",
+      "syllables": 1
+    },
+    {
+      "word": "apple",
+      "syllables": 2
+    },
+    {
+      "word": "estimated",
+      "syllables": 3
+    },
+    {
+      "word": "haemoglobin",
+      "syllables": 4
+    },
+    {
+      "word": "photoplethysmography",
+      "syllables": 7
+    },
+    {
+      "word": "blood",
+      "syllables": 1
+    },
+    {
+      "word": "pressure",
+      "syllables": 2
+    },
+    {
+      "word": "anaemia",
+      "syllables": 3
+    },
+    {
+      "word": "diagnosis",
+      "syllables": 3
+    },
+    {
+      "word": "screening",
+      "syllables": 2
+    },
+    {
+      "word": "rhythm",
+      "syllables": 1
+    },
+    {
+      "word": "played",
+      "syllables": 1
+    },
+    {
+      "word": "cared",
+      "syllables": 1
+    },
+    {
+      "word": "yellow",
+      "syllables": 2
+    }
+  ],
+  "sentences": [
+    {
+      "text": "",
+      "sentences": []
+    },
+    {
+      "text": "Short line.",
+      "sentences": [
+        "Short line"
+      ]
+    },
+    {
+      "text": "Your blood pressure was estimated at 128/84 mmHg. That is a little high. See a doctor within 7 days.",
+      "sentences": [
+        "Your blood pressure was estimated at 128/84 mmHg",
+        "That is a little high",
+        "See a doctor within 7 days"
+      ]
+    },
+    {
+      "text": "Photoplethysmographic estimation demonstrated prehypertensive stratification necessitating confirmatory oscillometric sphygmomanometry.",
+      "sentences": [
+        "Photoplethysmographic estimation demonstrated prehypertensive stratification necessitating confirmatory oscillometric sphygmomanometry"
+      ]
+    },
+    {
+      "text": "BP was 128.4 mmHg. e.g. this is one. Dr. Rao advised follow-up. Two!",
+      "sentences": [
+        "BP was 1284 mmHg",
+        "eg this is one",
+        "Dr Rao advised follow-up",
+        "Two"
+      ]
+    },
+    {
+      "text": "Line one\r\nLine two  \n\n  Line three   ",
+      "sentences": [
+        "Line one",
+        "Line two",
+        "Line three"
+      ]
+    }
+  ],
+  "readability": [
+    {
+      "text": "",
+      "metrics": {
+        "wordCount": 0,
+        "sentenceCount": 0,
+        "syllableCount": 0,
+        "polysyllables": 0,
+        "fkGrade": 0,
+        "readingEase": 0,
+        "avgWordsPerSentence": 0,
+        "longestSentenceWords": 0
+      },
+      "band": "very_accessible"
+    },
+    {
+      "text": "Short line.",
+      "metrics": {
+        "wordCount": 2,
+        "sentenceCount": 1,
+        "syllableCount": 2,
+        "polysyllables": 0,
+        "fkGrade": -3.01,
+        "readingEase": 120.21,
+        "avgWordsPerSentence": 2,
+        "longestSentenceWords": 2
+      },
+      "band": "very_accessible"
+    },
+    {
+      "text": "Your blood pressure was estimated at 128/84 mmHg. That is a little high. See a doctor within 7 days.",
+      "metrics": {
+        "wordCount": 17,
+        "sentenceCount": 3,
+        "syllableCount": 23,
+        "polysyllables": 1,
+        "fkGrade": 2.58,
+        "readingEase": 86.62,
+        "avgWordsPerSentence": 5.67,
+        "longestSentenceWords": 7
+      },
+      "band": "very_accessible"
+    },
+    {
+      "text": "Photoplethysmographic estimation demonstrated prehypertensive stratification necessitating confirmatory oscillometric sphygmomanometry.",
+      "metrics": {
+        "wordCount": 9,
+        "sentenceCount": 1,
+        "syllableCount": 45,
+        "polysyllables": 9,
+        "fkGrade": 46.92,
+        "readingEase": -225.3,
+        "avgWordsPerSentence": 9,
+        "longestSentenceWords": 9
+      },
+      "band": "specialist"
+    },
+    {
+      "text": "BP was 128.4 mmHg. e.g. this is one. Dr. Rao advised follow-up. Two!",
+      "metrics": {
+        "wordCount": 13,
+        "sentenceCount": 4,
+        "syllableCount": 16,
+        "polysyllables": 1,
+        "fkGrade": 0.2,
+        "readingEase": 99.41,
+        "avgWordsPerSentence": 3.25,
+        "longestSentenceWords": 4
+      },
+      "band": "very_accessible"
+    },
+    {
+      "text": "Line one\r\nLine two  \n\n  Line three   ",
+      "metrics": {
+        "wordCount": 6,
+        "sentenceCount": 3,
+        "syllableCount": 6,
+        "polysyllables": 0,
+        "fkGrade": -3.01,
+        "readingEase": 120.21,
+        "avgWordsPerSentence": 2,
+        "longestSentenceWords": 2
+      },
+      "band": "very_accessible"
+    }
+  ],
+  "normalizeText": [
+    {
+      "text": "",
+      "normalized": ""
+    },
+    {
+      "text": "Short line.",
+      "normalized": "Short line."
+    },
+    {
+      "text": "Your blood pressure was estimated at 128/84 mmHg. That is a little high. See a doctor within 7 days.",
+      "normalized": "Your blood pressure was estimated at 128/84 mmHg. That is a little high. See a doctor within 7 days."
+    },
+    {
+      "text": "Photoplethysmographic estimation demonstrated prehypertensive stratification necessitating confirmatory oscillometric sphygmomanometry.",
+      "normalized": "Photoplethysmographic estimation demonstrated prehypertensive stratification necessitating confirmatory oscillometric sphygmomanometry."
+    },
+    {
+      "text": "BP was 128.4 mmHg. e.g. this is one. Dr. Rao advised follow-up. Two!",
+      "normalized": "BP was 128.4 mmHg. e.g. this is one. Dr. Rao advised follow-up. Two!"
+    },
+    {
+      "text": "Line one\r\nLine two  \n\n  Line three   ",
+      "normalized": "Line one\nLine two\n\n  Line three"
+    }
+  ],
+  "claims": [
+    {
+      "text": "Estimated at 128/84 mmHg with a heart rate of around 72 bpm. Normal sits below 120 over 80. HbA1c is 6.8%. Haemoglobin of 9.2 g/dL. Follow up within 14 days.",
+      "labels": [
+        "haemoglobin",
+        "hemoglobin",
+        "hba1c"
+      ],
+      "extracted": [
+        {
+          "value": 84,
+          "unit": "mmHg",
+          "role": "diastolic",
+          "kind": "patient",
+          "raw": "128/84 mmHg",
+          "offset": 13
+        },
+        {
+          "value": 128,
+          "unit": "mmHg",
+          "role": "systolic",
+          "kind": "patient",
+          "raw": "128/84 mmHg",
+          "offset": 13
+        },
+        {
+          "value": 72,
+          "unit": "bpm",
+          "role": null,
+          "kind": "patient",
+          "raw": "72 bpm",
+          "offset": 53
+        },
+        {
+          "value": 80,
+          "unit": "mmHg",
+          "role": "diastolic",
+          "kind": "threshold",
+          "raw": "120 over 80",
+          "offset": 79
+        },
+        {
+          "value": 120,
+          "unit": "mmHg",
+          "role": "systolic",
+          "kind": "threshold",
+          "raw": "120 over 80",
+          "offset": 79
+        },
+        {
+          "value": 6.8,
+          "unit": "%",
+          "role": null,
+          "kind": "threshold",
+          "raw": "6.8%",
+          "offset": 101
+        },
+        {
+          "value": 9.2,
+          "unit": "g/dL",
+          "role": null,
+          "kind": "patient",
+          "raw": "9.2 g/dL",
+          "offset": 122
+        }
+      ]
+    },
+    {
+      "text": "Spend was 41200 usd against a budget of 45000 usd. Ticket volume fell to 318 tickets.",
+      "labels": [
+        "ticket volume",
+        "tickets"
+      ],
+      "extracted": [
+        {
+          "value": 318,
+          "unit": null,
+          "role": "ticket volume",
+          "kind": "patient",
+          "raw": "Ticket volume fell to 318",
+          "offset": 51
+        }
+      ]
+    }
+  ]
+}

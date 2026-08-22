@@ -1,0 +1,44 @@
+{
+  "id": "warn_missing_provenance",
+  "note": "Evidence marked 'real' with no model or source declared.",
+  "pack": "medical",
+  "profile": "clinician_report",
+  "expect": {
+    "status": "WARN",
+    "mustBlock": [],
+    "mustFail": [
+      "GRD_PROVENANCE"
+    ]
+  },
+  "content": {
+    "title": "Retinopathy screen",
+    "category": "diabetic_retinopathy",
+    "riskLevel": "high",
+    "score": 0.78,
+    "confidence": 0.8,
+    "body": "Fundus model scored 0.78 with 6 microaneurysms. Screening-grade output; normal range for this score sits below 0.30. Recommend urgent ophthalmology review and confirmation on slit lamp.",
+    "recommendations": [
+      "Refer to ophthalmology urgently, within 7 days.",
+      "Repeat fundus imaging at review."
+    ],
+    "disclaimer": "Screening output, not a diagnosis.",
+    "evidence": [
+      {
+        "toolId": "retina_tflite",
+        "modality": "retinal_fundus",
+        "fidelity": "real",
+        "label": "dr_score",
+        "value": 0.78,
+        "unit": "ratio",
+        "provenance": {},
+        "findings": [
+          {
+            "label": "microaneurysm_count",
+            "value": 6,
+            "unit": null
+          }
+        ]
+      }
+    ]
+  }
+}

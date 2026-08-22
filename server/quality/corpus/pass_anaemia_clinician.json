@@ -1,0 +1,44 @@
+{
+  "id": "pass_anaemia_clinician",
+  "note": "Dense clinician charting note. Jargon is allowed here; grounding is stricter.",
+  "pack": "medical",
+  "profile": "clinician_report",
+  "expect": {
+    "status": "PASS",
+    "mustBlock": [],
+    "mustFail": []
+  },
+  "content": {
+    "title": "Anaemia, moderate",
+    "category": "anemia",
+    "riskLevel": "high",
+    "score": 0.68,
+    "confidence": 0.81,
+    "body": "Uploaded CBC reports haemoglobin 9.2 g/dL against a normal range above 12, consistent with moderate anaemia. Screening-grade platform output; requires clinical confirmation. Recommend urgent haematology review and iron studies. Patient counselled to consult a physician within 3 days.",
+    "recommendations": [
+      "Order iron studies and ferritin within 3 days.",
+      "Refer to haematology for urgent review."
+    ],
+    "disclaimer": "Screening output, not a diagnosis.",
+    "evidence": [
+      {
+        "toolId": "lab_cbc",
+        "modality": "lab",
+        "fidelity": "real",
+        "label": "haemoglobin",
+        "value": 9.2,
+        "unit": "g/dL",
+        "provenance": {
+          "source": "uploaded_lab_pdf"
+        },
+        "findings": [
+          {
+            "label": "rbc",
+            "value": 3.8,
+            "unit": "ratio"
+          }
+        ]
+      }
+    ]
+  }
+}

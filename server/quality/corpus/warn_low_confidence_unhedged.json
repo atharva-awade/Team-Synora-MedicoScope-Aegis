@@ -1,0 +1,40 @@
+{
+  "id": "warn_low_confidence_unhedged",
+  "note": "Low confidence on a high-risk call with no statement that the signal is weak. The boilerplate disclaimer does not count.",
+  "pack": "medical",
+  "profile": "clinician_report",
+  "expect": {
+    "status": "WARN",
+    "mustBlock": [],
+    "mustFail": [
+      "SAF_CONFIDENCE_CALIBRATED"
+    ]
+  },
+  "content": {
+    "title": "Wheeze detected",
+    "category": "respiratory",
+    "riskLevel": "high",
+    "score": 0.66,
+    "confidence": 0.21,
+    "body": "Acoustic analysis returned an estimated wheeze index of 0.62 on a hand-tuned scale. Normal sits below 0.20. Recommend urgent respiratory review and spirometry to confirm. Patient advised to consult a physician within 48 hours.",
+    "recommendations": [
+      "Refer for spirometry within 48 hours.",
+      "Escalate urgently if breathlessness worsens."
+    ],
+    "disclaimer": "Screening-grade acoustic signal, requires clinical confirmation.",
+    "evidence": [
+      {
+        "toolId": "respiratory_dsp",
+        "modality": "respiratory_audio",
+        "fidelity": "fabricated_scale",
+        "label": "wheeze_index",
+        "value": 0.62,
+        "unit": "ratio",
+        "provenance": {
+          "source": "mic_stft"
+        },
+        "findings": []
+      }
+    ]
+  }
+}

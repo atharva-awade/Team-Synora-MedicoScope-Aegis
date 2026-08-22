@@ -1,0 +1,51 @@
+{
+  "id": "warn_unreadable_for_patient",
+  "note": "Correct, grounded, safe, and incomprehensible to the person it is written for.",
+  "pack": "medical",
+  "profile": "patient_report",
+  "expect": {
+    "status": "WARN",
+    "mustBlock": [],
+    "mustFail": [
+      "RDB_GRADE"
+    ]
+  },
+  "content": {
+    "title": "Prehypertensive stratification",
+    "category": "hypertension",
+    "riskLevel": "high",
+    "score": 0.71,
+    "confidence": 0.62,
+    "body": "Photoplethysmographic waveform analysis (light-based pulse sensing) yielded an estimated systolic determination of 128/84 mmHg concomitant with a chronotropic index of approximately 72 bpm, a constellation consistent with prehypertensive stratification (slightly raised blood pressure) necessitating confirmatory oscillometric sphygmomanometry, and the normal reference range sits below 120 over 80. This constitutes a screening signal and not a diagnosis. Please consult a physician within 7 days.",
+    "recommendations": [
+      "Book a confirmatory cuff measurement within 7 days.",
+      "Record morning readings for one week."
+    ],
+    "disclaimer": "Screening-grade estimate.",
+    "evidence": [
+      {
+        "toolId": "ppg_bp",
+        "modality": "ppg",
+        "fidelity": "heuristic",
+        "label": "systolic",
+        "value": 128,
+        "unit": "mmHg",
+        "provenance": {
+          "source": "camera_ppg_v2"
+        },
+        "findings": [
+          {
+            "label": "diastolic",
+            "value": 84,
+            "unit": "mmHg"
+          },
+          {
+            "label": "heart_rate",
+            "value": 72,
+            "unit": "bpm"
+          }
+        ]
+      }
+    ]
+  }
+}

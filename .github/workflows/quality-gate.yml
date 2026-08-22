@@ -1,0 +1,65 @@
+name: Quality Gate
+
+# The gate that governs the product is itself governed. Every push runs the
+# whole evidence chain, and any of these failing is a red build:
+#
+#   verify  -- 26 labelled fixtures reach their specified verdicts, each one
+#              re-evaluated 12x for determinism, and every certificate id is
+#              matched against a committed lock file. Loosening a rule without
+#              re-locking cannot pass CI, which is what stops silent rule drift.
+#   bench   -- zero variance and bit-identical scores across 400 runs per
+#              fixture, plus the p50/p99 latency that decides whether a gate is
+#              cheap enough to be mandatory.
+#   fuzz    -- injected defects must be caught, and semantically empty edits
+#              (whitespace, CRLF, key order, evidence order) must NOT move a
+#              certificate. Both directions matter.
+#   api     -- the HTTP contract, including that an advisory finding from an
+#              agent can never change a verdict.
+#   parity  -- the published conformance vectors are current, so any other
+#              implementation can be held to the same verdicts.
+
+on:
+  push:
+    paths:
+      - 'server/quality/**'
+      - 'server/src/routes/quality-gate.js'
+      - 'server/src/models/QualityCertificate.js'
+      - 'server/package.json'
+      - '.github/workflows/quality-gate.yml'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  gate:
+    name: policy engine evidence chain
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install
+        run: npm install --no-audit --no-fund
+
+      - name: Aegis gate unit tests (57 assertions, previously never run in CI)
+        run: npm run test:aegis
+
+      - name: Golden corpus + determinism + certificate lock
+        run: npm run gate:verify
+
+      - name: Zero-variance benchmark
+        run: npm run gate:bench
+
+      - name: Adversarial mutation harness
+        run: npm run gate:fuzz
+
+      - name: API contract
+        run: npm run gate:api
+
+      - name: Conformance vectors are current
+        run: node quality/harness/parity.js --check

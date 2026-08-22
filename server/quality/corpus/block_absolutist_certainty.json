@@ -1,0 +1,48 @@
+{
+  "id": "block_absolutist_certainty",
+  "note": "False certainty from a screening instrument.",
+  "pack": "medical",
+  "profile": "patient_report",
+  "expect": {
+    "status": "BLOCK",
+    "mustBlock": [
+      "SAF_NO_ABSOLUTES"
+    ],
+    "mustFail": [
+      "SAF_NO_ABSOLUTES"
+    ]
+  },
+  "content": {
+    "title": "Anaemia confirmed",
+    "category": "anemia",
+    "riskLevel": "high",
+    "score": 0.68,
+    "confidence": 0.81,
+    "body": "Your lab report shows haemoglobin of 9.2 g/dL. This definitely confirms that you have anaemia (a low red blood cell level) and no doubt explains your tiredness. A normal range sits above 12. This is a screening signal. Please see a doctor within 7 days to discuss treatment options.",
+    "recommendations": [
+      "Book a doctor visit within 7 days.",
+      "Bring the lab report to the appointment."
+    ],
+    "disclaimer": "Screening result, requires clinical confirmation.",
+    "evidence": [
+      {
+        "toolId": "lab_cbc",
+        "modality": "lab",
+        "fidelity": "real",
+        "label": "haemoglobin",
+        "value": 9.2,
+        "unit": "g/dL",
+        "provenance": {
+          "source": "uploaded_lab_pdf"
+        },
+        "findings": [
+          {
+            "label": "rbc",
+            "value": 3.8,
+            "unit": "ratio"
+          }
+        ]
+      }
+    ]
+  }
+}

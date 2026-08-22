@@ -1,0 +1,53 @@
+{
+  "id": "block_fidelity_overclaim",
+  "note": "Heuristic estimator narrated as a hard measurement. The platform's own fidelity contract, broken in prose.",
+  "pack": "medical",
+  "profile": "patient_report",
+  "expect": {
+    "status": "BLOCK",
+    "mustBlock": [
+      "GRD_NO_FIDELITY_OVERCLAIM"
+    ],
+    "mustFail": [
+      "GRD_NO_FIDELITY_OVERCLAIM"
+    ]
+  },
+  "content": {
+    "title": "Blood pressure measured",
+    "category": "hypertension",
+    "riskLevel": "high",
+    "score": 0.7,
+    "confidence": 0.6,
+    "body": "Your blood pressure is 128/84 mmHg and your heart rate is 72 bpm. A normal range sits below 120 over 80, so your pressure is high. This is a screening tool and not a diagnosis. Please see a doctor within 7 days for a cuff check and bring this report with you.",
+    "recommendations": [
+      "Book a cuff check with your doctor within 7 days.",
+      "Record your readings each morning."
+    ],
+    "disclaimer": "Screening report, requires clinical confirmation.",
+    "evidence": [
+      {
+        "toolId": "ppg_bp",
+        "modality": "ppg",
+        "fidelity": "heuristic",
+        "label": "systolic",
+        "value": 128,
+        "unit": "mmHg",
+        "provenance": {
+          "source": "camera_ppg_v2"
+        },
+        "findings": [
+          {
+            "label": "diastolic",
+            "value": 84,
+            "unit": "mmHg"
+          },
+          {
+            "label": "heart_rate",
+            "value": 72,
+            "unit": "bpm"
+          }
+        ]
+      }
+    ]
+  }
+}

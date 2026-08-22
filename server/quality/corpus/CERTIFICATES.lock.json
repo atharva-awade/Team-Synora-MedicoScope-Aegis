@@ -1,0 +1,249 @@
+{
+  "engineVersion": "3.0.0",
+  "packs": {
+    "generic": {
+      "packVersion": "1.0.0",
+      "packDigest": "aa5387db41b16395cd4305bd30fda5f0b73ded6cac1a4f473d864cec8d97b09d"
+    },
+    "medical": {
+      "packVersion": "3.0.0",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234"
+    }
+  },
+  "certificates": {
+    "block_absolutist_certainty": {
+      "certificateId": "WW091-CC3TE",
+      "verdictDigest": "ee040661d7c6c39e2788734c4de904fa99c373c748bf9fd0daaf53eaf4b6a906",
+      "contentDigest": "ea77a1240ec4a0ba831a54beace49e1cea8ccbc3e3bfde185a6e7917472e4ffe",
+      "status": "BLOCK",
+      "score": 0.8863,
+      "pack": "medical@3.0.0",
+      "profile": "patient_report"
+    },
+    "block_fidelity_overclaim": {
+      "certificateId": "QPZY1-6H77E",
+      "verdictDigest": "bbff0383373a1cfad330e7ca9c2e14614a0519ec67f7279d957ecc473c04e931",
+      "contentDigest": "fbefc5da0af61e281e9861c8bd586504c31f9e4bc181b582e404b7fb6c9dba5c",
+      "status": "BLOCK",
+      "score": 0.9505,
+      "pack": "medical@3.0.0",
+      "profile": "patient_report"
+    },
+    "block_high_risk_no_escalation": {
+      "certificateId": "EWYPH-FFE4W",
+      "verdictDigest": "7efb87772e880efdf68820802f1197f905f7139a05e8a260941f1e83f1de19a0",
+      "contentDigest": "36a7a72078905cef7f482b2564d34fb7454cfbabd79171cf4645bc4f38df0089",
+      "status": "BLOCK",
+      "score": 0.934,
+      "pack": "medical@3.0.0",
+      "profile": "patient_report"
+    },
+    "block_invented_haemoglobin": {
+      "certificateId": "7F1XF-224D8",
+      "verdictDigest": "370e711264b953f22e1c4fe1ab127ec36873c5e4abde0e20a3d2fcf486a0689d",
+      "contentDigest": "37303c3a064e7becc7eb2875885252cae5ea0de1615e7e632c201dfed33bcfa4",
+      "status": "BLOCK",
+      "score": 0.8354,
+      "pack": "medical@3.0.0",
+      "profile": "patient_report"
+    },
+    "block_missing_disclaimer": {
+      "certificateId": "PRMQZ-6CS8P",
+      "verdictDigest": "bcabf36c4b2441bc498c66a67d0dcbb21c48fd3123dbd5099609475fb226e77f",
+      "contentDigest": "d583064b53b7a75deebe9b1c37db62def434544e2dc6fb5704a405d171bc8ea1",
+      "status": "BLOCK",
+      "score": 0.9477,
+      "pack": "medical@3.0.0",
+      "profile": "patient_report"
+    },
+    "block_missing_required_fields": {
+      "certificateId": "13G6N-J5NGW",
+      "verdictDigest": "0183a92a8ed96c16bba4267dd4d0703d494b4e00b254371dd1ad3684cd334150",
+      "contentDigest": "742a85ad38e4cf54507d5b4d6e650b5c1604097378d839dd2c406143de38ae3b",
+      "status": "BLOCK",
+      "score": 0.6553,
+      "pack": "medical@3.0.0",
+      "profile": "patient_report"
+    },
+    "block_no_evidence_attached": {
+      "certificateId": "FG7NQ-FATT9",
+      "verdictDigest": "783ab75dd4bedd9780a53297462b1fceb040fc290d58d8c02bac5478b18c4f1d",
+      "contentDigest": "a221dc6b086a26f673fef992509394d63a3b0776f4dc28875d21905fff9f5191",
+      "status": "BLOCK",
+      "score": 0.8717,
+      "pack": "medical@3.0.0",
+      "profile": "patient_report"
+    },
+    "block_placeholder_left": {
+      "certificateId": "606KK-4R8EK",
+      "verdictDigest": "303992c47940c33c86051188bf94a4d0b19cf285df7caf02ce23a54f84bb77e0",
+      "contentDigest": "4099039648b4f4005c1ddcb1887f776f90efc10c18618cd62ac277f06e807ad5",
+      "status": "BLOCK",
+      "score": 0.9603,
+      "pack": "medical@3.0.0",
+      "profile": "patient_report"
+    },
+    "block_prescription_out_of_scope": {
+      "certificateId": "0HJJC-09W5J",
+      "verdictDigest": "0899604e29e30c209a963805beb3bdbff4521a927f7ac0e18d1ba433e2762921",
+      "contentDigest": "0d5f0a2704b04a85c57ea35a1b6defeec773164422ade2b0607057f1e5e1702a",
+      "status": "BLOCK",
+      "score": 0.8688,
+      "pack": "medical@3.0.0",
+      "profile": "patient_report"
+    },
+    "block_risk_label_contradiction": {
+      "certificateId": "6YRAJ-6B54J",
+      "verdictDigest": "3fc5935229a20c86f92c6e33d4324bae813ddee489d022487e0257ab00ef5903",
+      "contentDigest": "08ad82c4ea5711442e8427c2f27808e88a6019b47223824f712a9ba88b1e99f0",
+      "status": "BLOCK",
+      "score": 0.9505,
+      "pack": "medical@3.0.0",
+      "profile": "patient_report"
+    },
+    "generic_block_unsourced_figure": {
+      "certificateId": "SKGFK-MGEWP",
+      "verdictDigest": "c9879a87ebb10b326ea4320b057440d0a84f92256c3014556f7bcaa026638a8a",
+      "contentDigest": "1c9ac94452b87d5f3763d0cf50664bd9059adf82cd9156c87754bdc3fe215615",
+      "status": "BLOCK",
+      "score": 0.8728,
+      "pack": "generic@1.0.0",
+      "profile": "document"
+    },
+    "generic_pass_infra_note": {
+      "certificateId": "Q2KBY-GMM49",
+      "verdictDigest": "b195f8aa24905d04ec4dfd56ef5d0e2bda66eb9607fa4faae54112a83fa6091d",
+      "contentDigest": "4bd8152a5ea8cbc7ecc1f1a205af0ad7985cb50142215592518d1a112ebf4143",
+      "status": "PASS",
+      "score": 0.9896,
+      "pack": "generic@1.0.0",
+      "profile": "document"
+    },
+    "pass_anaemia_clinician": {
+      "certificateId": "RRENH-XGJKF",
+      "verdictDigest": "cc7a8e8997aaa5f7ee934209d35b07c785f36b2d0748f1bb4cb6f36af50ade65",
+      "contentDigest": "83e83348637f19beae387bed16f6f7ab79ba929227e565a391eb3ae92cc30a71",
+      "status": "PASS",
+      "score": 1,
+      "pack": "medical@3.0.0",
+      "profile": "clinician_report"
+    },
+    "pass_bp_patient": {
+      "certificateId": "9Q18E-5ZA8T",
+      "verdictDigest": "4b0472f54d77fc65b42cf667c565c3d68318946c20d50dce275bdcab40e562a1",
+      "contentDigest": "4f30073fd39998d6054e9683a5b42b1e8666302e06a4cc2359a40e640af3bd13",
+      "status": "PASS",
+      "score": 1,
+      "pack": "medical@3.0.0",
+      "profile": "patient_report"
+    },
+    "pass_consult_summary": {
+      "certificateId": "YGTF2-ZYR54",
+      "verdictDigest": "f8d71ffc222ccfafa0bcf8a7325636314b329f1a9cc2d8b574a7277a279cb69a",
+      "contentDigest": "dfff15072235d9104b173fc438a7c84272f984767c1ede0b021535ffc37c94e6",
+      "status": "PASS",
+      "score": 1,
+      "pack": "medical@3.0.0",
+      "profile": "consult_summary"
+    },
+    "pass_retina_ai_explanation": {
+      "certificateId": "VV3H3-JWR97",
+      "verdictDigest": "dd1819ec437975f006dbeb7dc545d31a90201fde9bfc8359a2a8e31eb536895e",
+      "contentDigest": "7f2b5a0e09e58e0e4c1d6a5bcffe70c8eee4e6a97141ad3126faa06d7ff2a0b8",
+      "status": "PASS",
+      "score": 1,
+      "pack": "medical@3.0.0",
+      "profile": "ai_explanation"
+    },
+    "warn_duplicate_boilerplate": {
+      "certificateId": "D3WW9-D42ET",
+      "verdictDigest": "61ee46217dd74ef942825e584e4049ec6704f1be14e1c1bd7ebdc6217751ca2d",
+      "contentDigest": "24bc8c06a43807e32763cda7693940265f2131a083e177b9734667b2806e183e",
+      "status": "WARN",
+      "score": 0.9881,
+      "pack": "medical@3.0.0",
+      "profile": "patient_report"
+    },
+    "warn_low_confidence_unhedged": {
+      "certificateId": "WT9E1-V8MXN",
+      "verdictDigest": "ed470d4aeaa45239c67fcf2ac5f0d5e82dd8199f6829c03fdefc7e799a5bfdd6",
+      "contentDigest": "babcd9c61801005189b387a29d72e7c68ad39c7bb5f06bbc25ab758429120507",
+      "status": "WARN",
+      "score": 0.9778,
+      "pack": "medical@3.0.0",
+      "profile": "clinician_report"
+    },
+    "warn_missing_provenance": {
+      "certificateId": "VSES2-V3JFY",
+      "verdictDigest": "dc7c1d197fd94f2f94f0989acd7a33bc5702c5aab95ed8601cb9507ff8d030fc",
+      "contentDigest": "9b40c451c3ffd06b4266152cd62f2a888c589e853472fb3e5c04a851d2139398",
+      "status": "WARN",
+      "score": 0.95,
+      "pack": "medical@3.0.0",
+      "profile": "clinician_report"
+    },
+    "warn_no_timeframe": {
+      "certificateId": "4Z2XW-5A9DY",
+      "verdictDigest": "2f1ee2546fe12fe547f2028eab07fda4306d995f24df06750ecc5f4683740681",
+      "contentDigest": "fc8c9372da294cb3abd843b807c92c1ffa0222f913574099f42f087df27e6352",
+      "status": "WARN",
+      "score": 0.9343,
+      "pack": "medical@3.0.0",
+      "profile": "patient_report"
+    },
+    "warn_pii_in_body": {
+      "certificateId": "5Y5KT-B6NY0",
+      "verdictDigest": "2f29d53af0f0352f4bae297bdf3511546a9d08eb5fad178c918b19266d4aaac9",
+      "contentDigest": "ec517f2d4c9df95e12f5b18258e8b76992e3fb28298e356b077f02e567b3830e",
+      "status": "WARN",
+      "score": 0.9791,
+      "pack": "medical@3.0.0",
+      "profile": "patient_report"
+    },
+    "warn_single_recommendation": {
+      "certificateId": "YMVZX-MKX1V",
+      "verdictDigest": "fadfea9e0d26df3853df6fb39aa4de2ec152d1872d4b0b4dca1ff0205bb5823f",
+      "contentDigest": "53c8b78eaf7c3ea2c0c1646e2268fd65e360c140e5e604585218548745a45b2c",
+      "status": "WARN",
+      "score": 0.9206,
+      "pack": "medical@3.0.0",
+      "profile": "patient_report"
+    },
+    "warn_thin_body": {
+      "certificateId": "A4DG7-4N6BZ",
+      "verdictDigest": "526832a35fa4d8faf6b7e4bd0a67b72095016475b02003d74c10054f681ccd2b",
+      "contentDigest": "7ebdaf70dda437f73a8b4fae9dddd34f8e75c9437d473b2b6b705eaa2ad81320",
+      "status": "WARN",
+      "score": 0.9718,
+      "pack": "medical@3.0.0",
+      "profile": "patient_report"
+    },
+    "warn_truncated_generation": {
+      "certificateId": "JJZJE-P1CWE",
+      "verdictDigest": "99f97b06e724b02abaa2b84fc66dd1ad1f7326d72fe3c6523b5ddd58c497a8c0",
+      "contentDigest": "3ee003927cacfdc7f7b387b2fa4f28b16e7eb913f4e494caf2f4ce7eb706860e",
+      "status": "WARN",
+      "score": 0.9762,
+      "pack": "medical@3.0.0",
+      "profile": "patient_report"
+    },
+    "warn_unglossed_jargon": {
+      "certificateId": "0DPTW-YGBED",
+      "verdictDigest": "06bdef85766d44a0256bd57c3a73747152574b1ef56929a72609d5ab7d3ffe9c",
+      "contentDigest": "5712ef3bd08a8da6d4c215e81378d43c0b821a6c7a3ac0098b5a6f8c6225033b",
+      "status": "WARN",
+      "score": 0.9212,
+      "pack": "medical@3.0.0",
+      "profile": "patient_report"
+    },
+    "warn_unreadable_for_patient": {
+      "certificateId": "49V4D-40A4D",
+      "verdictDigest": "24d262052609d2d2a4cf08dcaa2bd5a99e0e9fdd90cd7a059d61099944fecde6",
+      "contentDigest": "ff2f68ae2f5c02e74bf42e543de7c668d822a1f489689c4b38898aa85a426ac4",
+      "status": "WARN",
+      "score": 0.8424,
+      "pack": "medical@3.0.0",
+      "profile": "patient_report"
+    }
+  }
+}

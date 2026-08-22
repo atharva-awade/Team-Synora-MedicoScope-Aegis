@@ -1,0 +1,49 @@
+{
+  "id": "pass_bp_patient",
+  "note": "Clean patient-facing BP screening report. The reference case.",
+  "pack": "medical",
+  "profile": "patient_report",
+  "expect": {
+    "status": "PASS",
+    "mustBlock": [],
+    "mustFail": []
+  },
+  "content": {
+    "title": "Raised blood pressure estimate",
+    "category": "hypertension",
+    "riskLevel": "high",
+    "score": 0.71,
+    "confidence": 0.62,
+    "body": "Your blood pressure was estimated at 128/84 mmHg from the camera pulse scan, and your resting heart rate was around 72 bpm. This is a screening signal, not a diagnosis. A normal range sits below 120 over 80, so this reading suggests high blood pressure (raised pressure in your arteries). Please see a doctor within 7 days and ask for a cuff measurement to confirm it.",
+    "recommendations": [
+      "Book a cuff blood pressure check with your doctor within 7 days.",
+      "Repeat this scan each morning for a week and record the values."
+    ],
+    "disclaimer": "Screening-grade estimate. Requires clinical confirmation.",
+    "evidence": [
+      {
+        "toolId": "ppg_bp",
+        "modality": "ppg",
+        "fidelity": "heuristic",
+        "label": "systolic",
+        "value": 128,
+        "unit": "mmHg",
+        "provenance": {
+          "source": "camera_ppg_v2"
+        },
+        "findings": [
+          {
+            "label": "diastolic",
+            "value": 84,
+            "unit": "mmHg"
+          },
+          {
+            "label": "heart_rate",
+            "value": 72,
+            "unit": "bpm"
+          }
+        ]
+      }
+    ]
+  }
+}

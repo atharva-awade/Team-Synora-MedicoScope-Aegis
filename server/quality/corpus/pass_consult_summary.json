@@ -1,0 +1,48 @@
+{
+  "id": "pass_consult_summary",
+  "note": "Short consult summary under the relaxed conversational profile.",
+  "pack": "medical",
+  "profile": "consult_summary",
+  "expect": {
+    "status": "PASS",
+    "mustBlock": [],
+    "mustFail": []
+  },
+  "content": {
+    "title": "Consult summary: chest tightness",
+    "category": "cardio",
+    "riskLevel": "moderate",
+    "score": 0.44,
+    "confidence": 0.55,
+    "body": "You described chest tightness after climbing stairs. The pulse scan estimated 128/84 mmHg and a heart rate of about 72 bpm. Normal sits below 120 over 80. This is a screening signal and not a diagnosis. Please see a doctor within 7 days to confirm with a cuff.",
+    "recommendations": [
+      "Book a clinic visit within 7 days."
+    ],
+    "disclaimer": "Screening only.",
+    "evidence": [
+      {
+        "toolId": "ppg_bp",
+        "modality": "ppg",
+        "fidelity": "heuristic",
+        "label": "systolic",
+        "value": 128,
+        "unit": "mmHg",
+        "provenance": {
+          "source": "camera_ppg_v2"
+        },
+        "findings": [
+          {
+            "label": "diastolic",
+            "value": 84,
+            "unit": "mmHg"
+          },
+          {
+            "label": "heart_rate",
+            "value": 72,
+            "unit": "bpm"
+          }
+        ]
+      }
+    ]
+  }
+}

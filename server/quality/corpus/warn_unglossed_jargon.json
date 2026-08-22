@@ -1,0 +1,51 @@
+{
+  "id": "warn_unglossed_jargon",
+  "note": "Clinical vocabulary shipped to a patient with no gloss.",
+  "pack": "medical",
+  "profile": "patient_report",
+  "expect": {
+    "status": "WARN",
+    "mustBlock": [],
+    "mustFail": [
+      "RDB_JARGON_GLOSSED"
+    ]
+  },
+  "content": {
+    "title": "Tachycardia noted",
+    "category": "cardio",
+    "riskLevel": "high",
+    "score": 0.7,
+    "confidence": 0.62,
+    "body": "The pulse scan estimated 128/84 mmHg and showed tachycardia at around 72 bpm alongside mild oedema. A normal range sits below 120 over 80. This is a screening signal and not a diagnosis. Please see a doctor within 7 days so they can check you properly with a cuff.",
+    "recommendations": [
+      "Book a cuff check within 7 days.",
+      "Note any swelling in your ankles each evening."
+    ],
+    "disclaimer": "Screening-grade estimate.",
+    "evidence": [
+      {
+        "toolId": "ppg_bp",
+        "modality": "ppg",
+        "fidelity": "heuristic",
+        "label": "systolic",
+        "value": 128,
+        "unit": "mmHg",
+        "provenance": {
+          "source": "camera_ppg_v2"
+        },
+        "findings": [
+          {
+            "label": "diastolic",
+            "value": 84,
+            "unit": "mmHg"
+          },
+          {
+            "label": "heart_rate",
+            "value": 72,
+            "unit": "bpm"
+          }
+        ]
+      }
+    ]
+  }
+}

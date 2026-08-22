@@ -1,0 +1,5305 @@
+{
+  "generatedBy": "server/quality/harness/parity.js",
+  "engineVersion": "3.0.0",
+  "packs": {
+    "generic": {
+      "packVersion": "1.0.0",
+      "packDigest": "aa5387db41b16395cd4305bd30fda5f0b73ded6cac1a4f473d864cec8d97b09d",
+      "checkCount": 19
+    },
+    "medical": {
+      "packVersion": "3.0.0",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "checkCount": 26
+    }
+  },
+  "cases": [
+    {
+      "id": "block_absolutist_certainty",
+      "pack": "medical",
+      "profile": "patient_report",
+      "contentDigest": "ea77a1240ec4a0ba831a54beace49e1cea8ccbc3e3bfde185a6e7917472e4ffe",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "ee040661d7c6c39e2788734c4de904fa99c373c748bf9fd0daaf53eaf4b6a906",
+      "certificateId": "WW091-CC3TE",
+      "status": "BLOCK",
+      "score": 0.8863,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 1
+        },
+        {
+          "id": "readability",
+          "score": 0.5862
+        },
+        {
+          "id": "safety",
+          "score": 0.8535
+        },
+        {
+          "id": "structure",
+          "score": 1
+        }
+      ],
+      "metrics": {
+        "fkGrade": 6.33,
+        "readingEase": 62.91,
+        "gradeBand": "accessible",
+        "wordCount": 67,
+        "sentenceCount": 9,
+        "longestSentenceWords": 19,
+        "claimCount": 1,
+        "boundClaimCount": 1,
+        "thresholdClaimCount": 0,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": false,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [
+        "SAF_NO_ABSOLUTES"
+      ],
+      "claims": [
+        {
+          "raw": "9.2 g/dL",
+          "value": 9.2,
+          "unit": "g/dL",
+          "kind": "patient",
+          "boundTo": "lab_cbc",
+          "matchKind": "unit_value"
+        }
+      ]
+    },
+    {
+      "id": "block_fidelity_overclaim",
+      "pack": "medical",
+      "profile": "patient_report",
+      "contentDigest": "fbefc5da0af61e281e9861c8bd586504c31f9e4bc181b582e404b7fb6c9dba5c",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "bbff0383373a1cfad330e7ca9c2e14614a0519ec67f7279d957ecc473c04e931",
+      "certificateId": "QPZY1-6H77E",
+      "status": "BLOCK",
+      "score": 0.9505,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 0.8052
+        },
+        {
+          "id": "readability",
+          "score": 1
+        },
+        {
+          "id": "safety",
+          "score": 1
+        },
+        {
+          "id": "structure",
+          "score": 1
+        }
+      ],
+      "metrics": {
+        "fkGrade": 4.02,
+        "readingEase": 81.6,
+        "gradeBand": "very_accessible",
+        "wordCount": 69,
+        "sentenceCount": 8,
+        "longestSentenceWords": 16,
+        "claimCount": 3,
+        "boundClaimCount": 3,
+        "thresholdClaimCount": 2,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": false,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [
+        "GRD_NO_FIDELITY_OVERCLAIM"
+      ],
+      "claims": [
+        {
+          "raw": "128/84 mmHg",
+          "value": 84,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "128/84 mmHg",
+          "value": 128,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "72 bpm",
+          "value": 72,
+          "unit": "bpm",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "120 over 80",
+          "value": 80,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        },
+        {
+          "raw": "120 over 80",
+          "value": 120,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        }
+      ]
+    },
+    {
+      "id": "block_high_risk_no_escalation",
+      "pack": "medical",
+      "profile": "patient_report",
+      "contentDigest": "36a7a72078905cef7f482b2564d34fb7454cfbabd79171cf4645bc4f38df0089",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "7efb87772e880efdf68820802f1197f905f7139a05e8a260941f1e83f1de19a0",
+      "certificateId": "EWYPH-FFE4W",
+      "status": "BLOCK",
+      "score": 0.934,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 0.9138
+        },
+        {
+          "id": "grounding",
+          "score": 1
+        },
+        {
+          "id": "readability",
+          "score": 1
+        },
+        {
+          "id": "safety",
+          "score": 0.7802
+        },
+        {
+          "id": "structure",
+          "score": 1
+        }
+      ],
+      "metrics": {
+        "fkGrade": 3.97,
+        "readingEase": 82.84,
+        "gradeBand": "very_accessible",
+        "wordCount": 73,
+        "sentenceCount": 8,
+        "longestSentenceWords": 18,
+        "claimCount": 3,
+        "boundClaimCount": 3,
+        "thresholdClaimCount": 2,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": false,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": false,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [
+        "SAF_ESCALATION_PATH"
+      ],
+      "claims": [
+        {
+          "raw": "128/84 mmHg",
+          "value": 84,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "128/84 mmHg",
+          "value": 128,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "72 bpm",
+          "value": 72,
+          "unit": "bpm",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "120 over 80",
+          "value": 80,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        },
+        {
+          "raw": "120 over 80",
+          "value": 120,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        }
+      ]
+    },
+    {
+      "id": "block_invented_haemoglobin",
+      "pack": "medical",
+      "profile": "patient_report",
+      "contentDigest": "37303c3a064e7becc7eb2875885252cae5ea0de1615e7e632c201dfed33bcfa4",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "370e711264b953f22e1c4fe1ab127ec36873c5e4abde0e20a3d2fcf486a0689d",
+      "certificateId": "7F1XF-224D8",
+      "status": "BLOCK",
+      "score": 0.8354,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 0.6623
+        },
+        {
+          "id": "readability",
+          "score": 0.5862
+        },
+        {
+          "id": "safety",
+          "score": 1
+        },
+        {
+          "id": "structure",
+          "score": 1
+        }
+      ],
+      "metrics": {
+        "fkGrade": 5.56,
+        "readingEase": 69.47,
+        "gradeBand": "very_accessible",
+        "wordCount": 72,
+        "sentenceCount": 9,
+        "longestSentenceWords": 17,
+        "claimCount": 3,
+        "boundClaimCount": 2,
+        "thresholdClaimCount": 2,
+        "groundingCoverage": 0.6667,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": false,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [
+        "GRD_NO_UNGROUNDED_CLAIMS"
+      ],
+      "claims": [
+        {
+          "raw": "128/84 mmHg",
+          "value": 84,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "128/84 mmHg",
+          "value": 128,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "7.4 g/dL",
+          "value": 7.4,
+          "unit": "g/dL",
+          "kind": "patient",
+          "boundTo": null,
+          "matchKind": null
+        },
+        {
+          "raw": "120 over 80",
+          "value": 80,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        },
+        {
+          "raw": "120 over 80",
+          "value": 120,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        }
+      ]
+    },
+    {
+      "id": "block_missing_disclaimer",
+      "pack": "medical",
+      "profile": "patient_report",
+      "contentDigest": "d583064b53b7a75deebe9b1c37db62def434544e2dc6fb5704a405d171bc8ea1",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "bcabf36c4b2441bc498c66a67d0dcbb21c48fd3123dbd5099609475fb226e77f",
+      "certificateId": "PRMQZ-6CS8P",
+      "status": "BLOCK",
+      "score": 0.9477,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 1
+        },
+        {
+          "id": "readability",
+          "score": 1
+        },
+        {
+          "id": "safety",
+          "score": 0.7802
+        },
+        {
+          "id": "structure",
+          "score": 1
+        }
+      ],
+      "metrics": {
+        "fkGrade": 3.3,
+        "readingEase": 90.09,
+        "gradeBand": "very_accessible",
+        "wordCount": 63,
+        "sentenceCount": 6,
+        "longestSentenceWords": 21,
+        "claimCount": 3,
+        "boundClaimCount": 3,
+        "thresholdClaimCount": 2,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": false,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [
+        "SAF_DISCLAIMER"
+      ],
+      "claims": [
+        {
+          "raw": "128/84 mmHg",
+          "value": 84,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "128/84 mmHg",
+          "value": 128,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "72 bpm",
+          "value": 72,
+          "unit": "bpm",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "120 over 80",
+          "value": 80,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        },
+        {
+          "raw": "120 over 80",
+          "value": 120,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        }
+      ]
+    },
+    {
+      "id": "block_missing_required_fields",
+      "pack": "medical",
+      "profile": "patient_report",
+      "contentDigest": "742a85ad38e4cf54507d5b4d6e650b5c1604097378d839dd2c406143de38ae3b",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "0183a92a8ed96c16bba4267dd4d0703d494b4e00b254371dd1ad3684cd334150",
+      "certificateId": "13G6N-J5NGW",
+      "status": "BLOCK",
+      "score": 0.6553,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 0
+        },
+        {
+          "id": "grounding",
+          "score": 1
+        },
+        {
+          "id": "readability",
+          "score": 0.5862
+        },
+        {
+          "id": "safety",
+          "score": 1
+        },
+        {
+          "id": "structure",
+          "score": 0.325
+        }
+      ],
+      "metrics": {
+        "fkGrade": 8.79,
+        "readingEase": 35.61,
+        "gradeBand": "accessible",
+        "wordCount": 2,
+        "sentenceCount": 1,
+        "longestSentenceWords": 2,
+        "claimCount": 0,
+        "boundClaimCount": 0,
+        "thresholdClaimCount": 0,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": false,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": false,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": false,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [
+        "STR_REQUIRED_FIELDS"
+      ],
+      "claims": []
+    },
+    {
+      "id": "block_no_evidence_attached",
+      "pack": "medical",
+      "profile": "patient_report",
+      "contentDigest": "a221dc6b086a26f673fef992509394d63a3b0776f4dc28875d21905fff9f5191",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "783ab75dd4bedd9780a53297462b1fceb040fc290d58d8c02bac5478b18c4f1d",
+      "certificateId": "FG7NQ-FATT9",
+      "status": "BLOCK",
+      "score": 0.8717,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 0.8052
+        },
+        {
+          "id": "readability",
+          "score": 0.5862
+        },
+        {
+          "id": "safety",
+          "score": 1
+        },
+        {
+          "id": "structure",
+          "score": 1
+        }
+      ],
+      "metrics": {
+        "fkGrade": 5.1,
+        "readingEase": 74.73,
+        "gradeBand": "very_accessible",
+        "wordCount": 73,
+        "sentenceCount": 8,
+        "longestSentenceWords": 21,
+        "claimCount": 0,
+        "boundClaimCount": 0,
+        "thresholdClaimCount": 2,
+        "groundingCoverage": 1,
+        "evidenceCount": 0
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": false,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [
+        "GRD_EVIDENCE_DECLARED"
+      ],
+      "claims": [
+        {
+          "raw": "120 over 80",
+          "value": 80,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        },
+        {
+          "raw": "120 over 80",
+          "value": 120,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        }
+      ]
+    },
+    {
+      "id": "block_placeholder_left",
+      "pack": "medical",
+      "profile": "patient_report",
+      "contentDigest": "4099039648b4f4005c1ddcb1887f776f90efc10c18618cd62ac277f06e807ad5",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "303992c47940c33c86051188bf94a4d0b19cf285df7caf02ce23a54f84bb77e0",
+      "certificateId": "606KK-4R8EK",
+      "status": "BLOCK",
+      "score": 0.9603,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 1
+        },
+        {
+          "id": "readability",
+          "score": 1
+        },
+        {
+          "id": "safety",
+          "score": 1
+        },
+        {
+          "id": "structure",
+          "score": 0.75
+        }
+      ],
+      "metrics": {
+        "fkGrade": 4.7,
+        "readingEase": 74.04,
+        "gradeBand": "very_accessible",
+        "wordCount": 64,
+        "sentenceCount": 9,
+        "longestSentenceWords": 14,
+        "claimCount": 3,
+        "boundClaimCount": 3,
+        "thresholdClaimCount": 2,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": false,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [
+        "STR_NO_PLACEHOLDERS"
+      ],
+      "claims": [
+        {
+          "raw": "128/84 mmHg",
+          "value": 84,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "128/84 mmHg",
+          "value": 128,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "72 bpm",
+          "value": 72,
+          "unit": "bpm",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "120 over 80",
+          "value": 80,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        },
+        {
+          "raw": "120 over 80",
+          "value": 120,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        }
+      ]
+    },
+    {
+      "id": "block_prescription_out_of_scope",
+      "pack": "medical",
+      "profile": "patient_report",
+      "contentDigest": "0d5f0a2704b04a85c57ea35a1b6defeec773164422ade2b0607057f1e5e1702a",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "0899604e29e30c209a963805beb3bdbff4521a927f7ac0e18d1ba433e2762921",
+      "certificateId": "0HJJC-09W5J",
+      "status": "BLOCK",
+      "score": 0.8688,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 1
+        },
+        {
+          "id": "readability",
+          "score": 0.5862
+        },
+        {
+          "id": "safety",
+          "score": 0.7802
+        },
+        {
+          "id": "structure",
+          "score": 1
+        }
+      ],
+      "metrics": {
+        "fkGrade": 5.75,
+        "readingEase": 69.58,
+        "gradeBand": "very_accessible",
+        "wordCount": 62,
+        "sentenceCount": 7,
+        "longestSentenceWords": 19,
+        "claimCount": 1,
+        "boundClaimCount": 1,
+        "thresholdClaimCount": 0,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": false,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [
+        "SAF_WITHIN_SCOPE"
+      ],
+      "claims": [
+        {
+          "raw": "9.2 g/dL",
+          "value": 9.2,
+          "unit": "g/dL",
+          "kind": "patient",
+          "boundTo": "lab_cbc",
+          "matchKind": "unit_value"
+        }
+      ]
+    },
+    {
+      "id": "block_risk_label_contradiction",
+      "pack": "medical",
+      "profile": "patient_report",
+      "contentDigest": "08ad82c4ea5711442e8427c2f27808e88a6019b47223824f712a9ba88b1e99f0",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "3fc5935229a20c86f92c6e33d4324bae813ddee489d022487e0257ab00ef5903",
+      "certificateId": "6YRAJ-6B54J",
+      "status": "BLOCK",
+      "score": 0.9505,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 0.8052
+        },
+        {
+          "id": "readability",
+          "score": 1
+        },
+        {
+          "id": "safety",
+          "score": 1
+        },
+        {
+          "id": "structure",
+          "score": 1
+        }
+      ],
+      "metrics": {
+        "fkGrade": 5.3,
+        "readingEase": 75.37,
+        "gradeBand": "very_accessible",
+        "wordCount": 72,
+        "sentenceCount": 7,
+        "longestSentenceWords": 22,
+        "claimCount": 0,
+        "boundClaimCount": 0,
+        "thresholdClaimCount": 0,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": false,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [
+        "GRD_RISK_LABEL_CONSISTENT"
+      ],
+      "claims": []
+    },
+    {
+      "id": "generic_block_unsourced_figure",
+      "pack": "generic",
+      "profile": "document",
+      "contentDigest": "1c9ac94452b87d5f3763d0cf50664bd9059adf82cd9156c87754bdc3fe215615",
+      "packDigest": "aa5387db41b16395cd4305bd30fda5f0b73ded6cac1a4f473d864cec8d97b09d",
+      "verdictDigest": "c9879a87ebb10b326ea4320b057440d0a84f92256c3014556f7bcaa026638a8a",
+      "certificateId": "SKGFK-MGEWP",
+      "status": "BLOCK",
+      "score": 0.8728,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 0.5094
+        },
+        {
+          "id": "readability",
+          "score": 1
+        },
+        {
+          "id": "safety",
+          "score": 1
+        },
+        {
+          "id": "structure",
+          "score": 1
+        }
+      ],
+      "metrics": {
+        "fkGrade": 5.15,
+        "readingEase": 74.48,
+        "gradeBand": "very_accessible",
+        "wordCount": 55,
+        "sentenceCount": 6,
+        "longestSentenceWords": 13,
+        "claimCount": 2,
+        "boundClaimCount": 1,
+        "thresholdClaimCount": 1,
+        "groundingCoverage": 0.5,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "GEN_ACTIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GEN_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GEN_DEADLINE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GEN_DISCLOSURE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "GEN_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "GEN_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GEN_NO_DUPES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GEN_NO_OVERCLAIM",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GEN_NO_PII",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GEN_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GEN_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GEN_NO_UNSOURCED_FIGURES",
+          "ok": false,
+          "severity": "critical"
+        },
+        {
+          "id": "GEN_OWNER",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GEN_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GEN_READ_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GEN_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GEN_SENTENCE_LEN",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "GEN_SOURCES_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GEN_SOURCE_COVERAGE",
+          "ok": false,
+          "severity": "major"
+        }
+      ],
+      "blocking": [
+        "GEN_NO_UNSOURCED_FIGURES"
+      ],
+      "claims": [
+        {
+          "raw": "spend landed at 41200",
+          "value": 41200,
+          "unit": null,
+          "kind": "patient",
+          "boundTo": "billing_export",
+          "matchKind": "label_value"
+        },
+        {
+          "raw": "budget of 45000",
+          "value": 45000,
+          "unit": null,
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        },
+        {
+          "raw": "ticket volume fell to 318",
+          "value": 318,
+          "unit": null,
+          "kind": "patient",
+          "boundTo": null,
+          "matchKind": null
+        }
+      ]
+    },
+    {
+      "id": "generic_pass_infra_note",
+      "pack": "generic",
+      "profile": "document",
+      "contentDigest": "4bd8152a5ea8cbc7ecc1f1a205af0ad7985cb50142215592518d1a112ebf4143",
+      "packDigest": "aa5387db41b16395cd4305bd30fda5f0b73ded6cac1a4f473d864cec8d97b09d",
+      "verdictDigest": "b195f8aa24905d04ec4dfd56ef5d0e2bda66eb9607fa4faae54112a83fa6091d",
+      "certificateId": "Q2KBY-GMM49",
+      "status": "PASS",
+      "score": 0.9896,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 1
+        },
+        {
+          "id": "readability",
+          "score": 1
+        },
+        {
+          "id": "safety",
+          "score": 0.9438
+        },
+        {
+          "id": "structure",
+          "score": 1
+        }
+      ],
+      "metrics": {
+        "fkGrade": 6.49,
+        "readingEase": 65.75,
+        "gradeBand": "accessible",
+        "wordCount": 58,
+        "sentenceCount": 6,
+        "longestSentenceWords": 15,
+        "claimCount": 2,
+        "boundClaimCount": 2,
+        "thresholdClaimCount": 1,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "GEN_ACTIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GEN_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GEN_DEADLINE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GEN_DISCLOSURE",
+          "ok": false,
+          "severity": "minor"
+        },
+        {
+          "id": "GEN_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "GEN_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GEN_NO_DUPES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GEN_NO_OVERCLAIM",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GEN_NO_PII",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GEN_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GEN_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GEN_NO_UNSOURCED_FIGURES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GEN_OWNER",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GEN_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GEN_READ_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GEN_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GEN_SENTENCE_LEN",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "GEN_SOURCES_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GEN_SOURCE_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        }
+      ],
+      "blocking": [],
+      "claims": [
+        {
+          "raw": "spend landed at 41200",
+          "value": 41200,
+          "unit": null,
+          "kind": "patient",
+          "boundTo": "billing_export",
+          "matchKind": "label_value"
+        },
+        {
+          "raw": "budget of 45000",
+          "value": 45000,
+          "unit": null,
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        },
+        {
+          "raw": "220 ms",
+          "value": 220,
+          "unit": "ms",
+          "kind": "patient",
+          "boundTo": "billing_export",
+          "matchKind": "unit_value"
+        }
+      ]
+    },
+    {
+      "id": "pass_anaemia_clinician",
+      "pack": "medical",
+      "profile": "clinician_report",
+      "contentDigest": "83e83348637f19beae387bed16f6f7ab79ba929227e565a391eb3ae92cc30a71",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "cc7a8e8997aaa5f7ee934209d35b07c785f36b2d0748f1bb4cb6f36af50ade65",
+      "certificateId": "RRENH-XGJKF",
+      "status": "PASS",
+      "score": 1,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 1
+        },
+        {
+          "id": "readability",
+          "score": 1
+        },
+        {
+          "id": "safety",
+          "score": 1
+        },
+        {
+          "id": "structure",
+          "score": 1
+        }
+      ],
+      "metrics": {
+        "fkGrade": 11.79,
+        "readingEase": 22.98,
+        "gradeBand": "demanding",
+        "wordCount": 56,
+        "sentenceCount": 8,
+        "longestSentenceWords": 15,
+        "claimCount": 1,
+        "boundClaimCount": 1,
+        "thresholdClaimCount": 0,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [],
+      "claims": [
+        {
+          "raw": "9.2 g/dL",
+          "value": 9.2,
+          "unit": "g/dL",
+          "kind": "patient",
+          "boundTo": "lab_cbc",
+          "matchKind": "unit_value"
+        }
+      ]
+    },
+    {
+      "id": "pass_bp_patient",
+      "pack": "medical",
+      "profile": "patient_report",
+      "contentDigest": "4f30073fd39998d6054e9683a5b42b1e8666302e06a4cc2359a40e640af3bd13",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "4b0472f54d77fc65b42cf667c565c3d68318946c20d50dce275bdcab40e562a1",
+      "certificateId": "9Q18E-5ZA8T",
+      "status": "PASS",
+      "score": 1,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 1
+        },
+        {
+          "id": "readability",
+          "score": 1
+        },
+        {
+          "id": "safety",
+          "score": 1
+        },
+        {
+          "id": "structure",
+          "score": 1
+        }
+      ],
+      "metrics": {
+        "fkGrade": 6.08,
+        "readingEase": 69.9,
+        "gradeBand": "accessible",
+        "wordCount": 93,
+        "sentenceCount": 9,
+        "longestSentenceWords": 20,
+        "claimCount": 3,
+        "boundClaimCount": 3,
+        "thresholdClaimCount": 2,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [],
+      "claims": [
+        {
+          "raw": "128/84 mmHg",
+          "value": 84,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "128/84 mmHg",
+          "value": 128,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "72 bpm",
+          "value": 72,
+          "unit": "bpm",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "120 over 80",
+          "value": 80,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        },
+        {
+          "raw": "120 over 80",
+          "value": 120,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        }
+      ]
+    },
+    {
+      "id": "pass_consult_summary",
+      "pack": "medical",
+      "profile": "consult_summary",
+      "contentDigest": "dfff15072235d9104b173fc438a7c84272f984767c1ede0b021535ffc37c94e6",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "f8d71ffc222ccfafa0bcf8a7325636314b329f1a9cc2d8b574a7277a279cb69a",
+      "certificateId": "YGTF2-ZYR54",
+      "status": "PASS",
+      "score": 1,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 1
+        },
+        {
+          "id": "readability",
+          "score": 1
+        },
+        {
+          "id": "safety",
+          "score": 1
+        },
+        {
+          "id": "structure",
+          "score": 1
+        }
+      ],
+      "metrics": {
+        "fkGrade": 4.47,
+        "readingEase": 75.26,
+        "gradeBand": "very_accessible",
+        "wordCount": 55,
+        "sentenceCount": 8,
+        "longestSentenceWords": 12,
+        "claimCount": 3,
+        "boundClaimCount": 3,
+        "thresholdClaimCount": 2,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [],
+      "claims": [
+        {
+          "raw": "128/84 mmHg",
+          "value": 84,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "128/84 mmHg",
+          "value": 128,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "72 bpm",
+          "value": 72,
+          "unit": "bpm",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "120 over 80",
+          "value": 80,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        },
+        {
+          "raw": "120 over 80",
+          "value": 120,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        }
+      ]
+    },
+    {
+      "id": "pass_retina_ai_explanation",
+      "pack": "medical",
+      "profile": "ai_explanation",
+      "contentDigest": "7f2b5a0e09e58e0e4c1d6a5bcffe70c8eee4e6a97141ad3126faa06d7ff2a0b8",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "dd1819ec437975f006dbeb7dc545d31a90201fde9bfc8359a2a8e31eb536895e",
+      "certificateId": "VV3H3-JWR97",
+      "status": "PASS",
+      "score": 1,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 1
+        },
+        {
+          "id": "readability",
+          "score": 1
+        },
+        {
+          "id": "safety",
+          "score": 1
+        },
+        {
+          "id": "structure",
+          "score": 1
+        }
+      ],
+      "metrics": {
+        "fkGrade": 3.91,
+        "readingEase": 82.76,
+        "gradeBand": "very_accessible",
+        "wordCount": 97,
+        "sentenceCount": 11,
+        "longestSentenceWords": 17,
+        "claimCount": 0,
+        "boundClaimCount": 0,
+        "thresholdClaimCount": 0,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [],
+      "claims": []
+    },
+    {
+      "id": "warn_duplicate_boilerplate",
+      "pack": "medical",
+      "profile": "patient_report",
+      "contentDigest": "24bc8c06a43807e32763cda7693940265f2131a083e177b9734667b2806e183e",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "61ee46217dd74ef942825e584e4049ec6704f1be14e1c1bd7ebdc6217751ca2d",
+      "certificateId": "D3WW9-D42ET",
+      "status": "WARN",
+      "score": 0.9881,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 1
+        },
+        {
+          "id": "readability",
+          "score": 1
+        },
+        {
+          "id": "safety",
+          "score": 1
+        },
+        {
+          "id": "structure",
+          "score": 0.925
+        }
+      ],
+      "metrics": {
+        "fkGrade": 3.96,
+        "readingEase": 80.36,
+        "gradeBand": "very_accessible",
+        "wordCount": 77,
+        "sentenceCount": 10,
+        "longestSentenceWords": 14,
+        "claimCount": 3,
+        "boundClaimCount": 3,
+        "thresholdClaimCount": 2,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [],
+      "claims": [
+        {
+          "raw": "128/84 mmHg",
+          "value": 84,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "128/84 mmHg",
+          "value": 128,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "72 bpm",
+          "value": 72,
+          "unit": "bpm",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "120 over 80",
+          "value": 80,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        },
+        {
+          "raw": "120 over 80",
+          "value": 120,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        }
+      ]
+    },
+    {
+      "id": "warn_low_confidence_unhedged",
+      "pack": "medical",
+      "profile": "clinician_report",
+      "contentDigest": "babcd9c61801005189b387a29d72e7c68ad39c7bb5f06bbc25ab758429120507",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "ed470d4aeaa45239c67fcf2ac5f0d5e82dd8199f6829c03fdefc7e799a5bfdd6",
+      "certificateId": "WT9E1-V8MXN",
+      "status": "WARN",
+      "score": 0.9778,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 1
+        },
+        {
+          "id": "readability",
+          "score": 1
+        },
+        {
+          "id": "safety",
+          "score": 0.9143
+        },
+        {
+          "id": "structure",
+          "score": 1
+        }
+      ],
+      "metrics": {
+        "fkGrade": 11.84,
+        "readingEase": 21.06,
+        "gradeBand": "demanding",
+        "wordCount": 49,
+        "sentenceCount": 8,
+        "longestSentenceWords": 12,
+        "claimCount": 0,
+        "boundClaimCount": 0,
+        "thresholdClaimCount": 0,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [],
+      "claims": []
+    },
+    {
+      "id": "warn_missing_provenance",
+      "pack": "medical",
+      "profile": "clinician_report",
+      "contentDigest": "9b40c451c3ffd06b4266152cd62f2a888c589e853472fb3e5c04a851d2139398",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "dc7c1d197fd94f2f94f0989acd7a33bc5702c5aab95ed8601cb9507ff8d030fc",
+      "certificateId": "VSES2-V3JFY",
+      "status": "WARN",
+      "score": 0.95,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 0.9221
+        },
+        {
+          "id": "readability",
+          "score": 1
+        },
+        {
+          "id": "safety",
+          "score": 1
+        },
+        {
+          "id": "structure",
+          "score": 0.85
+        }
+      ],
+      "metrics": {
+        "fkGrade": 10.58,
+        "readingEase": 29.63,
+        "gradeBand": "demanding",
+        "wordCount": 41,
+        "sentenceCount": 7,
+        "longestSentenceWords": 9,
+        "claimCount": 0,
+        "boundClaimCount": 0,
+        "thresholdClaimCount": 0,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [],
+      "claims": []
+    },
+    {
+      "id": "warn_no_timeframe",
+      "pack": "medical",
+      "profile": "patient_report",
+      "contentDigest": "fc8c9372da294cb3abd843b807c92c1ffa0222f913574099f42f087df27e6352",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "2f1ee2546fe12fe547f2028eab07fda4306d995f24df06750ecc5f4683740681",
+      "certificateId": "4Z2XW-5A9DY",
+      "status": "WARN",
+      "score": 0.9343,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 0.5862
+        },
+        {
+          "id": "grounding",
+          "score": 1
+        },
+        {
+          "id": "readability",
+          "score": 1
+        },
+        {
+          "id": "safety",
+          "score": 1
+        },
+        {
+          "id": "structure",
+          "score": 1
+        }
+      ],
+      "metrics": {
+        "fkGrade": 4.02,
+        "readingEase": 81.6,
+        "gradeBand": "very_accessible",
+        "wordCount": 69,
+        "sentenceCount": 8,
+        "longestSentenceWords": 20,
+        "claimCount": 3,
+        "boundClaimCount": 3,
+        "thresholdClaimCount": 2,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [],
+      "claims": [
+        {
+          "raw": "128/84 mmHg",
+          "value": 84,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "128/84 mmHg",
+          "value": 128,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "72 bpm",
+          "value": 72,
+          "unit": "bpm",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "120 over 80",
+          "value": 80,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        },
+        {
+          "raw": "120 over 80",
+          "value": 120,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        }
+      ]
+    },
+    {
+      "id": "warn_pii_in_body",
+      "pack": "medical",
+      "profile": "patient_report",
+      "contentDigest": "ec517f2d4c9df95e12f5b18258e8b76992e3fb28298e356b077f02e567b3830e",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "2f29d53af0f0352f4bae297bdf3511546a9d08eb5fad178c918b19266d4aaac9",
+      "certificateId": "5Y5KT-B6NY0",
+      "status": "WARN",
+      "score": 0.9791,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 1
+        },
+        {
+          "id": "readability",
+          "score": 1
+        },
+        {
+          "id": "safety",
+          "score": 0.9121
+        },
+        {
+          "id": "structure",
+          "score": 1
+        }
+      ],
+      "metrics": {
+        "fkGrade": 3.63,
+        "readingEase": 79.16,
+        "gradeBand": "very_accessible",
+        "wordCount": 68,
+        "sentenceCount": 12,
+        "longestSentenceWords": 14,
+        "claimCount": 3,
+        "boundClaimCount": 3,
+        "thresholdClaimCount": 2,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [],
+      "claims": [
+        {
+          "raw": "128/84 mmHg",
+          "value": 84,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "128/84 mmHg",
+          "value": 128,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "72 bpm",
+          "value": 72,
+          "unit": "bpm",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "120 over 80",
+          "value": 80,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        },
+        {
+          "raw": "120 over 80",
+          "value": 120,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        }
+      ]
+    },
+    {
+      "id": "warn_single_recommendation",
+      "pack": "medical",
+      "profile": "patient_report",
+      "contentDigest": "53c8b78eaf7c3ea2c0c1646e2268fd65e360c140e5e604585218548745a45b2c",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "fadfea9e0d26df3853df6fb39aa4de2ec152d1872d4b0b4dca1ff0205bb5823f",
+      "certificateId": "YMVZX-MKX1V",
+      "status": "WARN",
+      "score": 0.9206,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 0.5
+        },
+        {
+          "id": "grounding",
+          "score": 1
+        },
+        {
+          "id": "readability",
+          "score": 1
+        },
+        {
+          "id": "safety",
+          "score": 1
+        },
+        {
+          "id": "structure",
+          "score": 1
+        }
+      ],
+      "metrics": {
+        "fkGrade": 4.86,
+        "readingEase": 75.47,
+        "gradeBand": "very_accessible",
+        "wordCount": 60,
+        "sentenceCount": 7,
+        "longestSentenceWords": 16,
+        "claimCount": 3,
+        "boundClaimCount": 3,
+        "thresholdClaimCount": 2,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": false,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [],
+      "claims": [
+        {
+          "raw": "128/84 mmHg",
+          "value": 84,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "128/84 mmHg",
+          "value": 128,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "72 bpm",
+          "value": 72,
+          "unit": "bpm",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "120 over 80",
+          "value": 80,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        },
+        {
+          "raw": "120 over 80",
+          "value": 120,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        }
+      ]
+    },
+    {
+      "id": "warn_thin_body",
+      "pack": "medical",
+      "profile": "patient_report",
+      "contentDigest": "7ebdaf70dda437f73a8b4fae9dddd34f8e75c9437d473b2b6b705eaa2ad81320",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "526832a35fa4d8faf6b7e4bd0a67b72095016475b02003d74c10054f681ccd2b",
+      "certificateId": "A4DG7-4N6BZ",
+      "status": "WARN",
+      "score": 0.9718,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 1
+        },
+        {
+          "id": "readability",
+          "score": 1
+        },
+        {
+          "id": "safety",
+          "score": 0.9817
+        },
+        {
+          "id": "structure",
+          "score": 0.85
+        }
+      ],
+      "metrics": {
+        "fkGrade": 4.84,
+        "readingEase": 68.74,
+        "gradeBand": "very_accessible",
+        "wordCount": 33,
+        "sentenceCount": 7,
+        "longestSentenceWords": 9,
+        "claimCount": 2,
+        "boundClaimCount": 2,
+        "thresholdClaimCount": 0,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": false,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [],
+      "claims": [
+        {
+          "raw": "128/84 mmHg",
+          "value": 84,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "128/84 mmHg",
+          "value": 128,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        }
+      ]
+    },
+    {
+      "id": "warn_truncated_generation",
+      "pack": "medical",
+      "profile": "patient_report",
+      "contentDigest": "3ee003927cacfdc7f7b387b2fa4f28b16e7eb913f4e494caf2f4ce7eb706860e",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "99f97b06e724b02abaa2b84fc66dd1ad1f7326d72fe3c6523b5ddd58c497a8c0",
+      "certificateId": "JJZJE-P1CWE",
+      "status": "WARN",
+      "score": 0.9762,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 1
+        },
+        {
+          "id": "readability",
+          "score": 1
+        },
+        {
+          "id": "safety",
+          "score": 1
+        },
+        {
+          "id": "structure",
+          "score": 0.85
+        }
+      ],
+      "metrics": {
+        "fkGrade": 3.76,
+        "readingEase": 82.39,
+        "gradeBand": "very_accessible",
+        "wordCount": 64,
+        "sentenceCount": 8,
+        "longestSentenceWords": 15,
+        "claimCount": 3,
+        "boundClaimCount": 3,
+        "thresholdClaimCount": 2,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [],
+      "claims": [
+        {
+          "raw": "128/84 mmHg",
+          "value": 84,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "128/84 mmHg",
+          "value": 128,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "72 bpm",
+          "value": 72,
+          "unit": "bpm",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "120 over 80",
+          "value": 80,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        },
+        {
+          "raw": "120 over 80",
+          "value": 120,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        }
+      ]
+    },
+    {
+      "id": "warn_unglossed_jargon",
+      "pack": "medical",
+      "profile": "patient_report",
+      "contentDigest": "5712ef3bd08a8da6d4c215e81378d43c0b821a6c7a3ac0098b5a6f8c6225033b",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "06bdef85766d44a0256bd57c3a73747152574b1ef56929a72609d5ab7d3ffe9c",
+      "certificateId": "0DPTW-YGBED",
+      "status": "WARN",
+      "score": 0.9212,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 1
+        },
+        {
+          "id": "readability",
+          "score": 0.5862
+        },
+        {
+          "id": "safety",
+          "score": 1
+        },
+        {
+          "id": "structure",
+          "score": 1
+        }
+      ],
+      "metrics": {
+        "fkGrade": 5.51,
+        "readingEase": 69.34,
+        "gradeBand": "very_accessible",
+        "wordCount": 62,
+        "sentenceCount": 8,
+        "longestSentenceWords": 15,
+        "claimCount": 3,
+        "boundClaimCount": 3,
+        "thresholdClaimCount": 2,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [],
+      "claims": [
+        {
+          "raw": "128/84 mmHg",
+          "value": 84,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "128/84 mmHg",
+          "value": 128,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "72 bpm",
+          "value": 72,
+          "unit": "bpm",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "120 over 80",
+          "value": 80,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        },
+        {
+          "raw": "120 over 80",
+          "value": 120,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        }
+      ]
+    },
+    {
+      "id": "warn_unreadable_for_patient",
+      "pack": "medical",
+      "profile": "patient_report",
+      "contentDigest": "ff2f68ae2f5c02e74bf42e543de7c668d822a1f489689c4b38898aa85a426ac4",
+      "packDigest": "26af15e24515403840bca5f6bb651f5846ac9d3b6a31b0b67720291e4814c234",
+      "verdictDigest": "24d262052609d2d2a4cf08dcaa2bd5a99e0e9fdd90cd7a059d61099944fecde6",
+      "certificateId": "49V4D-40A4D",
+      "status": "WARN",
+      "score": 0.8424,
+      "dimensions": [
+        {
+          "id": "actionability",
+          "score": 1
+        },
+        {
+          "id": "grounding",
+          "score": 1
+        },
+        {
+          "id": "readability",
+          "score": 0.1724
+        },
+        {
+          "id": "safety",
+          "score": 1
+        },
+        {
+          "id": "structure",
+          "score": 1
+        }
+      ],
+      "metrics": {
+        "fkGrade": 16.59,
+        "readingEase": -4.82,
+        "gradeBand": "specialist",
+        "wordCount": 75,
+        "sentenceCount": 7,
+        "longestSentenceWords": 43,
+        "claimCount": 3,
+        "boundClaimCount": 3,
+        "thresholdClaimCount": 2,
+        "groundingCoverage": 1,
+        "evidenceCount": 1
+      },
+      "checks": [
+        {
+          "id": "ACT_IMPERATIVE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_OWNER",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "ACT_RECOMMENDATIONS",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "ACT_TIMEFRAME",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_COVERAGE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_EVIDENCE_DECLARED",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_FIDELITY_OVERCLAIM",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_NO_UNGROUNDED_CLAIMS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "GRD_PROVENANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "GRD_RISK_LABEL_CONSISTENT",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "RDB_GRADE",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_JARGON_GLOSSED",
+          "ok": false,
+          "severity": "major"
+        },
+        {
+          "id": "RDB_PASSIVE_VOICE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "RDB_SENTENCE_LENGTH",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_CONFIDENCE_CALIBRATED",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_DISCLAIMER",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_ESCALATION_PATH",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_ABSOLUTES",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "SAF_NO_PII_IN_BODY",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "SAF_REFERENCE_RANGE",
+          "ok": true,
+          "severity": "minor"
+        },
+        {
+          "id": "SAF_WITHIN_SCOPE",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_BODY_SUBSTANCE",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_DUPLICATE_SENTENCES",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_NO_PLACEHOLDERS",
+          "ok": true,
+          "severity": "critical"
+        },
+        {
+          "id": "STR_NO_TRUNCATION",
+          "ok": true,
+          "severity": "major"
+        },
+        {
+          "id": "STR_REQUIRED_FIELDS",
+          "ok": true,
+          "severity": "critical"
+        }
+      ],
+      "blocking": [],
+      "claims": [
+        {
+          "raw": "128/84 mmHg",
+          "value": 84,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "128/84 mmHg",
+          "value": 128,
+          "unit": "mmHg",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "72 bpm",
+          "value": 72,
+          "unit": "bpm",
+          "kind": "patient",
+          "boundTo": "ppg_bp",
+          "matchKind": "unit_value"
+        },
+        {
+          "raw": "120 over 80",
+          "value": 80,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        },
+        {
+          "raw": "120 over 80",
+          "value": 120,
+          "unit": "mmHg",
+          "kind": "threshold",
+          "boundTo": null,
+          "matchKind": null
+        }
+      ]
+    }
+  ]
+}

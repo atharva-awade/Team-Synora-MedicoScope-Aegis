@@ -1,0 +1,29 @@
+{
+  "id": "block_no_evidence_attached",
+  "note": "A confident clinical claim with no evidence envelopes at all.",
+  "pack": "medical",
+  "profile": "patient_report",
+  "expect": {
+    "status": "BLOCK",
+    "mustBlock": [
+      "GRD_EVIDENCE_DECLARED"
+    ],
+    "mustFail": [
+      "GRD_EVIDENCE_DECLARED"
+    ]
+  },
+  "content": {
+    "title": "Possible hypertension",
+    "category": "hypertension",
+    "riskLevel": "moderate",
+    "score": 0.5,
+    "confidence": 0.5,
+    "body": "Based on your answers you may have raised blood pressure (high pressure in your arteries). This is a screening signal and not a diagnosis. A normal range sits below 120 over 80. Please see a doctor within 14 days so they can measure it properly with a cuff and decide what to do next.",
+    "recommendations": [
+      "Book a clinic blood pressure check within 14 days.",
+      "Reduce added salt in your meals."
+    ],
+    "disclaimer": "Screening questionnaire only, not a diagnosis.",
+    "evidence": []
+  }
+}
