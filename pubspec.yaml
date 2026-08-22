@@ -53,7 +53,7 @@ dependencies:
   glassmorphism: ^3.0.0
 
   # Google Fonts
-  google_fonts: ^6.3.2
+  google_fonts: 6.2.1
 
   # URL launcher for AR viewer
   url_launcher: ^6.2.4
