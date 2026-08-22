@@ -36,6 +36,7 @@
 - [The Healthcare Dilemma](#the-healthcare-dilemma)
 - [What We Built](#what-we-built)
 - [The Aegis Clinical Decision Engine](#the-aegis-clinical-decision-engine)
+- [The Repeatable Quality Gate](#the-repeatable-quality-gate)
 - [Multi-Modal Screening Arsenal](#multi-modal-screening-arsenal)
 - [MindSpace & Voice Biomarkers](#mindspace--voice-biomarkers)
 - [HearMe Context-Aware Medical Copilot](#hearme-context-aware-medical-copilot)
@@ -82,6 +83,119 @@ Capture Data  ->  Edge Inference  ->  Aegis Fusion  ->  Clinical Action  ->  Tel
 - 🗺️ **Emergency Telehealth & Geo-Routing**: Real-time patient threshold breach alerts with live GPS coordinate dispatch to connected doctors.
 - 🏆 **Health Engagement Gamification**: Synora Health Coins ecosystem rewarding preventive health habits and medication adherence.
 - 🌐 **Global Accessibility**: Multi-language localization for 7 languages (English, Hindi, Tamil, Telugu, Marathi, Bengali, Kannada) and fluid Glassmorphism UI.
+
+---
+
+## The Repeatable Quality Gate
+
+**A screening report can be fluent, well structured, grade-6 readable, correctly
+disclaimed — and contain a haemoglobin value no sensor ever produced.** Every
+readability-and-tone checker passes that document. It is also the most dangerous
+thing this product can emit.
+
+So before anything important is finalized, it goes through a gate whose entire
+design rests on one line:
+
+```
+verdict = f(contentDigest, packDigest, engineVersion)
+```
+
+A pure function. No clock, no randomness, no model call. Same content and same
+rules, same certificate id — on another machine, in another year.
+
+### What it actually checks
+
+Four of the five dimensions are what any content checker does: structure,
+readability (a real Flesch–Kincaid grade, not a lookup table), clinical safety
+and scope, actionability. The fifth is the one that matters.
+
+**Evidence grounding.** Prose is treated as a set of *claims* that must *bind* to
+evidence the system actually holds — reusing the `evidence.v1` envelopes and
+fidelity tiers the diagnostic tools already emit.
+
+| Sentence | Verdict |
+|---|---|
+| "Your blood pressure was estimated at 128/84 mmHg" | **PASS** — bound to the PPG envelope, and hedged because that envelope is `heuristic` |
+| "Your blood pressure **is** 128/84 mmHg" | **BLOCK** — `GRD_NO_FIDELITY_OVERCLAIM`: a heuristic estimate narrated as a measurement |
+| "Your haemoglobin is 9.2 g/dL" | **BLOCK** — `GRD_NO_UNGROUNDED_CLAIMS`: no haemoglobin measurement exists |
+| "A normal range sits below 120/80" | **PASS** — classified as a *threshold* statement, not a claim about this patient |
+| "low risk" over a 0.82 score | **BLOCK** — `GRD_RISK_LABEL_CONSISTENT`: not a wording defect, a wrong document |
+| "Start 325 mg ferrous sulphate twice daily" | **BLOCK** — `SAF_WITHIN_SCOPE`: referral is in scope, prescribing is not |
+
+### Rules are data, not code
+
+Every rule lives in a versioned JSON pack. The pack may reference predicates by
+id and pass arguments; it can never introduce behaviour. Load-time validation
+means a pack naming an unknown predicate **throws at boot** — a rule that quietly
+does nothing is worse than no rule.
+
+That is also why the gate does not force a domain on anyone.
+[`packs/generic.v1.json`](server/quality/packs/generic.v1.json) runs the same
+engine, the same certificate mechanics and the same harness over a non-clinical
+deliverable. The medical pack is one opinion; the engine has no clinical
+vocabulary in it.
+
+### Where the LLM is allowed to stand
+
+An LLM is non-deterministic, so nothing an LLM decides can be part of a
+repeatable verdict. Instead of putting a model inside the gate, **the agent never
+scores — it writes tests.** A critic agent proposes *assertions* (a predicate id
+plus arguments, never code). They are compiled against an allowlist, executed,
+and reported as **advisory** — excluded from the verdict digest by construction,
+unable to move PASS/WARN/BLOCK. There is an API test asserting that a *failing*
+advisory finding leaves the certificate byte-identical.
+
+The only route to authority is promotion: write it into the pack, bump the
+version, and re-run the entire golden corpus. Promotion that changes an existing
+verdict is **refused** until a human accepts the drift explicitly.
+
+### The rewrite the gate is allowed to reject
+
+When the gate blocks, an agent proposes a better draft. That is where these demos
+usually turn dangerous — the model improves the prose *and* rounds a number.
+
+So a rewrite is a proposal under contract. Before the new draft is even scored,
+four things must be byte-identical: the numeric claim multiset, the risk level and
+score, the cited evidence set, and the negation polarity on every clinical term.
+**Prose is free, facts are frozen.** The gate can block its own fix.
+
+### Proof, not assertion
+
+`cd server && npm test`
+
+| | |
+|---|---|
+| Aegis gate unit tests, now actually wired to CI | **57 pass** |
+| Labelled golden fixtures reaching their specified verdicts | **26 / 26** |
+| Certificate stability across 12 repeat evaluations each | **26 / 26 deterministic** |
+| Certificate ids matching the committed lock file | **26 / 26 locked** |
+| Score variance across 400 runs per fixture | **0** (bit-identical) |
+| Evaluation latency | **p50 0.5 ms · p99 1.1 ms** |
+| Injected defect classes caught by the mutation harness | **66 / 66 (100%)** |
+| Semantically empty edits that moved a certificate | **0 / 20** |
+| HTTP contract assertions | **15 / 15** |
+
+The lock file is the anti-drift mechanism: you cannot quietly loosen a rule and
+keep a green build, because every certificate id would move. The negative
+controls matter as much as the catch rate — a gate that reacts to whitespace or
+JSON key order would mint a new certificate for an unchanged document, making
+"repeatable" false in the other direction.
+
+### Enforcement
+
+`POST /api/quality-gate/finalize` is the only way to sign content. The server
+**re-evaluates the content it is sent** and returns `409` on BLOCK with the
+remediation list. A clinician may override with a written reason, which is
+appended to the same hash-chained `DecisionAudit` ledger as the clinical
+decisions it governs, with their identity attached.
+
+The app holds no rules at all. It runs a clearly-labelled offline *pre-flight*
+that issues no certificate and deliberately omits the checks that actually gate a
+report, because a local hint that could be read as a pass is worse than no local
+hint.
+
+Full engineering spec: **[`server/quality/SPEC.md`](server/quality/SPEC.md)**
+
 
 ---
 
@@ -408,6 +522,12 @@ Team-Synora-MedicoScope-Aegis/
 │   ├── services/              # API clients, Aegis gate, TFLite inference, DSP analyzers
 │   └── main.dart              # Application entrypoint & state providers
 ├── server/                    # Node.js Express REST API server
+│   ├── quality/               # Aegis Quality Gate: engine, policy packs, corpus, harnesses
+│   │   ├── lib/               # canonical hashing, claim binding, predicates, engine
+│   │   ├── packs/             # versioned rule sets as DATA (medical + domain-neutral)
+│   │   ├── corpus/            # 26 labelled fixtures + certificate lock + conformance vectors
+│   │   ├── harness/           # verify / bench / fuzz / parity / promote / route-smoke
+│   │   └── SPEC.md            # engine specification
 │   ├── src/
 │   │   ├── config/            # MongoDB database connection pool
 │   │   ├── middleware/        # JWT auth verify, role check, rate limiting
