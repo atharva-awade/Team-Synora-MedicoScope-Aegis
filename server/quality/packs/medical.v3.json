@@ -1,0 +1,839 @@
+{
+  "packId": "medical",
+  "packVersion": "3.0.0",
+  "engine": "3.x",
+  "title": "MedicoScope Clinical Screening Content Policy",
+  "description": "Domain policy for the Aegis Quality Gate. The ENGINE is domain-neutral; this file is the medical opinion. Fork it, keep the engine, and the same gate certifies a different field.",
+  "locale": "en",
+  "defaultProfile": "patient_report",
+  "authors": [
+    "Team Synora"
+  ],
+  "changelog": [
+    {
+      "version": "3.0.0",
+      "note": "First rules-as-data pack. Adds evidence binding, fidelity overclaim detection, real Flesch-Kincaid, scope guard, and profile overrides."
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "structure",
+      "title": "Structure & Completeness",
+      "weight": 1.0,
+      "intent": "Every field a reader needs to act is present, and nothing is a leftover from generation."
+    },
+    {
+      "id": "readability",
+      "title": "Readability & Accessibility",
+      "weight": 1.2,
+      "intent": "The reader can actually understand it at their reading level, with jargon glossed."
+    },
+    {
+      "id": "safety",
+      "title": "Clinical Safety & Scope",
+      "weight": 1.5,
+      "intent": "Escalation where risk demands it, no false certainty, and never steps outside screening scope."
+    },
+    {
+      "id": "actionability",
+      "title": "Actionability",
+      "weight": 1.0,
+      "intent": "A named actor, a concrete next step, and a deadline."
+    },
+    {
+      "id": "grounding",
+      "title": "Evidence Grounding",
+      "weight": 1.6,
+      "intent": "Every number in the prose traces to evidence the system actually holds, at the fidelity it actually has."
+    }
+  ],
+  "lexicons": {
+    "escalation": [
+      "a doctor",
+      "book a visit",
+      "book an appointment",
+      "call an ambulance",
+      "cardiology",
+      "clinic appointment",
+      "clinic visit",
+      "clinician review",
+      "consult a clinician",
+      "consult a physician",
+      "consult your doctor",
+      "doctor visit",
+      "emergency",
+      "emergency room",
+      "escalate to",
+      "eye doctor",
+      "go to hospital",
+      "haematology",
+      "hematology",
+      "immediately",
+      "medical attention",
+      "medical review",
+      "ophthalmology",
+      "refer to",
+      "referral to",
+      "same day",
+      "see a doctor",
+      "see a specialist",
+      "see your doctor",
+      "seek care",
+      "seek medical",
+      "specialist",
+      "the doctor",
+      "urgent",
+      "urgently",
+      "without delay",
+      "your doctor"
+    ],
+    "disclaimer": [
+      "not a diagnosis",
+      "not a medical diagnosis",
+      "not a substitute",
+      "does not replace",
+      "requires clinical confirmation",
+      "requires confirmation",
+      "needs clinical confirmation",
+      "for informational",
+      "informational purposes",
+      "screening",
+      "screening-grade",
+      "screening only",
+      "screening signal",
+      "screening test",
+      "screening tool",
+      "screening output",
+      "screening report",
+      "screening result",
+      "screening questionnaire",
+      "screening estimate"
+    ],
+    "absolutes": [
+      "definitely",
+      "guaranteed",
+      "guarantee",
+      "100% certain",
+      "100 percent certain",
+      "no doubt",
+      "without any doubt",
+      "certainly have",
+      "you have cancer",
+      "impossible that",
+      "never need",
+      "always fatal",
+      "completely rules out",
+      "conclusively",
+      "proves that you"
+    ],
+    "hedges": [
+      "estimated",
+      "estimate",
+      "estimation",
+      "approximately",
+      "approximate",
+      "around",
+      "roughly",
+      "about ",
+      "may ",
+      "might ",
+      "suggests",
+      "suggestive",
+      "possible",
+      "possibly",
+      "likely",
+      "appears",
+      "indicative",
+      "screening-grade",
+      "screening signal"
+    ],
+    "prescriptive": [
+      "take metformin",
+      "start insulin",
+      "increase your dose",
+      "increase the dose",
+      "stop taking",
+      "i prescribe",
+      "we prescribe",
+      "prescription for",
+      "begin therapy",
+      "start antibiotics",
+      "take aspirin",
+      "take ibuprofen",
+      "double your dose",
+      "titrate",
+      "self-medicate"
+    ],
+    "owners": [
+      "cardiologist",
+      "cardiology",
+      "care team",
+      "clinician",
+      "doctor",
+      "endocrinologist",
+      "endocrinology",
+      "haematology",
+      "hematology",
+      "laboratory",
+      "nurse",
+      "ophthalmologist",
+      "ophthalmology",
+      "patient",
+      "physician",
+      "primary care",
+      "pulmonologist",
+      "pulmonology",
+      "radiologist",
+      "specialist",
+      "the clinician",
+      "the lab",
+      "the physician",
+      "you ",
+      "your clinician",
+      "your doctor",
+      "your physician"
+    ],
+    "imperatives": [
+      "arrange",
+      "assess",
+      "attend",
+      "avoid",
+      "begin",
+      "book",
+      "bring",
+      "call",
+      "check",
+      "confirm",
+      "contact",
+      "continue",
+      "counsel",
+      "discuss",
+      "escalate",
+      "increase",
+      "investigate",
+      "measure",
+      "monitor",
+      "note",
+      "obtain",
+      "order",
+      "raise",
+      "record",
+      "reduce",
+      "refer",
+      "repeat",
+      "request",
+      "review",
+      "schedule",
+      "see",
+      "share",
+      "stop",
+      "track",
+      "upload",
+      "visit"
+    ],
+    "placeholders": [
+      "todo",
+      "tbd",
+      "lorem ipsum",
+      "xxx",
+      "<insert",
+      "[insert",
+      "placeholder",
+      "fixme",
+      "undefined",
+      "nan ",
+      "null,",
+      "{{",
+      "}}",
+      "...tbc",
+      "to be completed"
+    ],
+    "jargon": {
+      "myocardial infarction": "heart attack",
+      "hyperglycemia": "high blood sugar",
+      "hyperglycaemia": "high blood sugar",
+      "hypoglycemia": "low blood sugar",
+      "dyspnea": "shortness of breath",
+      "dyspnoea": "shortness of breath",
+      "tachycardia": "fast heart rate",
+      "bradycardia": "slow heart rate",
+      "diaphoresis": "heavy sweating",
+      "pruritus": "itching",
+      "erythema": "redness",
+      "ischemia": "reduced blood flow",
+      "ischaemia": "reduced blood flow",
+      "arrhythmia": "irregular heartbeat",
+      "hypertension": "high blood pressure",
+      "hypotension": "low blood pressure",
+      "edema": "swelling",
+      "oedema": "swelling",
+      "anaemia": "low red blood cell",
+      "anemia": "low red blood cell",
+      "retinopathy": "damage to the retina",
+      "microaneurysm": "tiny bulge in a blood vessel",
+      "exudate": "fluid deposit",
+      "auscultation": "listening to the chest",
+      "systolic murmur": "extra heart sound",
+      "photoplethysmography": "light-based pulse sensing",
+      "bronchospasm": "airway tightening",
+      "crepitation": "crackling lung sound",
+      "stenosis": "narrowing",
+      "proteinuria": "protein in the urine",
+      "nephropathy": "kidney damage",
+      "neuropathy": "nerve damage",
+      "prehypertensive": "slightly raised blood pressure",
+      "hba1c": "average blood sugar over three months"
+    },
+    "uncertaintyDisclosure": [
+      "low confidence",
+      "limited confidence",
+      "weak signal",
+      "uncertain",
+      "unreliable",
+      "interpret with caution",
+      "provisional",
+      "unconfirmed",
+      "low reliability",
+      "may be inaccurate",
+      "should not be relied on",
+      "confidence is low",
+      "insufficient signal quality",
+      "borderline signal"
+    ]
+  },
+  "claimExtraction": {
+    "bareNumberLabels": [
+      "haemoglobin",
+      "hemoglobin",
+      "hba1c",
+      "glucose",
+      "spo2",
+      "oxygen saturation",
+      "systolic",
+      "diastolic",
+      "heart rate",
+      "pulse rate",
+      "bmi",
+      "creatinine",
+      "cholesterol",
+      "ldl",
+      "hdl",
+      "triglycerides",
+      "platelet",
+      "wbc",
+      "rbc",
+      "tsh",
+      "jitter",
+      "shimmer",
+      "hnr",
+      "respiratory rate",
+      "temperature"
+    ],
+    "ignorePatterns": [
+      "\\bQG-[A-Z0-9.\\-]+\\b",
+      "\\b[A-Z0-9]{5}-[A-Z0-9]{5}\\b",
+      "\\bv?\\d+\\.\\d+\\.\\d+\\b",
+      "\\bgrade\\s+\\d+(?:\\.\\d+)?\\b",
+      "\\b\\d+\\s*(?:of|/)\\s*\\d+\\s*(?:dimension|check|point)s?\\b",
+      "\\b(?:dimension|check|point|step)\\s+\\d+\\b"
+    ],
+    "tolerances": {
+      "mmHg": 2,
+      "%": 1,
+      "bpm": 2,
+      "mg/dL": 2,
+      "g/dL": 0.2,
+      "mmol/L": 0.2,
+      "degC": 0.2,
+      "kg": 0.5,
+      "_relative": 0.02
+    },
+    "thresholdCues": [
+      "below",
+      "above",
+      "under",
+      "over",
+      "less than",
+      "greater than",
+      "more than",
+      "normal range",
+      "reference range",
+      "normal is",
+      "normal sits",
+      "target",
+      "healthy range",
+      "ideal",
+      "up to",
+      "at least",
+      "between",
+      "exceeds",
+      "threshold",
+      "cut-off",
+      "cutoff",
+      "guideline",
+      "starts at",
+      "considered high",
+      "considered low",
+      "anything past"
+    ],
+    "thresholdCueWindow": 18
+  },
+  "profiles": {
+    "patient_report": {
+      "title": "Patient-facing screening report",
+      "audience": "patient",
+      "thresholds": {
+        "pass": 0.85,
+        "block": 0.6
+      },
+      "dimensionWeights": {
+        "structure": 1.0,
+        "readability": 1.2,
+        "safety": 1.5,
+        "actionability": 1.0,
+        "grounding": 1.6
+      }
+    },
+    "clinician_report": {
+      "title": "Clinician / EHR charting report",
+      "audience": "clinician",
+      "thresholds": {
+        "pass": 0.85,
+        "block": 0.6
+      },
+      "dimensionWeights": {
+        "structure": 1.0,
+        "readability": 0.5,
+        "safety": 1.5,
+        "actionability": 1.0,
+        "grounding": 1.8
+      },
+      "overrides": {
+        "RDB_GRADE": {
+          "args": {
+            "max": 14
+          },
+          "severity": "minor",
+          "remedy": "Clinical charting may run dense, but keep it under a specialist reading level."
+        },
+        "RDB_JARGON_GLOSSED": {
+          "disabled": true
+        },
+        "RDB_PASSIVE_VOICE": {
+          "disabled": true
+        },
+        "STR_BODY_SUBSTANCE": {
+          "args": {
+            "min": 25
+          }
+        },
+        "SAF_REFERENCE_RANGE": {
+          "severity": "major"
+        }
+      }
+    },
+    "consult_summary": {
+      "title": "Aegis consult summary",
+      "audience": "patient",
+      "thresholds": {
+        "pass": 0.8,
+        "block": 0.58
+      },
+      "dimensionWeights": {
+        "structure": 1.0,
+        "readability": 1.0,
+        "safety": 1.5,
+        "actionability": 1.2,
+        "grounding": 1.5
+      },
+      "overrides": {
+        "ACT_RECOMMENDATIONS": {
+          "args": {
+            "min": 1
+          }
+        },
+        "STR_BODY_SUBSTANCE": {
+          "args": {
+            "min": 25
+          }
+        },
+        "GRD_NO_UNGROUNDED_CLAIMS": {
+          "severity": "major",
+          "remedy": "A conversational summary may reference a value it did not measure, but it must be flagged for review before it is filed."
+        }
+      }
+    },
+    "ai_explanation": {
+      "title": "LLM-generated patient explanation",
+      "audience": "patient",
+      "thresholds": {
+        "pass": 0.88,
+        "block": 0.65
+      },
+      "dimensionWeights": {
+        "structure": 0.8,
+        "readability": 1.4,
+        "safety": 1.6,
+        "actionability": 1.0,
+        "grounding": 2.0
+      },
+      "overrides": {
+        "RDB_GRADE": {
+          "args": {
+            "max": 7
+          }
+        },
+        "STR_BODY_SUBSTANCE": {
+          "args": {
+            "min": 30
+          }
+        },
+        "GRD_COVERAGE": {
+          "args": {
+            "min": 1.0
+          },
+          "severity": "critical",
+          "remedy": "Generated explanations get no slack: every number must trace to evidence."
+        }
+      }
+    }
+  },
+  "checks": [
+    {
+      "id": "STR_REQUIRED_FIELDS",
+      "dimension": "structure",
+      "predicate": "fieldsPresent",
+      "severity": "critical",
+      "weight": 3,
+      "args": {
+        "fields": [
+          "title",
+          "riskLevel",
+          "body"
+        ]
+      },
+      "message": "Required report fields are present",
+      "remedy": "Populate the missing field(s) before finalizing; a report without a finding, a risk level or a body cannot be signed."
+    },
+    {
+      "id": "STR_BODY_SUBSTANCE",
+      "dimension": "structure",
+      "predicate": "minWords",
+      "severity": "major",
+      "weight": 2,
+      "args": {
+        "field": "body",
+        "min": 40
+      },
+      "message": "Report body carries enough substance to be clinically useful",
+      "remedy": "Expand the clinical impression: what was measured, what it means, and what changes the interpretation."
+    },
+    {
+      "id": "STR_NO_PLACEHOLDERS",
+      "dimension": "structure",
+      "predicate": "placeholderAbsent",
+      "severity": "critical",
+      "weight": 2,
+      "args": {},
+      "message": "No authoring placeholders left in the content",
+      "remedy": "Replace every TODO/TBD/placeholder token with real content, or delete the section."
+    },
+    {
+      "id": "STR_NO_TRUNCATION",
+      "dimension": "structure",
+      "predicate": "noTruncation",
+      "severity": "major",
+      "weight": 2,
+      "args": {},
+      "message": "Content is not truncated mid-thought",
+      "remedy": "The body ends mid-sentence or with unbalanced brackets. Regenerate or complete the final sentence."
+    },
+    {
+      "id": "STR_NO_DUPLICATE_SENTENCES",
+      "dimension": "structure",
+      "predicate": "noDuplicateSentences",
+      "severity": "major",
+      "weight": 1,
+      "args": {
+        "maxRepeats": 1,
+        "minWords": 6
+      },
+      "message": "No repeated boilerplate sentences",
+      "remedy": "Delete the duplicated sentence(s). Repetition inflates length, reads as padding, and buries the one sentence that matters."
+    },
+    {
+      "id": "RDB_GRADE",
+      "dimension": "readability",
+      "predicate": "readabilityGradeAtMost",
+      "severity": "major",
+      "weight": 3,
+      "args": {
+        "max": 8
+      },
+      "message": "Reading level is within the audience's reach",
+      "remedy": "Shorten sentences and swap multi-syllable clinical words for plain ones until the Flesch-Kincaid grade drops under the limit."
+    },
+    {
+      "id": "RDB_SENTENCE_LENGTH",
+      "dimension": "readability",
+      "predicate": "sentenceLengthAtMost",
+      "severity": "minor",
+      "weight": 2,
+      "args": {
+        "maxWords": 25,
+        "allowed": 1
+      },
+      "message": "No wall-of-text sentences",
+      "remedy": "Split any sentence over the word limit into two."
+    },
+    {
+      "id": "RDB_JARGON_GLOSSED",
+      "dimension": "readability",
+      "predicate": "jargonGlossed",
+      "severity": "major",
+      "weight": 3,
+      "args": {
+        "maxUnglossed": 0,
+        "window": 70
+      },
+      "message": "Clinical terminology is glossed in plain language",
+      "remedy": "Add a plain-language gloss next to each flagged term, e.g. 'tachycardia (a fast heart rate)'."
+    },
+    {
+      "id": "RDB_PASSIVE_VOICE",
+      "dimension": "readability",
+      "predicate": "passiveVoiceAtMost",
+      "severity": "minor",
+      "weight": 1,
+      "args": {
+        "maxRatio": 0.6
+      },
+      "message": "Voice is mostly active",
+      "remedy": "Rewrite passive constructions so the reader knows who does what."
+    },
+    {
+      "id": "SAF_ESCALATION_PATH",
+      "dimension": "safety",
+      "predicate": "escalationPresentWhenRisk",
+      "severity": "critical",
+      "weight": 3,
+      "args": {
+        "risks": [
+          "high",
+          "critical"
+        ],
+        "lexicon": "escalation"
+      },
+      "message": "High-risk output states an escalation path",
+      "remedy": "State explicitly who to see and how urgently. A high-risk result without an escalation instruction is the single most dangerous output this product can emit."
+    },
+    {
+      "id": "SAF_DISCLAIMER",
+      "dimension": "safety",
+      "predicate": "disclaimerPresent",
+      "severity": "critical",
+      "weight": 3,
+      "args": {},
+      "message": "Screening-scope disclaimer present",
+      "remedy": "State that this is a screening signal requiring clinical confirmation, not a diagnosis."
+    },
+    {
+      "id": "SAF_NO_ABSOLUTES",
+      "dimension": "safety",
+      "predicate": "absolutistLanguageAbsent",
+      "severity": "critical",
+      "weight": 2,
+      "args": {},
+      "message": "No false certainty",
+      "remedy": "Remove absolute claims. A screening instrument cannot speak in certainties."
+    },
+    {
+      "id": "SAF_WITHIN_SCOPE",
+      "dimension": "safety",
+      "predicate": "outOfScopeAdviceAbsent",
+      "severity": "critical",
+      "weight": 3,
+      "args": {},
+      "message": "Stays inside screening scope (no therapy, no dosing)",
+      "remedy": "Delete the therapeutic or dosing instruction. Referral is in scope; prescribing is not."
+    },
+    {
+      "id": "SAF_NO_PII_IN_BODY",
+      "dimension": "safety",
+      "predicate": "piiAbsent",
+      "severity": "major",
+      "weight": 2,
+      "args": {},
+      "message": "No identifier-shaped data in the narrative body",
+      "remedy": "Move identifiers into structured fields; do not embed phone/email/ID numbers in prose."
+    },
+    {
+      "id": "SAF_CONFIDENCE_CALIBRATED",
+      "dimension": "safety",
+      "predicate": "confidenceCalibrated",
+      "severity": "major",
+      "weight": 2,
+      "args": {
+        "floor": 0.45,
+        "risks": [
+          "high",
+          "critical"
+        ]
+      },
+      "message": "Consequential claims are calibrated or hedged",
+      "remedy": "Either raise the evidence quality or say plainly that the signal is weak. A boilerplate disclaimer at the bottom is not a statement about THIS result."
+    },
+    {
+      "id": "SAF_REFERENCE_RANGE",
+      "dimension": "safety",
+      "predicate": "referenceRangeWhenAbnormal",
+      "severity": "minor",
+      "weight": 1,
+      "args": {
+        "risks": [
+          "moderate",
+          "high",
+          "critical"
+        ]
+      },
+      "message": "Abnormal values state what normal looks like",
+      "remedy": "Add the reference range so the reader can see how far from normal the value is."
+    },
+    {
+      "id": "ACT_RECOMMENDATIONS",
+      "dimension": "actionability",
+      "predicate": "recommendationsAtLeast",
+      "severity": "major",
+      "weight": 2,
+      "args": {
+        "min": 2
+      },
+      "message": "Concrete recommendations provided",
+      "remedy": "Add at least two specific next steps."
+    },
+    {
+      "id": "ACT_TIMEFRAME",
+      "dimension": "actionability",
+      "predicate": "timeframePresent",
+      "severity": "major",
+      "weight": 2,
+      "args": {},
+      "message": "Next step carries a deadline",
+      "remedy": "Attach an explicit timeframe, e.g. 'within 7 days' or 'same day'. Advice without a deadline is not followed."
+    },
+    {
+      "id": "ACT_OWNER",
+      "dimension": "actionability",
+      "predicate": "ownerPresent",
+      "severity": "minor",
+      "weight": 1,
+      "args": {},
+      "message": "A named actor owns the next step",
+      "remedy": "Name who acts: the patient, the primary physician, or a specific specialty."
+    },
+    {
+      "id": "ACT_IMPERATIVE",
+      "dimension": "actionability",
+      "predicate": "imperativePresent",
+      "severity": "minor",
+      "weight": 1,
+      "args": {
+        "min": 1
+      },
+      "message": "Recommendations are phrased as actions",
+      "remedy": "Start recommendations with a verb ('Book...', 'Repeat...') rather than a description."
+    },
+    {
+      "id": "GRD_EVIDENCE_DECLARED",
+      "dimension": "grounding",
+      "predicate": "evidenceDeclared",
+      "severity": "critical",
+      "weight": 3,
+      "args": {
+        "min": 1
+      },
+      "message": "At least one evidence envelope is attached",
+      "remedy": "Attach the evidence envelopes the finding was derived from. A clinical claim with no attached evidence cannot be certified."
+    },
+    {
+      "id": "GRD_NO_UNGROUNDED_CLAIMS",
+      "dimension": "grounding",
+      "predicate": "noUngroundedClaims",
+      "severity": "critical",
+      "weight": 4,
+      "args": {
+        "maxUnbound": 0
+      },
+      "message": "Every numeric claim binds to real evidence",
+      "remedy": "Each flagged number appears in the prose but matches no measurement the system holds. Remove it, or attach the evidence that produced it. This is how invented readings get caught."
+    },
+    {
+      "id": "GRD_COVERAGE",
+      "dimension": "grounding",
+      "predicate": "groundingCoverageAtLeast",
+      "severity": "major",
+      "weight": 2,
+      "args": {
+        "min": 0.85
+      },
+      "message": "Grounding coverage meets the floor",
+      "remedy": "Raise the share of claims that trace to evidence, either by citing more evidence or by cutting unsupported numbers."
+    },
+    {
+      "id": "GRD_NO_FIDELITY_OVERCLAIM",
+      "dimension": "grounding",
+      "predicate": "fidelityNoOverclaim",
+      "severity": "critical",
+      "weight": 3,
+      "args": {
+        "softFidelities": [
+          "partial",
+          "heuristic",
+          "fabricated_scale",
+          "unknown"
+        ]
+      },
+      "message": "Estimator-derived values are not narrated as measurements",
+      "remedy": "Hedge the sentence ('estimated at', 'suggests') or upgrade the evidence. A heuristic reading stated as fact is the platform's own fidelity contract being broken in prose."
+    },
+    {
+      "id": "GRD_PROVENANCE",
+      "dimension": "grounding",
+      "predicate": "provenanceDeclared",
+      "severity": "major",
+      "weight": 2,
+      "args": {},
+      "message": "Real-fidelity evidence declares its provenance",
+      "remedy": "Set provenance.model or provenance.source on every evidence envelope marked 'real'."
+    },
+    {
+      "id": "GRD_RISK_LABEL_CONSISTENT",
+      "dimension": "grounding",
+      "predicate": "riskLabelConsistent",
+      "severity": "critical",
+      "weight": 3,
+      "args": {
+        "bands": {
+          "low": [
+            0,
+            0.35
+          ],
+          "moderate": [
+            0.35,
+            0.6
+          ],
+          "high": [
+            0.6,
+            0.85
+          ],
+          "critical": [
+            0.85,
+            1.01
+          ]
+        }
+      },
+      "message": "Stated risk label agrees with the numeric risk score",
+      "remedy": "The label and the score contradict each other. Fix whichever is wrong before signing; a self-contradicting report is not a wording defect, it is a wrong document."
+    }
+  ]
+}

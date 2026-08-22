@@ -1,0 +1,481 @@
+{
+  "packId": "generic",
+  "packVersion": "1.0.0",
+  "engine": "3.x",
+  "title": "Domain-Neutral Document Policy",
+  "description": "Proof that the engine is not a medical tool with rules baked in. Same engine, same certificate mechanics, zero clinical vocabulary. A team in any domain drops in a pack like this and gets a repeatable finalize gate for their own deliverables.",
+  "locale": "en",
+  "defaultProfile": "document",
+  "authors": [
+    "Team Synora"
+  ],
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "note": "Domain-neutral baseline: completeness, readability, actionability, sourcing."
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "structure",
+      "title": "Completeness",
+      "weight": 1.0,
+      "intent": "Nothing required is missing and nothing half-written ships."
+    },
+    {
+      "id": "readability",
+      "title": "Readability",
+      "weight": 1.0,
+      "intent": "The intended reader can follow it."
+    },
+    {
+      "id": "safety",
+      "title": "Disclosure & Hygiene",
+      "weight": 1.0,
+      "intent": "No overclaiming, no leaked identifiers."
+    },
+    {
+      "id": "actionability",
+      "title": "Actionability",
+      "weight": 1.0,
+      "intent": "Someone can act, and knows by when."
+    },
+    {
+      "id": "grounding",
+      "title": "Sourcing",
+      "weight": 1.4,
+      "intent": "Every figure traces to a cited source."
+    }
+  ],
+  "lexicons": {
+    "absolutes": [
+      "definitely",
+      "guaranteed",
+      "guarantee",
+      "100% certain",
+      "no doubt",
+      "conclusively",
+      "proves that",
+      "without question",
+      "always works",
+      "never fails"
+    ],
+    "hedges": [
+      "estimated",
+      "estimate",
+      "approximately",
+      "around",
+      "roughly",
+      "may ",
+      "might ",
+      "suggests",
+      "likely",
+      "appears",
+      "provisional",
+      "draft",
+      "unverified"
+    ],
+    "owners": [
+      "you ",
+      "the team",
+      "the owner",
+      "the reviewer",
+      "the author",
+      "the client",
+      "the vendor",
+      "the committee",
+      "the approver",
+      "engineering",
+      "finance",
+      "legal",
+      "operations"
+    ],
+    "imperatives": [
+      "review",
+      "approve",
+      "send",
+      "schedule",
+      "confirm",
+      "update",
+      "publish",
+      "escalate",
+      "assign",
+      "measure",
+      "document",
+      "file",
+      "share",
+      "verify",
+      "decide"
+    ],
+    "placeholders": [
+      "todo",
+      "tbd",
+      "lorem ipsum",
+      "xxx",
+      "<insert",
+      "[insert",
+      "placeholder",
+      "fixme",
+      "undefined",
+      "{{",
+      "}}",
+      "to be completed",
+      "...tbc"
+    ],
+    "escalation": [
+      "escalate",
+      "flag to",
+      "raise with",
+      "urgent",
+      "immediately",
+      "same day",
+      "before sign-off",
+      "block release"
+    ],
+    "disclaimer": [
+      "draft",
+      "provisional",
+      "unverified",
+      "subject to review",
+      "for discussion",
+      "not final",
+      "internal only"
+    ],
+    "jargon": {},
+    "uncertaintyDisclosure": [
+      "provisional",
+      "unverified",
+      "draft",
+      "estimate only",
+      "low confidence",
+      "directional",
+      "not audited",
+      "subject to change"
+    ]
+  },
+  "claimExtraction": {
+    "bareNumberLabels": [
+      "budget",
+      "churn",
+      "conversions",
+      "cost",
+      "count",
+      "coverage",
+      "days saved",
+      "defects",
+      "error rate",
+      "headcount",
+      "hours",
+      "incidents",
+      "latency",
+      "margin",
+      "rate",
+      "requests",
+      "revenue",
+      "score",
+      "sessions",
+      "spend",
+      "throughput",
+      "ticket volume",
+      "tickets",
+      "total",
+      "uptime",
+      "users"
+    ],
+    "ignorePatterns": [
+      "\\bv?\\d+\\.\\d+\\.\\d+\\b",
+      "\\b[A-Z0-9]{5}-[A-Z0-9]{5}\\b"
+    ],
+    "tolerances": {
+      "%": 0.5,
+      "_relative": 0.01
+    },
+    "thresholdCues": [
+      "below",
+      "above",
+      "under",
+      "over",
+      "less than",
+      "greater than",
+      "more than",
+      "target",
+      "budget of",
+      "at least",
+      "up to",
+      "between",
+      "threshold",
+      "cap of",
+      "limit of",
+      "sla"
+    ],
+    "thresholdCueWindow": 18
+  },
+  "profiles": {
+    "document": {
+      "title": "General deliverable",
+      "audience": "reader",
+      "thresholds": {
+        "pass": 0.85,
+        "block": 0.6
+      },
+      "dimensionWeights": {
+        "structure": 1.0,
+        "readability": 1.0,
+        "safety": 1.0,
+        "actionability": 1.0,
+        "grounding": 1.4
+      }
+    },
+    "internal_note": {
+      "title": "Internal note",
+      "audience": "colleague",
+      "thresholds": {
+        "pass": 0.75,
+        "block": 0.5
+      },
+      "dimensionWeights": {
+        "structure": 1.0,
+        "readability": 0.6,
+        "safety": 0.8,
+        "actionability": 1.0,
+        "grounding": 1.2
+      },
+      "overrides": {
+        "GEN_READ_GRADE": {
+          "args": {
+            "max": 14
+          },
+          "severity": "minor"
+        },
+        "GEN_NO_UNSOURCED_FIGURES": {
+          "severity": "major"
+        }
+      }
+    }
+  },
+  "checks": [
+    {
+      "id": "GEN_REQUIRED_FIELDS",
+      "dimension": "structure",
+      "predicate": "fieldsPresent",
+      "severity": "critical",
+      "weight": 3,
+      "args": {
+        "fields": [
+          "title",
+          "body"
+        ]
+      },
+      "message": "Required fields present",
+      "remedy": "A deliverable with no title or no body cannot be finalized."
+    },
+    {
+      "id": "GEN_BODY_SUBSTANCE",
+      "dimension": "structure",
+      "predicate": "minWords",
+      "severity": "major",
+      "weight": 2,
+      "args": {
+        "field": "body",
+        "min": 40
+      },
+      "message": "Body has enough substance",
+      "remedy": "Expand the body; it is too thin to review."
+    },
+    {
+      "id": "GEN_NO_PLACEHOLDERS",
+      "dimension": "structure",
+      "predicate": "placeholderAbsent",
+      "severity": "critical",
+      "weight": 2,
+      "args": {},
+      "message": "No leftover placeholders",
+      "remedy": "Replace or remove every TODO/TBD/placeholder token."
+    },
+    {
+      "id": "GEN_NO_TRUNCATION",
+      "dimension": "structure",
+      "predicate": "noTruncation",
+      "severity": "major",
+      "weight": 2,
+      "args": {},
+      "message": "Not truncated",
+      "remedy": "Complete the final sentence and balance brackets."
+    },
+    {
+      "id": "GEN_NO_DUPES",
+      "dimension": "structure",
+      "predicate": "noDuplicateSentences",
+      "severity": "major",
+      "weight": 1,
+      "args": {
+        "maxRepeats": 1,
+        "minWords": 6
+      },
+      "message": "No repeated sentences",
+      "remedy": "Delete duplicated lines."
+    },
+    {
+      "id": "GEN_READ_GRADE",
+      "dimension": "readability",
+      "predicate": "readabilityGradeAtMost",
+      "severity": "major",
+      "weight": 3,
+      "args": {
+        "max": 11
+      },
+      "message": "Reading level within reach",
+      "remedy": "Shorten sentences and simplify vocabulary."
+    },
+    {
+      "id": "GEN_SENTENCE_LEN",
+      "dimension": "readability",
+      "predicate": "sentenceLengthAtMost",
+      "severity": "minor",
+      "weight": 2,
+      "args": {
+        "maxWords": 30,
+        "allowed": 1
+      },
+      "message": "No runaway sentences",
+      "remedy": "Split the long sentence."
+    },
+    {
+      "id": "GEN_NO_ABSOLUTES",
+      "dimension": "safety",
+      "predicate": "absolutistLanguageAbsent",
+      "severity": "major",
+      "weight": 2,
+      "args": {},
+      "message": "No unearned certainty",
+      "remedy": "Soften absolute claims or cite proof."
+    },
+    {
+      "id": "GEN_NO_PII",
+      "dimension": "safety",
+      "predicate": "piiAbsent",
+      "severity": "critical",
+      "weight": 3,
+      "args": {},
+      "message": "No identifiers in prose",
+      "remedy": "Remove emails, phone numbers and ID numbers from the narrative."
+    },
+    {
+      "id": "GEN_DISCLOSURE",
+      "dimension": "safety",
+      "predicate": "disclaimerPresent",
+      "severity": "minor",
+      "weight": 1,
+      "args": {},
+      "message": "Status disclosed where provisional",
+      "remedy": "Mark drafts and unverified figures as such."
+    },
+    {
+      "id": "GEN_ACTIONS",
+      "dimension": "actionability",
+      "predicate": "recommendationsAtLeast",
+      "severity": "major",
+      "weight": 2,
+      "args": {
+        "min": 1
+      },
+      "message": "At least one next step",
+      "remedy": "State what happens next."
+    },
+    {
+      "id": "GEN_DEADLINE",
+      "dimension": "actionability",
+      "predicate": "timeframePresent",
+      "severity": "major",
+      "weight": 2,
+      "args": {},
+      "message": "Next step has a deadline",
+      "remedy": "Attach a date or a duration to the action."
+    },
+    {
+      "id": "GEN_OWNER",
+      "dimension": "actionability",
+      "predicate": "ownerPresent",
+      "severity": "major",
+      "weight": 2,
+      "args": {},
+      "message": "Next step has an owner",
+      "remedy": "Name who is accountable."
+    },
+    {
+      "id": "GEN_IMPERATIVE",
+      "dimension": "actionability",
+      "predicate": "imperativePresent",
+      "severity": "minor",
+      "weight": 1,
+      "args": {
+        "min": 1
+      },
+      "message": "Actions phrased as actions",
+      "remedy": "Start each action with a verb."
+    },
+    {
+      "id": "GEN_SOURCES_DECLARED",
+      "dimension": "grounding",
+      "predicate": "evidenceDeclared",
+      "severity": "critical",
+      "weight": 3,
+      "args": {
+        "min": 1
+      },
+      "message": "At least one source attached",
+      "remedy": "Attach the sources the figures came from."
+    },
+    {
+      "id": "GEN_NO_UNSOURCED_FIGURES",
+      "dimension": "grounding",
+      "predicate": "noUngroundedClaims",
+      "severity": "critical",
+      "weight": 4,
+      "args": {
+        "maxUnbound": 0
+      },
+      "message": "Every figure traces to a source",
+      "remedy": "Each flagged number appears in the prose but matches no attached source. Cite it or cut it."
+    },
+    {
+      "id": "GEN_SOURCE_COVERAGE",
+      "dimension": "grounding",
+      "predicate": "groundingCoverageAtLeast",
+      "severity": "major",
+      "weight": 2,
+      "args": {
+        "min": 0.9
+      },
+      "message": "Sourcing coverage meets the floor",
+      "remedy": "Raise the share of figures that trace to a source."
+    },
+    {
+      "id": "GEN_NO_OVERCLAIM",
+      "dimension": "grounding",
+      "predicate": "fidelityNoOverclaim",
+      "severity": "major",
+      "weight": 2,
+      "args": {
+        "softFidelities": [
+          "partial",
+          "heuristic",
+          "fabricated_scale",
+          "unknown"
+        ]
+      },
+      "message": "Estimates are labelled as estimates",
+      "remedy": "Hedge figures that came from an estimate rather than a measurement."
+    },
+    {
+      "id": "GEN_PROVENANCE",
+      "dimension": "grounding",
+      "predicate": "provenanceDeclared",
+      "severity": "major",
+      "weight": 2,
+      "args": {},
+      "message": "Authoritative sources declare provenance",
+      "remedy": "Set provenance.source on every source marked 'real'."
+    }
+  ]
+}
