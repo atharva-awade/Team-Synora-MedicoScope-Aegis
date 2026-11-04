@@ -5,6 +5,7 @@ import 'package:medicoscope/core/locale/locale_provider.dart';
 import 'package:medicoscope/core/locale/app_strings.dart';
 import 'package:medicoscope/core/widgets/language_picker.dart';
 import 'package:medicoscope/screens/profile/profile_screen.dart';
+import 'package:medicoscope/services/ambulance_service.dart';
 import 'package:medicoscope/screens/linking/my_code_screen.dart';
 import 'package:medicoscope/screens/linking/link_doctor_screen.dart';
 import 'package:medicoscope/screens/patients/patient_list_screen.dart';
@@ -150,6 +151,31 @@ class AppDrawer extends StatelessWidget {
                   icon: Icons.link,
                   title: AppStrings.get('link_to_doctor', lang),
                   onTap: () => _navigateTo(context, const LinkDoctorScreen()),
+                ),
+
+              if (authProvider.isPatient)
+                _buildMenuItem(
+                  context,
+                  icon: Icons.emergency_rounded,
+                  title: AppStrings.get('sos_emergency_contact', lang),
+                  onTap: () => _navigateTo(context, const ProfileScreen()),
+                ),
+
+              if (authProvider.isPatient)
+                _buildMenuItem(
+                  context,
+                  icon: Icons.airport_shuttle_rounded,
+                  title: 'Emergency Ambulance (Simulation)',
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    AmbulanceService.triggerCriticalAlertCountdown(
+                      context: context,
+                      alertHeadline: 'Manual Emergency Dispatch Requested',
+                      alertSeverity: 'CRITICAL',
+                      patientName: user?.name ?? 'Patient',
+                      details: 'Patient requested immediate emergency response.',
+                    );
+                  },
                 ),
 
               if (authProvider.isDoctor)

@@ -4,6 +4,7 @@
 
     <!-- Standard permissions -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.SEND_SMS"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <!-- MindSpace voice check-in + CardioScope heart-sound recording -->
@@ -61,6 +62,15 @@
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="https" />
+        </intent>
+        <!-- SMS and SMSTO schemes for SOS Emergency SMS launch -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="sms" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SENDTO" />
+            <data android:scheme="smsto" />
         </intent>
     </queries>
 
