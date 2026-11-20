@@ -30,7 +30,13 @@ import 'package:medicoscope/services/disease_risk_store.dart';
 class ChatView extends StatefulWidget {
   final bool fullScreen;
   final String? presetPrompt;
-  const ChatView({super.key, this.fullScreen = false, this.presetPrompt});
+  final bool initialNanoMode;
+  const ChatView({
+    super.key,
+    this.fullScreen = false,
+    this.presetPrompt,
+    this.initialNanoMode = false,
+  });
 
   @override
   State<ChatView> createState() => _ChatViewState();
@@ -60,6 +66,7 @@ class _ChatViewState extends State<ChatView> {
   @override
   void initState() {
     super.initState();
+    _isNanoMode = widget.initialNanoMode;
     _scroll.addListener(_onScroll);
     _loadMedicalSummary().then((_) {
       final preset = widget.presetPrompt?.trim();

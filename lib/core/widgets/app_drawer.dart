@@ -13,6 +13,10 @@ import 'package:medicoscope/screens/chat/chat_history_screen.dart';
 import 'package:medicoscope/screens/mental_health/mindspace_history_screen.dart';
 import 'package:medicoscope/screens/rewards/claimed_rewards_screen.dart';
 import 'package:medicoscope/screens/welcome/welcome_screen.dart';
+import 'package:medicoscope/screens/live/gemini_live_screen.dart';
+import 'package:medicoscope/screens/chat/chat_screen.dart';
+import 'package:medicoscope/screens/mental_health/mental_health_screen.dart';
+import 'package:medicoscope/widgets/aegis/medgemma_badge.dart';
 import 'package:provider/provider.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -185,6 +189,63 @@ class AppDrawer extends StatelessWidget {
                   title: AppStrings.get('my_patients', lang),
                   onTap: () => _navigateTo(context, const PatientListScreen()),
                 ),
+
+              const Divider(height: 32),
+
+              // Google AI Showcase Section
+              Padding(
+                padding: const EdgeInsets.only(left: 16, bottom: 4),
+                child: Row(
+                  children: [
+                    const Icon(Icons.auto_awesome, size: 14, color: Color(0xFF4285F4)),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Google AI Showcase',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? const Color(0xFF81E6D9) : const Color(0xFF319795),
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              _buildMenuItem(
+                context,
+                icon: Icons.record_voice_over_rounded,
+                title: 'Gemini Live Telehealth',
+                subtitle: 'Real-time conversational voice consult',
+                onTap: () => _navigateTo(context, const GeminiLiveScreen()),
+              ),
+
+              _buildMenuItem(
+                context,
+                icon: Icons.phone_android_rounded,
+                title: 'Gemini Nano (Edge AICore)',
+                subtitle: '100% offline private edge triage',
+                onTap: () => _navigateTo(context, const ChatScreen(initialNanoMode: true)),
+              ),
+
+              _buildMenuItem(
+                context,
+                icon: Icons.music_note_rounded,
+                title: 'Google Lyria Soundscapes',
+                subtitle: 'Acoustic Solfeggio sound therapy',
+                onTap: () => _navigateTo(context, const MentalHealthScreen()),
+              ),
+
+              _buildMenuItem(
+                context,
+                icon: Icons.shield_outlined,
+                title: 'MedGemma 2 Compliance',
+                subtitle: 'Hospital intranet clinical guardrail',
+                onTap: () {
+                  Navigator.of(context).pop();
+                  MedGemmaBadge.showComplianceDialog(context);
+                },
+              ),
 
               const Divider(height: 32),
 

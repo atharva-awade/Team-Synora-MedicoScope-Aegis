@@ -32,7 +32,8 @@ void openChatScreen(BuildContext context, {String? presetPrompt}) {
 /// questions and can expand into this screen.
 class ChatScreen extends StatelessWidget {
   final String? presetPrompt;
-  const ChatScreen({super.key, this.presetPrompt});
+  final bool initialNanoMode;
+  const ChatScreen({super.key, this.presetPrompt, this.initialNanoMode = false});
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +46,11 @@ class ChatScreen extends StatelessWidget {
         children: [
           _hero(context, isDark, lang),
           Expanded(
-              child: ChatView(fullScreen: true, presetPrompt: presetPrompt)),
+              child: ChatView(
+            fullScreen: true,
+            presetPrompt: presetPrompt,
+            initialNanoMode: initialNanoMode,
+          )),
         ],
       ),
     );

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:provider/provider.dart';
 
 import 'package:medicoscope/core/theme/app_theme.dart';
@@ -26,6 +27,10 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
   late AnimationController _pulseController;
   late AnimationController _rotationController;
   final FlutterTts _tts = FlutterTts();
+  late stt.SpeechToText _speech;
+  bool _speechAvailable = false;
+  final TextEditingController _textController = TextEditingController();
+  final ScrollController _transcriptScrollController = ScrollController();
 
   String _userSpeech = '';
   String _aiResponse = '';
@@ -33,9 +38,9 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
 
   final List<String> _quickPrompts = [
     'Analyze my blood pressure of 145/92',
-    'I have a dark, irregular mole on my arm',
+    'I have an irregular mole on my arm',
     'Shortness of breath after climbing stairs',
-    'Explain my recent screening results in simple terms',
+    'Explain my recent screening results simply',
   ];
 
   @override
@@ -51,7 +56,8 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
       duration: const Duration(milliseconds: 8000),
     )..repeat();
 
-    _initTts();
+    _speech = stt.SpeechToText();
+    _initSpeechAndTts();
 
     if (widget.initialPrompt != null) {
       Future.delayed(const Duration(milliseconds: 400), () {
@@ -60,7 +66,32 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     }
   }
 
-  Future<void> _initTts() async {
+  Future<void> _initSpeechAndTts() async {
+    // 1. Initialize Google Speech Recognition
+    try {
+      _speechAvailable = await _speech.initialize(
+        onError: (val) {
+          if (mounted && _state == GeminiLiveState.listening) {
+            setState(() {
+              _state = GeminiLiveState.idle;
+            });
+          }
+        },
+        onStatus: (status) {
+          if (status == 'done' || status == 'notListening') {
+            if (mounted &&
+                _state == GeminiLiveState.listening &&
+                _userSpeech.trim().isNotEmpty) {
+              _processQuery(_userSpeech);
+            }
+          }
+        },
+      );
+    } catch (_) {
+      _speechAvailable = false;
+    }
+
+    // 2. Initialize Text-To-Speech (Google Voice Engine)
     await _tts.setLanguage('en-US');
     await _tts.setPitch(1.0);
     await _tts.setSpeechRate(0.5);
@@ -71,6 +102,8 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
         });
       }
     });
+
+    if (mounted) setState(() {});
   }
 
   @override
@@ -78,52 +111,98 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     _pulseController.dispose();
     _rotationController.dispose();
     _tts.stop();
+    _speech.stop();
+    _textController.dispose();
+    _transcriptScrollController.dispose();
     super.dispose();
   }
 
-  Future<void> _startListening() async {
+  Future<void> _toggleListening() async {
+    // If speaking, stop playback
+    if (_state == GeminiLiveState.speaking) {
+      _stopSpeaking();
+      return;
+    }
+
+    // If currently listening, stop and process
+    if (_state == GeminiLiveState.listening) {
+      await _speech.stop();
+      if (_userSpeech.trim().isNotEmpty) {
+        _processQuery(_userSpeech);
+      } else {
+        setState(() => _state = GeminiLiveState.idle);
+      }
+      return;
+    }
+
+    // Start Real Microphone Listening
     setState(() {
       _state = GeminiLiveState.listening;
-      _userSpeech = 'Listening to your clinical query...';
+      _userSpeech = '';
     });
 
-    // Simulates voice input duration before processing
-    await Future.delayed(const Duration(milliseconds: 2200));
-
-    final sample = _quickPrompts[DateTime.now().second % _quickPrompts.length];
-    _processQuery(sample);
+    if (_speechAvailable) {
+      await _speech.listen(
+        onResult: (result) {
+          if (mounted) {
+            setState(() {
+              _userSpeech = result.recognizedWords;
+            });
+            if (result.finalResult && result.recognizedWords.trim().isNotEmpty) {
+              _processQuery(result.recognizedWords);
+            }
+          }
+        },
+        listenFor: const Duration(seconds: 20),
+        pauseFor: const Duration(seconds: 3),
+        localeId: 'en_US',
+      );
+    } else {
+      // If speech recognizer is unavailable on emulator/device
+      setState(() {
+        _userSpeech = 'Microphone active. Speak or tap any clinical query.';
+      });
+    }
   }
 
   Future<void> _processQuery(String query) async {
-    if (!mounted) return;
+    if (!mounted || query.trim().isEmpty) return;
+    
+    // Stop any ongoing speech listening
+    if (_speech.isListening) {
+      await _speech.stop();
+    }
+
     setState(() {
       _state = GeminiLiveState.thinking;
-      _userSpeech = query;
-      _transcript.add({'role': 'user', 'text': query});
+      _userSpeech = query.trim();
+      _transcript.add({'role': 'user', 'text': query.trim()});
     });
+
+    _scrollTranscriptToBottom();
 
     try {
       final auth = Provider.of<AuthProvider>(context, listen: false);
       final api = ApiService(token: auth.token);
 
-      // 1. Query Gemini 2.5 Flash / FastChat backend
       String replyText = '';
       try {
+        // 1. Query live Google Cloud Run Gemini Chatbot
         final resp = await api.post(
           '${ApiConstants.chatbotBaseUrl}/chat',
           {
-            'message': query,
+            'message': query.trim(),
             'session_id': 'gemini_live_${auth.user?.id ?? "guest"}',
             'language': 'en',
-            'medical_context': 'Patient live voice consult via Gemini Live.',
+            'medical_context': 'Patient real-time live voice telehealth consult with Gemini Live.',
           },
-        ).timeout(const Duration(seconds: 4));
+        ).timeout(const Duration(seconds: 8));
 
         replyText = resp['response']?.toString() ?? '';
       } catch (_) {
-        // Instant On-Device Gemini Nano fail-safe fallback
+        // 2. Fail-Safe: On-Device Google Gemini Nano Edge Engine (<50ms)
         final nanoRes = await GeminiNanoService.infer(
-          query: query,
+          query: query.trim(),
           patientName: auth.user?.name,
         );
         replyText = nanoRes.text;
@@ -137,10 +216,14 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
         _state = GeminiLiveState.speaking;
       });
 
-      // Speak response in real-time
+      _scrollTranscriptToBottom();
+
+      // Clean markdown asterisks and bullets for smooth Google speech playback
       final cleanSpeech = replyText
           .replaceAll(RegExp(r'\*\*|•|#|[-_]{2,}'), '')
+          .replaceAll(RegExp(r'\n+'), ' ')
           .trim();
+
       await _tts.speak(cleanSpeech);
     } catch (e) {
       if (!mounted) return;
@@ -157,10 +240,22 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     });
   }
 
+  void _scrollTranscriptToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_transcriptScrollController.hasClients) {
+        _transcriptScrollController.animateTo(
+          _transcriptScrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1117), // Deep Obsidian Google AI Canvas
+      backgroundColor: const Color(0xFF0D1117), // Google AI Obsidian Canvas
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -168,6 +263,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white70),
           onPressed: () {
             _tts.stop();
+            _speech.stop();
             Navigator.of(context).pop();
           },
         ),
@@ -179,23 +275,24 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
                 gradient: const LinearGradient(
                   colors: [Color(0xFF4285F4), Color(0xFF34A853), Color(0xFFFBBC05), Color(0xFFEA4335)],
                 ),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: const Text(
-                'Gemini Live',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
-                ),
+              child: const Row(
+                children: [
+                  Icon(Icons.graphic_eq_rounded, color: Colors.white, size: 14),
+                  SizedBox(width: 4),
+                  Text(
+                    'Gemini Live',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white),
+                  ),
+                ],
               ),
             ),
             const SizedBox(width: 8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFF38A169).withOpacity(0.2),
+                color: const Color(0xFF48BB78).withOpacity(0.15),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: const Color(0xFF48BB78).withOpacity(0.4)),
               ),
@@ -212,49 +309,107 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
             ),
           ],
         ),
+        actions: [
+          if (_transcript.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.refresh_rounded, color: Colors.white54, size: 20),
+              tooltip: 'Reset Voice Session',
+              onPressed: () {
+                _stopSpeaking();
+                setState(() {
+                  _transcript.clear();
+                  _userSpeech = '';
+                  _aiResponse = '';
+                  _state = GeminiLiveState.idle;
+                });
+              },
+            ),
+        ],
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // Top Live Transcript Card
-            if (_userSpeech.isNotEmpty)
+            // Live Dialogue / Transcript Area
+            if (_transcript.isNotEmpty)
               Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                padding: const EdgeInsets.all(14),
+                height: 140,
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: const Color(0xFF161B22),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: Colors.white12),
                 ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.mic, color: Color(0xFF63B3ED), size: 18),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        _userSpeech,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w600,
+                child: ListView.builder(
+                  controller: _transcriptScrollController,
+                  itemCount: _transcript.length,
+                  itemBuilder: (context, index) {
+                    final item = _transcript[index];
+                    final isUser = item['role'] == 'user';
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            isUser ? Icons.person : Icons.auto_awesome,
+                            size: 14,
+                            color: isUser ? const Color(0xFF63B3ED) : const Color(0xFF81E6D9),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              item['text'] ?? '',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                color: isUser ? Colors.white : const Color(0xFFE2E8F0),
+                                fontWeight: isUser ? FontWeight.w600 : FontWeight.w400,
+                                height: 1.35,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ).animate().fadeIn(duration: 250.ms),
+
+            // Live recognized words banner
+            if (_state == GeminiLiveState.listening && _userSpeech.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4285F4).withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF4285F4).withOpacity(0.4)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.mic, color: Color(0xFF4285F4), size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _userSpeech,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ).animate().fadeIn(duration: 300.ms),
+              ),
 
-            // Centerpiece: Living Google AI Glowing Aura Orb
+            // Centerpiece: Living Google AI Pulsing Aura Orb
             Expanded(
               child: Center(
                 child: GestureDetector(
-                  onTap: () {
-                    if (_state == GeminiLiveState.speaking) {
-                      _stopSpeaking();
-                    } else if (_state == GeminiLiveState.idle) {
-                      _startListening();
-                    }
-                  },
+                  onTap: _toggleListening,
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
@@ -336,14 +491,18 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
-              'Tap orb to speak or interrupt response',
-              style: TextStyle(fontSize: 11, color: Colors.white38),
+            Text(
+              _state == GeminiLiveState.speaking
+                  ? 'Tap orb to interrupt & ask new question'
+                  : _state == GeminiLiveState.listening
+                      ? 'Listening... tap orb when done'
+                      : 'Tap orb to speak with Google Gemini Live',
+              style: const TextStyle(fontSize: 12, color: Colors.white54),
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
 
-            // Quick Clinical Prompt Pills
+            // Quick Clinical Prompt Pills (Custom Dark Glassmorphic Styling - No more blank white pills!)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SingleChildScrollView(
@@ -353,19 +512,38 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
                   children: _quickPrompts.map((p) {
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
-                      child: ActionChip(
-                        label: Text(p),
-                        backgroundColor: Colors.white.withOpacity(0.06),
-                        labelStyle: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white70,
-                        ),
-                        shape: RoundedRectangleBorder(
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
                           borderRadius: BorderRadius.circular(16),
-                          side: const BorderSide(color: Colors.white12),
+                          onTap: () => _processQuery(p),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1C2230), // Solid dark contrast
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(0xFF7C4DFF).withOpacity(0.4),
+                                width: 1.2,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.bolt, size: 14, color: Color(0xFFFBBC05)),
+                                const SizedBox(width: 6),
+                                Text(
+                                  p,
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        onPressed: () => _processQuery(p),
                       ),
                     );
                   }).toList(),
@@ -373,7 +551,58 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
+
+            // Bottom Text & Voice Bar (Allows typing or 1-tap mic)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF161B22),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _textController,
+                        style: const TextStyle(color: Colors.white, fontSize: 13),
+                        decoration: const InputDecoration(
+                          hintText: 'Type clinical query or tap orb to speak...',
+                          hintStyle: TextStyle(color: Colors.white38, fontSize: 13),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                        ),
+                        onSubmitted: (val) {
+                          if (val.trim().isNotEmpty) {
+                            _processQuery(val);
+                            _textController.clear();
+                          }
+                        },
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        _state == GeminiLiveState.listening ? Icons.stop_circle : Icons.mic,
+                        color: _orbPrimaryColor(),
+                      ),
+                      onPressed: _toggleListening,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.send_rounded, color: Color(0xFF4285F4)),
+                      onPressed: () {
+                        if (_textController.text.trim().isNotEmpty) {
+                          _processQuery(_textController.text);
+                          _textController.clear();
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -422,7 +651,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
   String _stateHeadline() {
     switch (_state) {
       case GeminiLiveState.listening:
-        return 'LISTENING TO CLINICAL SPEECH...';
+        return 'LISTENING TO YOUR SPEECH...';
       case GeminiLiveState.thinking:
         return 'GEMINI LIVE SYNTHESIZING...';
       case GeminiLiveState.speaking:

@@ -5,7 +5,7 @@ class MedGemmaBadge extends StatelessWidget {
   final bool compact;
   const MedGemmaBadge({super.key, this.compact = false});
 
-  void _showComplianceDialog(BuildContext context) {
+  static void showComplianceDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -69,7 +69,7 @@ class MedGemmaBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => _showComplianceDialog(context),
+      onTap: () => showComplianceDialog(context),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: compact ? 6 : 9, vertical: compact ? 2 : 4),
         decoration: BoxDecoration(

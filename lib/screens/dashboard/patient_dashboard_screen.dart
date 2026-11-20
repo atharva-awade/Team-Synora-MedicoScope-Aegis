@@ -26,6 +26,7 @@ import 'package:medicoscope/screens/appointments/patient_appointments_screen.dar
 import 'package:medicoscope/screens/nearby_doctors/nearby_doctors_screen.dart';
 import 'package:medicoscope/screens/steps/steps_screen.dart';
 import 'package:medicoscope/screens/live/gemini_live_screen.dart';
+import 'package:medicoscope/widgets/aegis/medgemma_badge.dart';
 import 'package:provider/provider.dart';
 import 'package:medicoscope/core/theme/theme_provider.dart';
 
@@ -268,11 +269,12 @@ class PatientDashboardScreen extends StatelessWidget {
 
                     const SizedBox(height: AppTheme.spacingMedium),
 
-                    // Gemini Live Voice-to-Voice Telehealth (Google AI Showcase)
+                    // ── Google AI Innovation Stack (Tier 1 - Tier 3) ──
+                    // 1. Gemini Live Telehealth (Real-Time Voice-to-Voice)
                     DashboardTile(
                       icon: Icons.record_voice_over_rounded,
                       title: 'Gemini Live Telehealth',
-                      description: 'Real-time conversational voice consult with Google Gemini AI',
+                      description: 'Real-time bi-directional voice consult with Google Gemini AI',
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -283,6 +285,60 @@ class PatientDashboardScreen extends StatelessWidget {
                         const GeminiLiveScreen(),
                       ),
                       animationDelay: 430,
+                    ),
+
+                    const SizedBox(height: AppTheme.spacingMedium),
+
+                    // 2. Google Gemini Nano (On-Device AICore Edge AI)
+                    DashboardTile(
+                      icon: Icons.phone_android_rounded,
+                      title: 'Gemini Nano · On-Device AICore',
+                      description: '100% offline edge clinical triage running locally (<50ms)',
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF00B4DB), Color(0xFF0083B0)],
+                      ),
+                      onTap: () => _navigateTo(
+                        context,
+                        const ChatScreen(initialNanoMode: true),
+                      ),
+                      animationDelay: 440,
+                    ),
+
+                    const SizedBox(height: AppTheme.spacingMedium),
+
+                    // 3. Google Lyria (Acoustic Therapy Soundscapes in MindSpace)
+                    DashboardTile(
+                      icon: Icons.music_note_rounded,
+                      title: 'Google Lyria · Acoustic Soundscapes',
+                      description: 'Generative soundwaves (432Hz, 528Hz, 639Hz) for anxiety & sleep',
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
+                      ),
+                      onTap: () => _navigateTo(
+                        context,
+                        const MentalHealthScreen(),
+                      ),
+                      animationDelay: 445,
+                    ),
+
+                    const SizedBox(height: AppTheme.spacingMedium),
+
+                    // 4. MedGemma 2 (Clinical Hospital Intranet Guardrail)
+                    DashboardTile(
+                      icon: Icons.shield_rounded,
+                      title: 'MedGemma 2 · Clinical Guardrail',
+                      description: 'Hospital intranet safety verification & contraindication compliance',
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF134E5E), Color(0xFF71B280)],
+                      ),
+                      onTap: () => MedGemmaBadge.showComplianceDialog(context),
+                      animationDelay: 450,
                     ),
 
                     const SizedBox(height: AppTheme.spacingMedium),
