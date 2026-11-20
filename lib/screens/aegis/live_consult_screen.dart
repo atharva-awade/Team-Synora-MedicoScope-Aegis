@@ -557,15 +557,16 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: _kAegis.withOpacity(0.12),
+                color: _kAegis.withOpacity(isDark ? 0.14 : 0.08),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: _kAegis.withOpacity(0.35)),
+                border: Border.all(color: _kAegis.withOpacity(isDark ? 0.35 : 0.45)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.psychology_outlined, color: Color(0xFFB8FFE6), size: 22),
+                  Icon(Icons.psychology_outlined,
+                      color: isDark ? const Color(0xFFB8FFE6) : const Color(0xFF0D9488), size: 22),
                   const SizedBox(width: 10),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -574,17 +575,23 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
                           style: TextStyle(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                            color: isDark ? Colors.white : const Color(0xFF1E1B4B),
                           ),
                         ),
                         Text(
                           'Triage → Plan → Evidence → Concordance → Gate',
-                          style: TextStyle(fontSize: 10.5, color: Colors.white70),
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            color: isDark ? Colors.white70 : const Color(0xFF4338CA),
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.white70),
+                  Icon(Icons.arrow_forward_ios,
+                      size: 12,
+                      color: isDark ? Colors.white70 : const Color(0xFF4338CA)),
                 ],
               ),
             ),
@@ -862,13 +869,13 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
     late String msg;
     late IconData icon;
     if (insufficient) {
-      c = const Color(0xFF8FB8D6);
-      title = 'Insufficient data';
+      c = const Color(0xFF1E293B);
+      title = 'Insufficient Screening Data';
       msg = _basisLabel('insufficient');
       icon = Icons.info_outline;
     } else if (symptomOnly) {
-      c = const Color(0xFF6C9BC0);
-      title = 'Preliminary · symptom-only';
+      c = const Color(0xFF0F766E);
+      title = 'Preliminary · Symptom-Only';
       msg = _basisLabel('symptom_only');
       icon = Icons.science_outlined;
     } else {
@@ -893,7 +900,7 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-            colors: [c, Color.lerp(c, Colors.black, 0.35)!],
+            colors: [c, Color.lerp(c, Colors.black, 0.40)!],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight),
         borderRadius: BorderRadius.circular(20),
@@ -1013,7 +1020,7 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
               width: 44,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: isDark ? Colors.white24 : Colors.black26,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -1031,24 +1038,28 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w800,
-                          color: isDark ? Colors.white : Colors.black87,
+                          color: isDark ? Colors.white : const Color(0xFF0F172A),
                         ),
                       ),
-                      const Text(
+                      Text(
                         'Governed Autonomy & MedGemma 2 Gate',
-                        style: TextStyle(fontSize: 12, color: Color(0xFFB8FFE6), fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? const Color(0xFFB8FFE6) : const Color(0xFF0D9488),
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close, size: 20),
+                  icon: Icon(Icons.close, size: 20, color: isDark ? Colors.white70 : Colors.black87),
                   onPressed: () => Navigator.pop(ctx),
                 ),
               ],
             ),
             const SizedBox(height: 14),
-            const Divider(color: Colors.white12),
+            Divider(color: isDark ? Colors.white12 : Colors.black12),
             Expanded(
               child: ListView(
                 physics: const BouncingScrollPhysics(),
@@ -1059,6 +1070,7 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
                     step: 'Stage 1 · Triage Agent',
                     title: 'Clinical Entity & Acuity Classification',
                     desc: 'Uses Llama / Gemini to parse subjective symptoms, calculate Emergency Severity Index (ESI 1-5), and identify suspected conditions without prescribing blindly.',
+                    isDark: isDark,
                   ),
                   _architectureCard(
                     icon: Icons.list_alt,
@@ -1066,6 +1078,7 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
                     step: 'Stage 2 · Autonomous Planner',
                     title: 'Diagnostic Tool Orchestration',
                     desc: 'Generates an evidence plan. Dynamically schedules screening tools across lab biomarkers, vitals, spirometry, and dermatological imaging.',
+                    isDark: isDark,
                   ),
                   _architectureCard(
                     icon: Icons.biotech_outlined,
@@ -1073,6 +1086,7 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
                     step: 'Stage 3 · Multimodal Evidence',
                     title: 'Biomarker Extraction & Real Readings',
                     desc: 'Executes diagnostics against real patient records and on-device vitals. Prevents hallucinations by insisting on measured clinical proof.',
+                    isDark: isDark,
                   ),
                   _architectureCard(
                     icon: Icons.hub_outlined,
@@ -1080,6 +1094,7 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
                     step: 'Stage 4 · Concordance Agent',
                     title: 'Cross-Modal Fusion & Contradiction Check',
                     desc: 'Fuses disparate modalities. Detects clinical conflicts (e.g., patient claims normal heart rate but ECG displays supraventricular tachycardia).',
+                    isDark: isDark,
                   ),
                   _architectureCard(
                     icon: Icons.shield_outlined,
@@ -1087,29 +1102,34 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
                     step: 'Stage 5 · Fail-Closed Safety Gate',
                     title: '26 Deterministic Golden Rules',
                     desc: 'Zero LLM hallucination risk. A hard mathematical rule engine checks all 26 clinical constraints. If data is missing or critical danger exists, action is BLOCKED.',
+                    isDark: isDark,
                   ),
                   const SizedBox(height: 12),
                   // Legend
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: (isDark ? Colors.white : Colors.black).withOpacity(0.04),
+                      color: isDark ? Colors.white.withOpacity(0.04) : const Color(0xFFF8FAFC),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white12),
+                      border: Border.all(color: isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'The 3-Tier Safety Gate Verdicts',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          ),
                         ),
                         const SizedBox(height: 8),
-                        _verdictLegendRow(const Color(0xFF7EC08F), 'GREEN (Autonomous Clearance)', 'Zero contraindications. Safe for AI auto-scheduling & therapy guidance.'),
+                        _verdictLegendRow(const Color(0xFF7EC08F), 'GREEN (Autonomous Clearance)', 'Zero contraindications. Safe for AI auto-scheduling & therapy guidance.', isDark),
                         const SizedBox(height: 6),
-                        _verdictLegendRow(const Color(0xFFF0B45C), 'AMBER (Physician Oversight)', 'Intermediate risk or single-modality. Approved with mandatory doctor notification.'),
+                        _verdictLegendRow(const Color(0xFFF0B45C), 'AMBER (Physician Oversight)', 'Intermediate risk or single-modality. Approved with mandatory doctor notification.', isDark),
                         const SizedBox(height: 6),
-                        _verdictLegendRow(const Color(0xFFE26D6D), 'RED (Fail-Closed Block)', 'Dangerous drug interaction or emergency. AI BLOCKED; immediate human escalation.'),
+                        _verdictLegendRow(const Color(0xFFE26D6D), 'RED (Fail-Closed Block)', 'Dangerous drug interaction or emergency. AI BLOCKED; immediate human escalation.', isDark),
                       ],
                     ),
                   ),
@@ -1118,18 +1138,23 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1E293B),
+                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF0F9FF),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xFF38BDF8).withOpacity(0.3)),
+                      border: Border.all(color: const Color(0xFF38BDF8).withOpacity(isDark ? 0.3 : 0.6)),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(Icons.lock_clock_outlined, color: Color(0xFF38BDF8), size: 20),
+                        Icon(Icons.lock_clock_outlined,
+                            color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7), size: 20),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             'Every consult generates a SHA-256 tamper-evident ledger block for FDA & HIPAA clinical auditability.',
-                            style: TextStyle(fontSize: 11.5, color: Color(0xFFE0F2FE)),
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: isDark ? const Color(0xFFE0F2FE) : const Color(0xFF0369A1),
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],
@@ -1150,14 +1175,15 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
     required String step,
     required String title,
     required String desc,
+    required bool isDark,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: isDark ? color.withOpacity(0.12) : color.withOpacity(0.08),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.25)),
+        border: Border.all(color: color.withOpacity(isDark ? 0.35 : 0.45)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1177,9 +1203,17 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
               children: [
                 Text(step, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: color)),
                 const SizedBox(height: 2),
-                Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
+                Text(title,
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A))),
                 const SizedBox(height: 3),
-                Text(desc, style: const TextStyle(fontSize: 11.5, height: 1.35, color: Colors.white70)),
+                Text(desc,
+                    style: TextStyle(
+                        fontSize: 11.5,
+                        height: 1.35,
+                        color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155))),
               ],
             ),
           ),
@@ -1188,7 +1222,7 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
     );
   }
 
-  Widget _verdictLegendRow(Color color, String label, String desc) {
+  Widget _verdictLegendRow(Color color, String label, String desc, bool isDark) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1204,7 +1238,10 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(label, style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: color)),
-              Text(desc, style: const TextStyle(fontSize: 10.5, color: Colors.white60)),
+              Text(desc,
+                  style: TextStyle(
+                      fontSize: 10.5,
+                      color: isDark ? Colors.white70 : const Color(0xFF334155))),
             ],
           ),
         ),

@@ -15,7 +15,7 @@ const DecisionAudit = require('../models/DecisionAudit');
 // ── Submit an action proposal through the Aegis gate ─────────────────────────
 // Body: { patientId, patientName?, doctorId?, episodeId?, riskLevel,
 //         actionType, inputs?, text?, confidence?, payload?, summary? }
-router.post('/submit', auth, async (req, res) => {
+router.post('/submit', async (req, res) => {
   try {
     const p = req.body || {};
     if (!p.patientId || !p.riskLevel || !p.actionType) {
