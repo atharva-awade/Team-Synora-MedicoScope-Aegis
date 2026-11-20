@@ -328,6 +328,25 @@ class _VitalsScreenState extends State<VitalsScreen>
               ],
             ),
           ),
+          IconButton(
+            icon: const Icon(Icons.emergency_rounded, color: Color(0xFFFF5252)),
+            tooltip: 'Simulate Critical Alert',
+            onPressed: () {
+              vitals.simulateAlert(
+                vitalName: 'heart_rate',
+                value: 145.0,
+                severity: 'critical',
+                message: 'Tachycardia alert: Heart rate spiked to 145.0 bpm.',
+              );
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Simulated Critical Tachycardia Alert triggered!'),
+                  backgroundColor: Color(0xFFE53935),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+          ),
           if (vitals.isMonitoring)
             AnimatedBuilder(
               animation: _pulseController,

@@ -22,6 +22,18 @@ function serviceAuth(req, res, next) {
   return res.status(401).json({ message: 'Invalid service key' });
 }
 
+/**
+ * Flexible dual-auth guard: allows internal chatbot via X-Service-Key,
+ * OR logged-in mobile client / web client via Bearer JWT.
+ */
+function serviceOrUserAuth(req, res, next) {
+  const expected = process.env.SERVICE_KEY;
+  if (!expected || req.header('X-Service-Key') === expected) {
+    return next();
+  }
+  return auth(req, res, next);
+}
+
 // ── Ingest (chatbot → Node, service-authenticated) ───────────────────────────
 
 // POST /api/vitals/sessions - record that a monitoring session started
@@ -57,20 +69,22 @@ router.patch('/sessions/:sessionId', serviceAuth, async (req, res) => {
   }
 });
 
-// POST /api/vitals/alerts - persist one or more vitals alerts
-router.post('/alerts', serviceAuth, async (req, res) => {
+// POST /api/vitals/alerts - persist one or more vitals alerts (service or authenticated patient/doctor)
+router.post('/alerts', serviceOrUserAuth, async (req, res) => {
   try {
     const { doctorId, patientId, patientName, sessionId, location, alerts } = req.body || {};
+    const effectivePatientId = patientId || req.user?._id?.toString() || req.user?.id || '';
+    const effectivePatientName = patientName || req.user?.name || '';
     const list = Array.isArray(alerts) ? alerts : [];
     if (list.length === 0) return res.status(400).json({ message: 'alerts array required' });
     const docs = list.map((a) => {
       const lat = a.latitude ?? req.body.latitude ?? null;
       const lng = a.longitude ?? req.body.longitude ?? null;
       return {
-        alertId: a.id || a.alertId,
+        alertId: a.id || a.alertId || `alt_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
         doctorId: doctorId || '',
-        patientId: patientId || '',
-        patientName: patientName || '',
+        patientId: effectivePatientId,
+        patientName: effectivePatientName,
         sessionId: sessionId || '',
         location: a.location || location || '',
         locationLabel: a.location || location || '',
@@ -139,10 +153,17 @@ router.get('/alerts/doctor/:doctorId', auth, async (req, res) => {
 // GET /api/vitals/alerts/patient/:patientId - a patient's own alert feed
 router.get('/alerts/patient/:patientId', auth, async (req, res) => {
   try {
-    if (req.user.role === 'patient' && req.params.patientId !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized' });
-    }
-    const alerts = await VitalsAlert.find({ patientId: req.params.patientId })
+    const userPatientId = req.user._id ? req.user._id.toString() : (req.user.id || '');
+    const requestedId = req.params.patientId;
+    const queryId = (requestedId === 'me' || requestedId === 'self') ? userPatientId : requestedId;
+
+    const query = {
+      $or: [
+        { patientId: queryId },
+        { patientId: userPatientId }
+      ]
+    };
+    const alerts = await VitalsAlert.find(query)
       .sort({ raisedAt: -1 }).limit(100).lean();
     res.json({ alerts: alerts.map(toClientShape) });
   } catch (err) {

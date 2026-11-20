@@ -886,11 +886,11 @@ VITALS_BASELINES = {
 }
 
 ALERT_THRESHOLDS = {
-    "heart_rate_high":  130,
-    "heart_rate_low":   50,
-    "systolic_high":    150,
-    "systolic_low":     85,
-    "spo2_low":         92,
+    "heart_rate_high":  105,
+    "heart_rate_low":   60,
+    "systolic_high":    132,
+    "systolic_low":     90,
+    "spo2_low":         94,
 }
 
 
@@ -901,14 +901,14 @@ def _apply_excursion(pt: dict) -> str:
     alerts at all. Returns the kind of excursion applied."""
     kind = random.choice(["hr_high", "hr_high", "sys_high", "sys_high", "spo2_low", "hr_low"])
     if kind == "hr_high":
-        pt["heart_rate"] = round(random.uniform(132, 165), 1)
+        pt["heart_rate"] = round(random.uniform(112, 145), 1)
     elif kind == "sys_high":
-        pt["systolic"] = round(random.uniform(152, 178), 1)
-        pt["diastolic"] = round(random.uniform(95, 112), 1)
+        pt["systolic"] = round(random.uniform(138, 168), 1)
+        pt["diastolic"] = round(random.uniform(88, 102), 1)
     elif kind == "spo2_low":
-        pt["spo2"] = round(random.uniform(85, 91), 1)
+        pt["spo2"] = round(random.uniform(86, 92), 1)
     elif kind == "hr_low":
-        pt["heart_rate"] = round(random.uniform(43, 49), 1)
+        pt["heart_rate"] = round(random.uniform(46, 56), 1)
     return kind
 
 
@@ -950,9 +950,9 @@ def _generate_vitals(session: dict) -> list[dict]:
         }
 
         # Simulated excursions so a session actually surfaces alerts: force one
-        # early (so the doctor/patient sees an alert quickly), then ~13% of
+        # early (so the doctor/patient sees an alert quickly), then ~22% of
         # points thereafter. Most readings still stay in the normal range.
-        if tick == 3 or random.random() < 0.13:
+        if tick == 2 or tick == 3 or random.random() < 0.22:
             _apply_excursion(pt)
 
         points.append(pt)

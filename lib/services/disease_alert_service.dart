@@ -243,7 +243,7 @@ class DiseaseAlertService {
 
   /// Minimal-fields variant used by legacy modalities (skin scan, heart
   /// sound, OG vitals alerts) that don't build a full DiseaseRiskResult.
-  /// Only sends to the backend - no local store write.
+  /// Stores locally in SharedPreferences AND sends to backend for immediate visibility.
   static Future<void> sendGenericAlert({
     required String doctorId,
     required String patientId,
@@ -253,28 +253,116 @@ class DiseaseAlertService {
     required String source,
     String? authToken,
   }) async {
-    if (doctorId.isEmpty || authToken == null) return;
+    // 1. Always store locally in SharedPreferences for instant UI display
     try {
-      final fix = await LocationService.getFix();
-      await http
-          .post(
-            Uri.parse('${ApiConstants.baseUrl}/mental-health/notifications'),
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $authToken',
-            },
-            body: jsonEncode({
-              'doctorId': doctorId,
-              'patientId': patientId,
-              'patientName': patientName,
-              'clinicalReport': clinicalReport,
-              'urgency': urgency,
-              'transcript': '[Auto] MedicoScope screening - $source',
-              'source': source,
-              ...fix.toJson(),
-            }),
-          )
-          .timeout(const Duration(seconds: 10));
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getStringList(_key) ?? <String>[];
+      
+      DiseaseType dType = DiseaseType.hypertension;
+      DetectionMethod dMethod = DetectionMethod.ppgBloodPressure;
+      if (source.contains('respiratory') || source.contains('cough') || source.contains('lung')) {
+        dType = DiseaseType.respiratory;
+        dMethod = DetectionMethod.respiratoryAcoustic;
+      } else if (source.contains('anemia') || source.contains('pallor')) {
+        dType = DiseaseType.anemia;
+        dMethod = DetectionMethod.conjunctivalPallor;
+      } else if (source.contains('retin') || source.contains('diabetes') || source.contains('eye')) {
+        dType = DiseaseType.diabetes;
+        dMethod = DetectionMethod.retinalFundus;
+      }
+
+      final alert = DiseaseAlert(
+        id: '${source}_${DateTime.now().millisecondsSinceEpoch}',
+        disease: dType,
+        method: dMethod,
+        risk: urgency.toLowerCase() == 'critical'
+            ? RiskLevel.critical
+            : (urgency.toLowerCase() == 'high' ? RiskLevel.high : RiskLevel.moderate),
+        headline: clinicalReport.split('\n').first,
+        dataSource: source,
+        timestamp: DateTime.now(),
+      );
+      raw.insert(0, jsonEncode(alert.toJson()));
+      if (raw.length > _maxStored) raw.removeRange(_maxStored, raw.length);
+      await prefs.setStringList(_key, raw);
     } catch (_) {}
+
+    // Resolve live location
+    LocationFix fix = LocationFix.empty;
+    try {
+      fix = await LocationService.getFix();
+    } catch (_) {}
+
+    // 2. Dispatch Emergency SMS if high/critical
+    final urgLower = urgency.toLowerCase();
+    if (urgLower == 'critical' || urgLower == 'high') {
+      try {
+        await SosEmergencyService.sendAlertSms(
+          alertType: source,
+          patientName: patientName,
+          severity: urgency.toUpperCase(),
+          headline: clinicalReport.split('\n').first,
+          details: clinicalReport,
+          locationFix: fix,
+        );
+      } catch (_) {}
+    }
+
+    // 3. Best-effort push to backend vitals alerts & doctor notifications
+    if (authToken != null && authToken.isNotEmpty) {
+      try {
+        // Push to vitals alerts collection
+        await http.post(
+          Uri.parse('${ApiConstants.baseUrl}/vitals/alerts'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $authToken',
+          },
+          body: jsonEncode({
+            'doctorId': doctorId,
+            'patientId': patientId,
+            'patientName': patientName,
+            'alerts': [
+              {
+                'alertId': '${source}_${DateTime.now().millisecondsSinceEpoch}',
+                'type': source,
+                'severity': urgLower,
+                'message': clinicalReport.split('\n').first,
+                'vital': source,
+                'location': fix.label,
+                'latitude': fix.latitude,
+                'longitude': fix.longitude,
+                'timestamp': DateTime.now().toUtc().toIso8601String(),
+              }
+            ],
+          }),
+        ).timeout(const Duration(seconds: 6));
+      } catch (_) {}
+
+      // Push to doctor mental health/clinical notification feed if doctor is linked
+      if (doctorId.isNotEmpty) {
+        try {
+          await http
+              .post(
+                Uri.parse('${ApiConstants.baseUrl}/mental-health/notifications'),
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Bearer $authToken',
+                },
+                body: jsonEncode({
+                  'doctorId': doctorId,
+                  'patientId': patientId,
+                  'patientName': patientName,
+                  'clinicalReport': clinicalReport,
+                  'urgency': urgency,
+                  'transcript': '[Auto] MedicoScope screening - $source',
+                  'source': source,
+                  ...fix.toJson(),
+                }),
+              )
+              .timeout(const Duration(seconds: 6));
+        } catch (_) {}
+      }
+    }
   }
 }

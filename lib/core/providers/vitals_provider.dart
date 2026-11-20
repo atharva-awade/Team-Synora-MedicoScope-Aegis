@@ -135,28 +135,28 @@ class VitalsProvider extends ChangeNotifier {
   static const Duration _normalInterval = Duration(seconds: 2);
   static const Duration _urgentInterval = Duration(milliseconds: 800);
 
-  // ── Medical thresholds ─────────────────────────────────────────────────
+  // ── Medical thresholds (Standard Clinical Guidelines) ───────────────────────
   static const _hrThreshold = _VitalThreshold(
-    criticalLow: 40,
-    warningLow: 50,
-    warningHigh: 130,
-    criticalHigh: 160,
+    criticalLow: 45,
+    warningLow: 60,
+    warningHigh: 105,
+    criticalHigh: 130,
   );
   static const _systolicThreshold = _VitalThreshold(
-    criticalLow: 70,
+    criticalLow: 80,
     warningLow: 90,
-    warningHigh: 150,
-    criticalHigh: 180,
+    warningHigh: 132,
+    criticalHigh: 160,
   );
   static const _diastolicThreshold = _VitalThreshold(
-    criticalLow: 40,
+    criticalLow: 50,
     warningLow: 60,
-    warningHigh: 95,
-    criticalHigh: 110,
+    warningHigh: 88,
+    criticalHigh: 100,
   );
   static const _spo2Threshold = _VitalThreshold(
-    criticalLow: 88,
-    warningLow: 92,
+    criticalLow: 90,
+    warningLow: 94,
     warningHigh: 101,
     criticalHigh: 101,
   );
@@ -637,6 +637,41 @@ class VitalsProvider extends ChangeNotifier {
 
   void clearAlerts() {
     _alerts.clear();
+    notifyListeners();
+  }
+
+  /// Manually trigger a simulated alert for testing or instant demonstration
+  void simulateAlert({
+    String vitalName = 'heart_rate',
+    double value = 138.0,
+    String severity = 'critical',
+    String message = 'Tachycardia alert: Heart rate dangerously high at 138.0 bpm.',
+  }) {
+    final now = DateTime.now().toUtc().toIso8601String();
+    final mapsUrl = (_latitude != 0.0 && _longitude != 0.0)
+        ? 'https://www.google.com/maps?q=$_latitude,$_longitude'
+        : 'https://www.google.com/maps?q=19.0760,72.8777';
+    final alert = VitalAlert(
+      type: 'simulated_$vitalName',
+      severity: severity,
+      message: message,
+      vital: vitalName,
+      currentValue: value,
+      predictedValue: value,
+      timestamp: now,
+      location: _sessionLocation.isNotEmpty ? _sessionLocation : 'Mumbai, India',
+      latitude: _latitude != 0.0 ? _latitude : 19.0760,
+      longitude: _longitude != 0.0 ? _longitude : 72.8777,
+      mapsUrl: mapsUrl,
+      emergencyContactName: _emergencyContactName,
+      emergencyContactPhone: _emergencyContactPhone,
+      patientName: _patientName.isNotEmpty ? _patientName : 'Patient',
+      isLocal: true,
+    );
+    _alerts.insert(0, alert);
+    if (onNewAlerts != null) {
+      onNewAlerts!([alert]);
+    }
     notifyListeners();
   }
 

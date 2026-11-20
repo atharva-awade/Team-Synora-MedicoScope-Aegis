@@ -45,6 +45,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
   bool _speechAvailable = false;
   bool _isProcessing = false;
   bool _continuousMode = true; // Auto-listen after AI responds for fluent bidirectional chat
+  bool _hasSpokenInTurn = false;
   Timer? _silenceTimer;
 
   final TextEditingController _textController = TextEditingController();
@@ -109,18 +110,31 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
 
   void _onTTSStateChange() {
     if (!mounted) return;
-    if (GeminiTTSService.state == TTSState.idle && _state == GeminiLiveState.speaking) {
-      if (_continuousMode) {
-        // Fluent bidirectional loop: wait a gentle breather, then listen for user follow-up
-        Future.delayed(const Duration(milliseconds: 600), () {
-          if (mounted && _state == GeminiLiveState.speaking) {
-            _startListening();
-          }
-        });
-      } else {
+    final ttsState = GeminiTTSService.state;
+
+    if (ttsState == TTSState.playing) {
+      if (_state != GeminiLiveState.speaking) {
         setState(() {
-          _state = GeminiLiveState.idle;
+          _state = GeminiLiveState.speaking;
+          _hasSpokenInTurn = true;
         });
+      }
+    } else if (ttsState == TTSState.idle && _state == GeminiLiveState.speaking) {
+      // Only transition back to listening if audio was genuinely playing and has now ended
+      if (_hasSpokenInTurn) {
+        _hasSpokenInTurn = false;
+        if (_continuousMode) {
+          // Fluent bidirectional loop: wait a gentle breather, then listen for user follow-up
+          Future.delayed(const Duration(milliseconds: 650), () {
+            if (mounted && _state == GeminiLiveState.speaking) {
+              _startListening();
+            }
+          });
+        } else {
+          setState(() {
+            _state = GeminiLiveState.idle;
+          });
+        }
       }
     }
   }
@@ -167,6 +181,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
 
   Future<void> _startListening() async {
     if (!mounted) return;
+    _hasSpokenInTurn = false;
     _silenceTimer?.cancel();
     await GeminiTTSService.stop();
 
@@ -303,6 +318,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
         _aiResponse = replyText;
         _transcript.add({'role': 'ai', 'text': replyText});
         _state = GeminiLiveState.speaking;
+        _hasSpokenInTurn = true;
         _isProcessing = false;
       });
 
@@ -329,6 +345,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
   }
 
   void _stopSpeaking() async {
+    _hasSpokenInTurn = false;
     _silenceTimer?.cancel();
     await GeminiTTSService.stop();
     if (mounted) {

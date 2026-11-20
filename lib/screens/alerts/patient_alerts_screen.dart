@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:medicoscope/core/theme/app_theme.dart';
 import 'package:medicoscope/core/providers/auth_provider.dart';
+import 'package:medicoscope/core/providers/vitals_provider.dart';
 import 'package:medicoscope/core/widgets/glass_card.dart';
+import 'package:medicoscope/models/disease_risk_result.dart';
+import 'package:medicoscope/services/disease_alert_service.dart';
 import 'package:medicoscope/services/vitals_service.dart';
 import 'package:provider/provider.dart';
 import 'package:medicoscope/core/theme/theme_provider.dart';
@@ -45,26 +48,90 @@ class _PatientAlertsScreenState extends State<PatientAlertsScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final patientId = authProvider.user?.id ?? '';
 
+    final combinedAlerts = <Map<String, dynamic>>[];
+    final seenIds = <String>{};
+
+    // 1. Fetch backend vitals alerts from MongoDB
     try {
-      final alerts = await VitalsService.getPatientAlerts(
+      final backendAlerts = await VitalsService.getPatientAlerts(
         patientId: patientId,
         authToken: authProvider.token,
       );
-      if (!mounted) return;
-      setState(() {
-        _alerts = alerts;
-        if (!silent) _isLoading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      if (!silent) setState(() => _isLoading = false);
-    }
+      for (final a in backendAlerts) {
+        final id = a['id']?.toString() ?? '${a['vital']}_${a['timestamp']}';
+        if (!seenIds.contains(id)) {
+          seenIds.add(id);
+          combinedAlerts.add(a);
+        }
+      }
+    } catch (_) {}
+
+    // 2. Fetch local multi-modality screening alerts (SkinScope, CardioScope, Respiratory, Diabetes, Anemia)
+    try {
+      final diseaseAlerts = await DiseaseAlertService.getAll();
+      for (final da in diseaseAlerts) {
+        final id = da.id;
+        if (!seenIds.contains(id)) {
+          seenIds.add(id);
+          combinedAlerts.add({
+            'id': da.id,
+            'type': 'disease_${da.disease.name}',
+            'severity': da.risk.label.toLowerCase(),
+            'message': da.headline,
+            'vital': da.disease.name,
+            'current_value': null,
+            'patient_name': authProvider.user?.name ?? 'Patient',
+            'location': da.dataSource,
+            'read': da.read,
+            'timestamp': da.timestamp.toIso8601String(),
+            'source': da.dataSource,
+          });
+        }
+      }
+    } catch (_) {}
+
+    // 3. Include active telemetry alerts from VitalsProvider
+    try {
+      final vitalsProvider = Provider.of<VitalsProvider>(context, listen: false);
+      for (final va in vitalsProvider.alerts) {
+        final id = 'vital_${va.vital}_${va.timestamp}';
+        if (!seenIds.contains(id)) {
+          seenIds.add(id);
+          combinedAlerts.add({
+            'id': id,
+            'type': va.type,
+            'severity': va.severity.toLowerCase(),
+            'message': va.message,
+            'vital': va.vital,
+            'current_value': va.currentValue,
+            'patient_name': va.patientName.isNotEmpty ? va.patientName : (authProvider.user?.name ?? 'Patient'),
+            'location': va.location,
+            'read': false,
+            'timestamp': va.timestamp,
+          });
+        }
+      }
+    } catch (_) {}
+
+    // Sort all alerts chronologically (most recent first)
+    combinedAlerts.sort((a, b) {
+      final tA = DateTime.tryParse(a['timestamp']?.toString() ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final tB = DateTime.tryParse(b['timestamp']?.toString() ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+      return tB.compareTo(tA);
+    });
+
+    if (!mounted) return;
+    setState(() {
+      _alerts = combinedAlerts;
+      if (!silent) _isLoading = false;
+    });
   }
 
   Future<void> _markAsRead(String id) async {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       await VitalsService.markAlertRead(alertId: id, authToken: authProvider.token);
+      await DiseaseAlertService.markAllRead();
       setState(() {
         for (final a in _alerts) {
           if (a['id'] == id) {
@@ -83,6 +150,8 @@ class _PatientAlertsScreenState extends State<PatientAlertsScreen> {
       case 'high':
         return const Color(0xFFFF7043);
       case 'medium':
+      case 'warning':
+      case 'moderate':
         return const Color(0xFFFF9800);
       default:
         return const Color(0xFF4CAF50);
@@ -90,15 +159,21 @@ class _PatientAlertsScreenState extends State<PatientAlertsScreen> {
   }
 
   IconData _vitalIcon(String vital) {
-    switch (vital.toLowerCase()) {
-      case 'heart_rate':
-        return Icons.favorite;
-      case 'blood_pressure':
-        return Icons.speed;
-      case 'spo2':
-        return Icons.air;
-      default:
-        return Icons.monitor_heart;
+    final v = vital.toLowerCase();
+    if (v.contains('heart') || v.contains('cardiac') || v.contains('pcg')) {
+      return Icons.favorite;
+    } else if (v.contains('bp') || v.contains('pressure') || v.contains('hypertension')) {
+      return Icons.speed;
+    } else if (v.contains('spo2') || v.contains('respiratory') || v.contains('cough') || v.contains('breath')) {
+      return Icons.air;
+    } else if (v.contains('skin') || v.contains('melanoma') || v.contains('lesion')) {
+      return Icons.coronavirus_outlined;
+    } else if (v.contains('anemia') || v.contains('pallor') || v.contains('hemoglobin')) {
+      return Icons.bloodtype_rounded;
+    } else if (v.contains('diabet') || v.contains('retina') || v.contains('eye')) {
+      return Icons.visibility_rounded;
+    } else {
+      return Icons.monitor_heart;
     }
   }
 
@@ -166,6 +241,28 @@ class _PatientAlertsScreenState extends State<PatientAlertsScreen> {
                               isDark ? AppTheme.darkTextLight : AppTheme.textDark,
                         ),
                       ),
+                    ),
+                    // Test / Simulate Alert button for verifying the alert system
+                    IconButton(
+                      icon: const Icon(Icons.notification_add_rounded, color: Color(0xFFFF5252)),
+                      tooltip: 'Simulate Test Alert',
+                      onPressed: () {
+                        final vp = Provider.of<VitalsProvider>(context, listen: false);
+                        vp.simulateAlert(
+                          vitalName: 'heart_rate',
+                          value: 142.0,
+                          severity: 'critical',
+                          message: 'Critical Tachycardia: Heart rate breached safe limit at 142.0 bpm.',
+                        );
+                        _fetchAlerts(silent: true);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('⚠️ Critical Tachycardia Alert generated across all modalities!'),
+                            backgroundColor: Color(0xFFE53935),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      },
                     ),
                     if (unreadCount > 0)
                       Container(

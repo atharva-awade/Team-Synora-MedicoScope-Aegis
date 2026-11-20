@@ -17,8 +17,9 @@ class GeminiTTSService {
 
   static final AudioPlayer _player = AudioPlayer();
   static final FlutterTts _flutterTts = FlutterTts();
-  static bool _usingNativeFallback = false;
+  static bool _usingNativeFallback = true;
   static bool _isInitialized = false;
+  static bool _isPreparingSpeech = false;
 
   static TTSState _state = TTSState.idle;
   static String? _currentPlayingText;
@@ -74,7 +75,7 @@ class GeminiTTSService {
 
     // Listen to Cloud AudioPlayer state
     _player.onPlayerStateChanged.listen((s) {
-      if (!_usingNativeFallback) {
+      if (!_usingNativeFallback && !_isPreparingSpeech) {
         if (s == PlayerState.playing) {
           _state = TTSState.playing;
         } else if (s == PlayerState.paused) {
@@ -88,28 +89,28 @@ class GeminiTTSService {
 
     // Configure Native FlutterTts handlers
     _flutterTts.setStartHandler(() {
-      if (_usingNativeFallback) {
+      if (_usingNativeFallback && !_isPreparingSpeech) {
         _state = TTSState.playing;
         stateNotifier.value = _state;
       }
     });
 
     _flutterTts.setCompletionHandler(() {
-      if (_usingNativeFallback) {
+      if (_usingNativeFallback && !_isPreparingSpeech) {
         _state = TTSState.idle;
         stateNotifier.value = _state;
       }
     });
 
     _flutterTts.setCancelHandler(() {
-      if (_usingNativeFallback) {
+      if (_usingNativeFallback && !_isPreparingSpeech) {
         _state = TTSState.idle;
         stateNotifier.value = _state;
       }
     });
 
     _flutterTts.setPauseHandler(() {
-      if (_usingNativeFallback) {
+      if (_usingNativeFallback && !_isPreparingSpeech) {
         _state = TTSState.paused;
         stateNotifier.value = _state;
       }
@@ -117,7 +118,7 @@ class GeminiTTSService {
 
     _flutterTts.setErrorHandler((msg) {
       debugPrint('Native TTS error: $msg');
-      if (_usingNativeFallback) {
+      if (_usingNativeFallback && !_isPreparingSpeech) {
         _state = TTSState.idle;
         stateNotifier.value = _state;
       }
@@ -198,30 +199,38 @@ class GeminiTTSService {
         return true;
       }
 
-      await stop();
+      // Prepare new speech: silently halt previous without firing false completion
+      _isPreparingSpeech = true;
+      try {
+        await _player.stop();
+        await _flutterTts.stop();
+      } catch (_) {}
+      _isPreparingSpeech = false;
 
       _state = TTSState.loading;
       stateNotifier.value = _state;
       _currentPlayingText = cleanText;
 
-      // 1. Attempt Cloud Synthesis via Gemini 3.8 Flash TTS
-      Uint8List? wavBytes;
-      try {
-        wavBytes = await synthesizeToBytes(
-          text: cleanText,
-          languageCode: lang,
-        );
-      } catch (e) {
-        debugPrint('Gemini Cloud TTS failed ($e). Falling back to Native Engine.');
+      // 1. Attempt Cloud Synthesis via Gemini 3.8 Flash TTS (Aoede voice if configured)
+      Uint8List? audioBytes;
+      if (_apiKey.isNotEmpty) {
+        try {
+          audioBytes = await synthesizeToBytes(
+            text: cleanText,
+            languageCode: lang,
+          );
+        } catch (e) {
+          debugPrint('Gemini Cloud TTS failed ($e). Falling back to Native Engine.');
+        }
       }
 
       // If Cloud Audio succeeded, play through AudioPlayer
-      if (wavBytes != null && wavBytes.isNotEmpty) {
+      if (audioBytes != null && audioBytes.isNotEmpty) {
         _usingNativeFallback = false;
         final tempDir = await getTemporaryDirectory();
         final tempFile = File(
-            '${tempDir.path}/gemini_tts_${DateTime.now().millisecondsSinceEpoch}.wav');
-        await tempFile.writeAsBytes(wavBytes);
+            '${tempDir.path}/gemini_tts_${DateTime.now().millisecondsSinceEpoch}.mp3');
+        await tempFile.writeAsBytes(audioBytes);
 
         await _player.stop();
         if (speed != null) _speed = speed;
@@ -233,8 +242,8 @@ class GeminiTTSService {
         return true;
       }
 
-      // 2. Seamless Fallback: Native High-Performance Multi-Lingual TTS Engine
-      debugPrint('Activating Seamless Native Regional Speech Engine for $lang...');
+      // 2. Seamless Native High-Performance Multi-Lingual Speech Engine (com.google.android.tts)
+      debugPrint('Activating Seamless Native Regional Speech Engine for $lang (Google Neural)...');
       _usingNativeFallback = true;
       return await _speakNative(cleanText, lang, speed);
     } catch (e) {
@@ -254,6 +263,7 @@ class GeminiTTSService {
           if (engines is List && engines.contains('com.google.android.tts')) {
             await _flutterTts.setEngine('com.google.android.tts');
           }
+          await _flutterTts.awaitSpeakCompletion(true);
         }
       } catch (_) {}
 
@@ -271,6 +281,7 @@ class GeminiTTSService {
       await _flutterTts.setVolume(1.0);
       await _flutterTts.setPitch(1.0);
 
+      _usingNativeFallback = true;
       _state = TTSState.playing;
       stateNotifier.value = _state;
 
