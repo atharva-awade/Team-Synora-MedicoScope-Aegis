@@ -8,15 +8,30 @@ set -euo pipefail
 
 REGION="asia-south1"
 PROJECT_ID="${1:-$(gcloud config get-value project 2>/dev/null || true)}"
+GEMINI_KEY="${2:-${GEMINI_API_KEY:-}}"
+GROQ_KEY="${3:-${GROQ_API_KEY:-}}"
+
+# Auto-extract from chatbot/.env if present and not provided as an argument
+if [ -z "$GEMINI_KEY" ] && [ -f chatbot/.env ]; then
+    GEMINI_KEY=$(grep -E '^GEMINI_API_KEY=' chatbot/.env | cut -d '=' -f2- | tr -d '\r"' || true)
+fi
+if [ -z "$GROQ_KEY" ] && [ -f chatbot/.env ]; then
+    GROQ_KEY=$(grep -E '^GROQ_API_KEY=' chatbot/.env | cut -d '=' -f2- | tr -d '\r"' || true)
+fi
 
 if [ -z "$PROJECT_ID" ] || [ "$PROJECT_ID" = "(unset)" ]; then
-    echo "[ERROR] No active GCP project found. Run 'gcloud init' or pass project ID: ./deploy_gcp_cloud_run.sh <PROJECT_ID>"
+    echo "[ERROR] No active GCP project found. Run 'gcloud init' or pass project ID: ./deploy_gcp_cloud_run.sh <PROJECT_ID> [GEMINI_API_KEY]"
     exit 1
 fi
 
 echo "=========================================================="
 echo " MedicoScope Google Cloud Run Deployment"
 echo " Project: $PROJECT_ID | Region: $REGION"
+if [ -n "$GEMINI_KEY" ]; then
+    echo " Gemini API: Configured (Secured via Cloud Run Environment)"
+else
+    echo " [WARNING] GEMINI_API_KEY not found. Pass it as second argument: ./deploy_gcp_cloud_run.sh <PROJECT_ID> <GEMINI_API_KEY>"
+fi
 echo "=========================================================="
 
 echo "--> Enabling Cloud Run and Cloud Build APIs..."
@@ -37,6 +52,14 @@ gcloud run deploy medicoscope-backend \
 BACKEND_URL=$(gcloud run services describe medicoscope-backend --region "$REGION" --format 'value(status.url)' --project "$PROJECT_ID")
 echo "[SUCCESS] Backend URL: $BACKEND_URL"
 
+ENV_VARS="BACKEND_URL=${BACKEND_URL}/api"
+if [ -n "$GEMINI_KEY" ]; then
+    ENV_VARS="${ENV_VARS},GEMINI_API_KEY=${GEMINI_KEY}"
+fi
+if [ -n "$GROQ_KEY" ]; then
+    ENV_VARS="${ENV_VARS},GROQ_API_KEY=${GROQ_KEY}"
+fi
+
 echo "--> [2/2] Deploying Gemini Chatbot Engine..."
 gcloud run deploy medicoscope-chatbot \
     --source chatbot \
@@ -47,7 +70,7 @@ gcloud run deploy medicoscope-chatbot \
     --max-instances 2 \
     --memory 512Mi \
     --cpu 1 \
-    --set-env-vars "BACKEND_URL=${BACKEND_URL}/api" \
+    --set-env-vars "$ENV_VARS" \
     --project "$PROJECT_ID"
 
 CHATBOT_URL=$(gcloud run services describe medicoscope-chatbot --region "$REGION" --format 'value(status.url)' --project "$PROJECT_ID")

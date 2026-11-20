@@ -5,7 +5,9 @@
 
 param(
     [string]$ProjectId = "",
-    [string]$Region = "asia-south1"
+    [string]$Region = "asia-south1",
+    [string]$GeminiApiKey = "",
+    [string]$GroqApiKey = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -36,14 +38,38 @@ if (-not $ProjectId -or $ProjectId -eq "(unset)") {
     exit 1
 }
 
+# 3. Resolve API Keys (from args, env, or chatbot/.env)
+if (-not $GeminiApiKey -and $env:GEMINI_API_KEY) {
+    $GeminiApiKey = $env:GEMINI_API_KEY
+}
+if (-not $GroqApiKey -and $env:GROQ_API_KEY) {
+    $GroqApiKey = $env:GROQ_API_KEY
+}
+if (Test-Path "chatbot/.env") {
+    $envContent = Get-Content "chatbot/.env"
+    if (-not $GeminiApiKey) {
+        $gLine = $envContent | Where-Object { $_ -match "^GEMINI_API_KEY=(.*)$" }
+        if ($gLine) { $GeminiApiKey = ($gLine -replace "^GEMINI_API_KEY=", "").Trim().Trim('"') }
+    }
+    if (-not $GroqApiKey) {
+        $qLine = $envContent | Where-Object { $_ -match "^GROQ_API_KEY=(.*)$" }
+        if ($qLine) { $GroqApiKey = ($qLine -replace "^GROQ_API_KEY=", "").Trim().Trim('"') }
+    }
+}
+
 Write-Host "Using Project ID: $ProjectId" -ForegroundColor Yellow
 Write-Host "Deploying to Region: $Region (Mumbai, India)" -ForegroundColor Yellow
+if ($GeminiApiKey) {
+    Write-Host "Gemini API: Configured (Secured via Cloud Run Environment)" -ForegroundColor Green
+} else {
+    Write-Host "[WARNING] GEMINI_API_KEY not found. Pass -GeminiApiKey <KEY>" -ForegroundColor Yellow
+}
 
-# 3. Enable Required GCP APIs ($0 cost)
+# 4. Enable Required GCP APIs ($0 cost)
 Write-Host "`n--> Enabling Cloud Run and Cloud Build APIs..." -ForegroundColor Cyan
 & gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com --project $ProjectId
 
-# 4. Deploy Node.js Backend API
+# 5. Deploy Node.js Backend API
 Write-Host "`n--> [1/2] Deploying MedicoScope Node.js API to Cloud Run..." -ForegroundColor Cyan
 & gcloud run deploy medicoscope-backend `
     --source server `
@@ -59,7 +85,16 @@ Write-Host "`n--> [1/2] Deploying MedicoScope Node.js API to Cloud Run..." -Fore
 $BACKEND_URL = (& gcloud run services describe medicoscope-backend --region $Region --format 'value(status.url)' --project $ProjectId).Trim()
 Write-Host "[SUCCESS] Node.js Backend URL: $BACKEND_URL" -ForegroundColor Green
 
-# 5. Deploy Python FastChat / Gemini Chatbot
+# Build environment variables list
+$envVars = "BACKEND_URL=$BACKEND_URL/api"
+if ($GeminiApiKey) {
+    $envVars += ",GEMINI_API_KEY=$GeminiApiKey"
+}
+if ($GroqApiKey) {
+    $envVars += ",GROQ_API_KEY=$GroqApiKey"
+}
+
+# 6. Deploy Python FastChat / Gemini Chatbot
 Write-Host "`n--> [2/2] Deploying MedicoScope Gemini Chatbot Engine to Cloud Run..." -ForegroundColor Cyan
 & gcloud run deploy medicoscope-chatbot `
     --source chatbot `
@@ -70,7 +105,7 @@ Write-Host "`n--> [2/2] Deploying MedicoScope Gemini Chatbot Engine to Cloud Run
     --max-instances 2 `
     --memory 512Mi `
     --cpu 1 `
-    --set-env-vars "BACKEND_URL=$BACKEND_URL/api" `
+    --set-env-vars "$envVars" `
     --project $ProjectId
 
 $CHATBOT_URL = (& gcloud run services describe medicoscope-chatbot --region $Region --format 'value(status.url)' --project $ProjectId).Trim()
