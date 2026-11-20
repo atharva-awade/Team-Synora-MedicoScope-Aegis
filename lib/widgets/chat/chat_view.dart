@@ -717,15 +717,17 @@ class _ChatViewState extends State<ChatView> {
               ),
             ],
           ),
-          // Actions on the finished last assistant message.
-          if (isLast && !m.streaming && !_isLoading)
+          // Actions on assistant messages (Copy, Regenerate on latest, Listen audio readout).
+          if (!m.isUser && !m.streaming)
             Padding(
               padding: const EdgeInsets.only(left: 32, top: 4),
               child: Row(children: [
                 _miniAction(Icons.copy_rounded, 'Copy', () => _copy(m.text)),
-                const SizedBox(width: 14),
-                _miniAction(
-                    Icons.refresh_rounded, 'Regenerate', _regenerate),
+                if (isLast && !_isLoading) ...[
+                  const SizedBox(width: 14),
+                  _miniAction(
+                      Icons.refresh_rounded, 'Regenerate', _regenerate),
+                ],
                 const SizedBox(width: 14),
                 ValueListenableBuilder<TTSState>(
                   valueListenable: GeminiTTSService.stateNotifier,

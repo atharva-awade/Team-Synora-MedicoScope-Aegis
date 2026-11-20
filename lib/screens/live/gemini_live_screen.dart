@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:medicoscope/core/theme/app_theme.dart';
 import 'package:medicoscope/core/providers/auth_provider.dart';
 import 'package:medicoscope/services/gemini_nano_service.dart';
+import 'package:medicoscope/services/gemini_tts_service.dart';
 import 'package:medicoscope/services/api_service.dart';
 import 'package:medicoscope/core/constants/api_constants.dart';
 
@@ -26,7 +27,6 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
   GeminiLiveState _state = GeminiLiveState.idle;
   late AnimationController _pulseController;
   late AnimationController _rotationController;
-  final FlutterTts _tts = FlutterTts();
   late stt.SpeechToText _speech;
   bool _speechAvailable = false;
   final TextEditingController _textController = TextEditingController();
@@ -35,6 +35,27 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
   String _userSpeech = '';
   String _aiResponse = '';
   final List<Map<String, String>> _transcript = [];
+  String _selectedLanguage = 'en';
+
+  static const Map<String, String> _languages = {
+    'en': 'English',
+    'hi': 'Hindi (हिंदी)',
+    'mr': 'Marathi (मराठी)',
+    'ta': 'Tamil (தமிழ்)',
+    'te': 'Telugu (తెలుగు)',
+    'kn': 'Kannada (ಕನ್ನಡ)',
+    'bn': 'Bengali (বাংলা)',
+  };
+
+  static const Map<String, String> _sttLocales = {
+    'en': 'en_IN',
+    'hi': 'hi_IN',
+    'mr': 'mr_IN',
+    'ta': 'ta_IN',
+    'te': 'te_IN',
+    'kn': 'kn_IN',
+    'bn': 'bn_IN',
+  };
 
   final List<String> _quickPrompts = [
     'Analyze my blood pressure of 145/92',
@@ -57,7 +78,9 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     )..repeat();
 
     _speech = stt.SpeechToText();
-    _initSpeechAndTts();
+    GeminiTTSService.init();
+    GeminiTTSService.stateNotifier.addListener(_onTTSStateChange);
+    _initSpeechRecognizer();
 
     if (widget.initialPrompt != null) {
       Future.delayed(const Duration(milliseconds: 400), () {
@@ -66,8 +89,16 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     }
   }
 
-  Future<void> _initSpeechAndTts() async {
-    // 1. Initialize Google Speech Recognition
+  void _onTTSStateChange() {
+    if (!mounted) return;
+    if (GeminiTTSService.state == TTSState.idle && _state == GeminiLiveState.speaking) {
+      setState(() {
+        _state = GeminiLiveState.idle;
+      });
+    }
+  }
+
+  Future<void> _initSpeechRecognizer() async {
     try {
       _speechAvailable = await _speech.initialize(
         onError: (val) {
@@ -90,19 +121,6 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     } catch (_) {
       _speechAvailable = false;
     }
-
-    // 2. Initialize Text-To-Speech (Google Voice Engine)
-    await _tts.setLanguage('en-US');
-    await _tts.setPitch(1.0);
-    await _tts.setSpeechRate(0.5);
-    _tts.setCompletionHandler(() {
-      if (mounted) {
-        setState(() {
-          _state = GeminiLiveState.idle;
-        });
-      }
-    });
-
     if (mounted) setState(() {});
   }
 
@@ -110,7 +128,8 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
   void dispose() {
     _pulseController.dispose();
     _rotationController.dispose();
-    _tts.stop();
+    GeminiTTSService.stateNotifier.removeListener(_onTTSStateChange);
+    GeminiTTSService.stop();
     _speech.stop();
     _textController.dispose();
     _transcriptScrollController.dispose();
@@ -142,6 +161,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     });
 
     if (_speechAvailable) {
+      final locId = _sttLocales[_selectedLanguage] ?? 'en_IN';
       await _speech.listen(
         onResult: (result) {
           if (mounted) {
@@ -155,10 +175,9 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
         },
         listenFor: const Duration(seconds: 20),
         pauseFor: const Duration(seconds: 3),
-        localeId: 'en_US',
+        localeId: locId,
       );
     } else {
-      // If speech recognizer is unavailable on emulator/device
       setState(() {
         _userSpeech = 'Microphone active. Speak or tap any clinical query.';
       });
@@ -168,7 +187,6 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
   Future<void> _processQuery(String query) async {
     if (!mounted || query.trim().isEmpty) return;
     
-    // Stop any ongoing speech listening
     if (_speech.isListening) {
       await _speech.stop();
     }
@@ -187,13 +205,13 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
 
       String replyText = '';
       try {
-        // 1. Query live Google Cloud Run Gemini Chatbot
+        // 1. Query live Google Cloud Run Gemini Chatbot in chosen language
         final resp = await api.post(
           '${ApiConstants.chatbotBaseUrl}/chat',
           {
             'message': query.trim(),
             'session_id': 'gemini_live_${auth.user?.id ?? "guest"}',
-            'language': 'en',
+            'language': _selectedLanguage,
             'medical_context': 'Patient real-time live voice telehealth consult with Gemini Live.',
           },
         ).timeout(const Duration(seconds: 8));
@@ -218,13 +236,17 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
 
       _scrollTranscriptToBottom();
 
-      // Clean markdown asterisks and bullets for smooth Google speech playback
+      // Clean markdown asterisks and bullets for smooth Google Neural speech playback
       final cleanSpeech = replyText
           .replaceAll(RegExp(r'\*\*|•|#|[-_]{2,}'), '')
           .replaceAll(RegExp(r'\n+'), ' ')
           .trim();
 
-      await _tts.speak(cleanSpeech);
+      // Speak using high-fidelity Google Neural voice synthesis in chosen language
+      await GeminiTTSService.speak(
+        text: cleanSpeech,
+        languageCode: _selectedLanguage,
+      );
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -234,10 +256,12 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
   }
 
   void _stopSpeaking() async {
-    await _tts.stop();
-    setState(() {
-      _state = GeminiLiveState.idle;
-    });
+    await GeminiTTSService.stop();
+    if (mounted) {
+      setState(() {
+        _state = GeminiLiveState.idle;
+      });
+    }
   }
 
   void _scrollTranscriptToBottom() {
@@ -262,7 +286,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white70),
           onPressed: () {
-            _tts.stop();
+            GeminiTTSService.stop();
             _speech.stop();
             Navigator.of(context).pop();
           },
@@ -310,6 +334,72 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
           ],
         ),
         actions: [
+          PopupMenuButton<String>(
+            tooltip: 'Select Language',
+            initialValue: _selectedLanguage,
+            color: const Color(0xFF1E293B),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+              side: const BorderSide(color: Colors.white12),
+            ),
+            child: Container(
+              margin: const EdgeInsets.only(right: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1C2230),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFF7C4DFF).withOpacity(0.4)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.language, size: 14, color: Color(0xFFD6BCFA)),
+                  const SizedBox(width: 4),
+                  Text(
+                    _selectedLanguage.toUpperCase(),
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFFD6BCFA),
+                    ),
+                  ),
+                  const Icon(Icons.arrow_drop_down, size: 14, color: Color(0xFFD6BCFA)),
+                ],
+              ),
+            ),
+            onSelected: (val) {
+              setState(() {
+                _selectedLanguage = val;
+              });
+            },
+            itemBuilder: (ctx) {
+              return _languages.entries.map((e) {
+                return PopupMenuItem<String>(
+                  value: e.key,
+                  child: Row(
+                    children: [
+                      Text(
+                        e.value,
+                        style: TextStyle(
+                          color: e.key == _selectedLanguage
+                              ? const Color(0xFF7C4DFF)
+                              : Colors.white,
+                          fontWeight: e.key == _selectedLanguage
+                              ? FontWeight.w800
+                              : FontWeight.normal,
+                          fontSize: 13,
+                        ),
+                      ),
+                      if (e.key == _selectedLanguage) ...[
+                        const Spacer(),
+                        const Icon(Icons.check, color: Color(0xFF7C4DFF), size: 16),
+                      ],
+                    ],
+                  ),
+                );
+              }).toList();
+            },
+          ),
           if (_transcript.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.refresh_rounded, color: Colors.white54, size: 20),

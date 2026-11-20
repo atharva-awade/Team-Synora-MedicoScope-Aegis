@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:medicoscope/models/ambulance_booking_model.dart';
 import 'package:medicoscope/services/api_service.dart';
@@ -143,6 +145,41 @@ class AmbulanceService {
     final x = math.cos(phi1) * math.sin(phi2) -
         math.sin(phi1) * math.cos(phi2) * math.cos(deltaLambda);
     return math.atan2(y, x);
+  }
+
+  /// Fetches an actual real-world street driving route from OSRM between hospital and patient.
+  /// Follows authentic road corridors, highway curves, and city intersections.
+  static Future<List<LatLng>> fetchRealisticStreetRoute({
+    required LatLng start,
+    required LatLng end,
+    int fallbackSteps = 60,
+  }) async {
+    try {
+      final url = Uri.parse(
+        'https://router.project-osrm.org/route/v1/driving/'
+        '${start.longitude},${start.latitude};${end.longitude},${end.latitude}'
+        '?overview=full&geometries=geojson',
+      );
+      final response = await http.get(url).timeout(const Duration(seconds: 4));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['code'] == 'Ok' &&
+            data['routes'] is List &&
+            data['routes'].isNotEmpty) {
+          final coords = data['routes'][0]['geometry']['coordinates'] as List;
+          final points = coords
+              .map<LatLng>((c) => LatLng(
+                    (c[1] as num).toDouble(),
+                    (c[0] as num).toDouble(),
+                  ))
+              .toList();
+          if (points.length >= 2) {
+            return points;
+          }
+        }
+      }
+    } catch (_) {}
+    return generateRouteCoordinates(start: start, end: end, steps: fallbackSteps);
   }
 
   /// Interpolates a smooth, realistic road polyline from hospital to user coordinates.

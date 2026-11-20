@@ -34,6 +34,7 @@ class _AmbulanceTrackingScreenState extends State<AmbulanceTrackingScreen>
   double _currentBearing = 0.0;
   bool _use3DMarker = false;
   bool _show3dCard = true;
+  bool _autoCenter = true;
 
   @override
   void initState() {
@@ -55,12 +56,31 @@ class _AmbulanceTrackingScreenState extends State<AmbulanceTrackingScreen>
       widget.booking.patientLongitude,
     );
 
-    // Natural 60-step street corridor without erratic jitter
+    // Initialize baseline corridor immediately for instantaneous render
     _routePoints = AmbulanceService.generateRouteCoordinates(
       start: hospLatLng,
       end: patLatLng,
       steps: 60,
     );
+
+    // Fetch actual real-world street route from OSRM following authentic roads
+    AmbulanceService.fetchRealisticStreetRoute(
+      start: hospLatLng,
+      end: patLatLng,
+    ).then((actualStreetPoints) {
+      if (mounted && actualStreetPoints.length >= 2) {
+        setState(() {
+          _routePoints = actualStreetPoints;
+          _currentStepIndex = 0;
+          if (_routePoints.length > 1) {
+            _currentBearing = AmbulanceService.calculateBearing(
+              _routePoints[0],
+              _routePoints[1],
+            );
+          }
+        });
+      }
+    });
 
     // Calculate initial forward heading toward first waypoint
     if (_routePoints.length > 1) {
@@ -109,8 +129,8 @@ class _AmbulanceTrackingScreenState extends State<AmbulanceTrackingScreen>
           if (_etaMinutesRemaining <= 0) _etaMinutesRemaining = 1;
         });
 
-        // Gently keep map camera centered without jerky snapping
-        if (_currentStepIndex % 2 == 0) {
+        // Gently keep map camera centered only when auto-center is enabled
+        if (_autoCenter && _currentStepIndex % 2 == 0) {
           final currentPos = _routePoints[_currentStepIndex];
           _mapController.move(currentPos, _mapController.camera.zoom);
         }
@@ -200,6 +220,11 @@ class _AmbulanceTrackingScreenState extends State<AmbulanceTrackingScreen>
               initialZoom: 15.0,
               minZoom: 11.0,
               maxZoom: 18.0,
+              onPositionChanged: (camera, hasGesture) {
+                if (hasGesture && _autoCenter) {
+                  setState(() => _autoCenter = false);
+                }
+              },
             ),
             children: [
               TileLayer(
@@ -400,6 +425,75 @@ class _AmbulanceTrackingScreenState extends State<AmbulanceTrackingScreen>
             ),
           ),
 
+          // 2.5 Floating Interactive Map Controls (Zoom +, Zoom -, Re-center Ambulance, My Location, View Route)
+          Positioned(
+            right: 16,
+            top: 75,
+            child: Column(
+              children: [
+                _buildMapActionButton(
+                  icon: Icons.add,
+                  tooltip: 'Zoom In',
+                  onTap: () {
+                    final z = (_mapController.camera.zoom + 1.0).clamp(11.0, 18.0);
+                    _mapController.move(_mapController.camera.center, z);
+                  },
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 8),
+                _buildMapActionButton(
+                  icon: Icons.remove,
+                  tooltip: 'Zoom Out',
+                  onTap: () {
+                    final z = (_mapController.camera.zoom - 1.0).clamp(11.0, 18.0);
+                    _mapController.move(_mapController.camera.center, z);
+                  },
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 8),
+                _buildMapActionButton(
+                  icon: Icons.navigation_rounded,
+                  tooltip: _autoCenter ? 'Tracking Ambulance (Tap to unlock)' : 'Follow Ambulance',
+                  active: _autoCenter,
+                  activeColor: const Color(0xFFFF3B30),
+                  onTap: () {
+                    setState(() => _autoCenter = !_autoCenter);
+                    if (_autoCenter && _currentStepIndex < _routePoints.length) {
+                      _mapController.move(_routePoints[_currentStepIndex], 16.0);
+                    }
+                  },
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 8),
+                _buildMapActionButton(
+                  icon: Icons.person_pin_circle_rounded,
+                  tooltip: 'Center on My Location',
+                  activeColor: const Color(0xFF2196F3),
+                  onTap: () {
+                    setState(() => _autoCenter = false);
+                    _mapController.move(patientPos, 16.0);
+                  },
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 8),
+                _buildMapActionButton(
+                  icon: Icons.alt_route_rounded,
+                  tooltip: 'View Full Route',
+                  onTap: () {
+                    setState(() => _autoCenter = false);
+                    _mapController.fitCamera(
+                      CameraFit.bounds(
+                        bounds: LatLngBounds.fromPoints(_routePoints),
+                        padding: const EdgeInsets.fromLTRB(40, 110, 40, 360),
+                      ),
+                    );
+                  },
+                  isDark: isDark,
+                ),
+              ],
+            ),
+          ),
+
           // 3. Bottom Real-Time Telemetry & 3D Vehicle Sheet
           Align(
             alignment: Alignment.bottomCenter,
@@ -525,6 +619,14 @@ class _AmbulanceTrackingScreenState extends State<AmbulanceTrackingScreen>
                                   ),
                                 ),
                                 const Spacer(),
+                                IconButton(
+                                  icon: const Icon(Icons.open_in_full, size: 16, color: Color(0xFFFF3B30)),
+                                  tooltip: 'Open 3D Vehicle Full Window',
+                                  constraints: const BoxConstraints(),
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  onPressed: _open3DAmbulanceFullScreenModal,
+                                ),
+                                const SizedBox(width: 4),
                                 InkWell(
                                   onTap: () => setState(() => _show3dCard = !_show3dCard),
                                   child: Padding(
@@ -791,6 +893,223 @@ class _AmbulanceTrackingScreenState extends State<AmbulanceTrackingScreen>
       ),
     );
   }
+
+  Widget _buildMapActionButton({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onTap,
+    required bool isDark,
+    bool active = false,
+    Color activeColor = const Color(0xFFFF3B30),
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: active
+                  ? activeColor
+                  : (isDark ? const Color(0xFF1E293B) : Colors.white),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: active
+                    ? Colors.white38
+                    : (isDark ? Colors.white12 : Colors.black12),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.18),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Icon(
+              icon,
+              size: 20,
+              color: active
+                  ? Colors.white
+                  : (isDark ? Colors.white70 : Colors.black87),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _open3DAmbulanceFullScreenModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.85,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0F172A) : Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black45,
+                    blurRadius: 30,
+                    offset: Offset(0, -10),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Top bar with drag handle and close button
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 14, 12, 6),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFF3B30).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.view_in_ar_rounded,
+                              color: Color(0xFFFF3B30), size: 20),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '3D ALS Ambulance • ${widget.booking.vehicleNumber}',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w800,
+                                  color: isDark ? Colors.white : Colors.black87,
+                                ),
+                              ),
+                              Text(
+                                'Advanced Life Support ICU Vehicle Inspector',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: isDark ? Colors.white54 : Colors.black54,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded, size: 24),
+                          color: isDark ? Colors.white70 : Colors.black54,
+                          onPressed: () => Navigator.pop(ctx),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(color: Colors.white12, height: 1),
+
+                  // Large interactive 3D model viewer
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        const ModelViewer(
+                          key: ValueKey('ambulance_3d_fullscreen'),
+                          src: 'assets/3d_models/ambulance.glb',
+                          alt: '3D ALS Emergency Ambulance',
+                          ar: false,
+                          autoRotate: true,
+                          autoRotateDelay: 0,
+                          rotationPerSecond: '25deg',
+                          cameraControls: true,
+                          backgroundColor: Colors.transparent,
+                        ),
+                        Positioned(
+                          top: 12,
+                          left: 16,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.65),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.white12),
+                            ),
+                            child: const Row(
+                              children: [
+                                Icon(Icons.touch_app_rounded, color: Colors.white70, size: 14),
+                                SizedBox(width: 6),
+                                Text(
+                                  'Interactive 360° • Pinch to Zoom • Drag to Orbit',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Equipment & Telemetry specs
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                      border: Border.all(
+                        color: isDark ? Colors.white10 : Colors.black12,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.medical_services_outlined, size: 16, color: Color(0xFF10B981)),
+                            SizedBox(width: 6),
+                            Text(
+                              'Onboard ICU Clinical Telemetry',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF10B981),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: const [
+                            _EquipmentPill(icon: Icons.air, label: 'Hamilton-T1 Transport Ventilator'),
+                            _EquipmentPill(icon: Icons.monitor_heart, label: 'Zoll X-Series Monitor / Defib'),
+                            _EquipmentPill(icon: Icons.vaccines, label: 'B. Braun Syringe Infusion Pump'),
+                            _EquipmentPill(icon: Icons.local_gas_station, label: 'O2 Tank: 15L @ 200 bar'),
+                            _EquipmentPill(icon: Icons.groups, label: 'ALS Paramedic Crew: Dispatched'),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 }
 
 /// Custom painter for top-view emergency vehicle with forward headlight illumination
@@ -937,5 +1256,41 @@ class AmbulanceTopViewPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant AmbulanceTopViewPainter oldDelegate) {
     return oldDelegate.strobePhase != strobePhase;
+  }
+}
+
+class _EquipmentPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _EquipmentPill({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F172A) : Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: const Color(0xFF10B981)),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

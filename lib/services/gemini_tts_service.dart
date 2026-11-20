@@ -248,6 +248,15 @@ class GeminiTTSService {
   /// Speak using device's native TTS engine in regional Indian languages
   static Future<bool> _speakNative(String text, String lang, double? speed) async {
     try {
+      try {
+        if (Platform.isAndroid) {
+          final engines = await _flutterTts.getEngines;
+          if (engines is List && engines.contains('com.google.android.tts')) {
+            await _flutterTts.setEngine('com.google.android.tts');
+          }
+        }
+      } catch (_) {}
+
       final localeTag = _nativeLocales[lang] ?? 'en-IN';
       
       try {
@@ -319,65 +328,87 @@ class GeminiTTSService {
     }
   }
 
-  /// Call Gemini 3.8 Flash TTS REST API and return decoded WAV bytes
+  /// Call Google Neural Speech Services or Gemini Flash TTS and return audio bytes
   static Future<Uint8List?> synthesizeToBytes({
     required String text,
     String languageCode = 'en',
   }) async {
+    // 1. Google Neural Speech Stream (Ultra-fast, human-like cadence, 100+ languages)
     try {
-      final prefix = _languagePromptPrefixes[languageCode] ?? '';
-      final promptText = '$prefix$text';
+      final clean = text.length > 200 ? text.substring(0, 200) : text;
+      final ttsUrl = Uri.parse(
+        'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=$languageCode&q=${Uri.encodeComponent(clean)}',
+      );
+      final resp = await http.get(
+        ttsUrl,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36',
+        },
+      ).timeout(const Duration(seconds: 4));
 
-      final url = Uri.parse('$_endpoint?key=$_apiKey');
-      final payload = {
-        'contents': [
-          {
-            'parts': [
-              {'text': promptText}
-            ]
-          }
-        ],
-        'generationConfig': {
-          'speechConfig': {
-            'voiceConfig': {
-              'prebuiltVoiceConfig': {
-                'voiceName': 'Aoede', // Warm, expressive voice
-              }
-            }
-          }
-        }
-      };
-
-      final response = await http
-          .post(
-            url,
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode(payload),
-          )
-          .timeout(const Duration(seconds: 15));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final candidates = data['candidates'] as List?;
-        if (candidates != null && candidates.isNotEmpty) {
-          final parts = candidates[0]['content']?['parts'] as List?;
-          if (parts != null && parts.isNotEmpty) {
-            for (final p in parts) {
-              final inlineData = p['inlineData'];
-              if (inlineData != null && inlineData['data'] != null) {
-                final base64Str = inlineData['data'] as String;
-                return base64Decode(base64Str);
-              }
-            }
-          }
-        }
+      if (resp.statusCode == 200 && resp.bodyBytes.isNotEmpty) {
+        return resp.bodyBytes;
       }
-      debugPrint('Gemini TTS API returned status: ${response.statusCode}');
-      return null;
     } catch (e) {
-      debugPrint('Gemini TTS synthesize error: $e');
-      return null;
+      debugPrint('Google Neural TTS stream fallback: $e');
     }
+
+    // 2. Gemini Cloud Speech Config (if key is supplied in environment)
+    if (_apiKey.isNotEmpty) {
+      try {
+        final prefix = _languagePromptPrefixes[languageCode] ?? '';
+        final promptText = '$prefix$text';
+
+        final url = Uri.parse('$_endpoint?key=$_apiKey');
+        final payload = {
+          'contents': [
+            {
+              'parts': [
+                {'text': promptText}
+              ]
+            }
+          ],
+          'generationConfig': {
+            'speechConfig': {
+              'voiceConfig': {
+                'prebuiltVoiceConfig': {
+                  'voiceName': 'Aoede', // Warm, expressive voice
+                }
+              }
+            }
+          }
+        };
+
+        final response = await http
+            .post(
+              url,
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode(payload),
+            )
+            .timeout(const Duration(seconds: 8));
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          final candidates = data['candidates'] as List?;
+          if (candidates != null && candidates.isNotEmpty) {
+            final parts = candidates[0]['content']?['parts'] as List?;
+            if (parts != null && parts.isNotEmpty) {
+              for (final p in parts) {
+                final inlineData = p['inlineData'];
+                if (inlineData != null && inlineData['data'] != null) {
+                  final base64Str = inlineData['data'] as String;
+                  return base64Decode(base64Str);
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {
+        debugPrint('Gemini Cloud TTS synthesize error: $e');
+      }
+    }
+
+    return null;
   }
 
   /// Clean Markdown and symbols for natural spoken speech

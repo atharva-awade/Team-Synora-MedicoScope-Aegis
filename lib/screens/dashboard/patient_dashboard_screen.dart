@@ -27,6 +27,7 @@ import 'package:medicoscope/screens/nearby_doctors/nearby_doctors_screen.dart';
 import 'package:medicoscope/screens/steps/steps_screen.dart';
 import 'package:medicoscope/screens/live/gemini_live_screen.dart';
 import 'package:medicoscope/widgets/aegis/medgemma_badge.dart';
+import 'package:medicoscope/services/ambulance_service.dart';
 import 'package:provider/provider.dart';
 import 'package:medicoscope/core/theme/theme_provider.dart';
 
@@ -339,6 +340,32 @@ class PatientDashboardScreen extends StatelessWidget {
                       ),
                       onTap: () => MedGemmaBadge.showComplianceDialog(context),
                       animationDelay: 450,
+                    ),
+
+                    const SizedBox(height: AppTheme.spacingMedium),
+
+                    // 5. SOS Emergency Ambulance (Authentic Road Simulation + 3D Vehicle Inspector)
+                    DashboardTile(
+                      icon: Icons.emergency_rounded,
+                      title: 'SOS Emergency Ambulance',
+                      description: 'Authentic street routing, interactive map & 3D ALS vehicle inspector',
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFFFF416C), Color(0xFFFF4B2B)],
+                      ),
+                      onTap: () {
+                        AmbulanceService.triggerCriticalAlertCountdown(
+                          context: context,
+                          alertHeadline: 'Emergency Ambulance Requested',
+                          alertSeverity: 'CRITICAL',
+                          patientName: authProvider.user?.name ?? 'Patient',
+                          patientId: authProvider.user?.id,
+                          details: 'Emergency ambulance dispatched with ICU paramedics.',
+                          countdownSeconds: 3,
+                        );
+                      },
+                      animationDelay: 455,
                     ),
 
                     const SizedBox(height: AppTheme.spacingMedium),
