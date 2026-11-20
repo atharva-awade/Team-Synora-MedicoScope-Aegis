@@ -61,10 +61,12 @@ gcloud run deploy medicoscope-backend \
     --region "$REGION" \
     --platform managed \
     --allow-unauthenticated \
+    --port 8080 \
     --min-instances 0 \
     --max-instances 2 \
     --memory 512Mi \
     --cpu 1 \
+    --set-env-vars "NODE_ENV=production" \
     --project "$PROJECT_ID"
 
 BACKEND_URL=$(gcloud run services describe medicoscope-backend --region "$REGION" --format 'value(status.url)' --project "$PROJECT_ID")
@@ -84,6 +86,7 @@ gcloud run deploy medicoscope-chatbot \
     --region "$REGION" \
     --platform managed \
     --allow-unauthenticated \
+    --port 8080 \
     --min-instances 0 \
     --max-instances 2 \
     --memory 512Mi \

@@ -25,7 +25,15 @@ const appointmentRoutes = require('./routes/appointments');
 const ambulanceRoutes = require('./routes/ambulance');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = parseInt(process.env.PORT || '8080', 10);
+
+process.on('uncaughtException', (err) => {
+  console.error('[UNCAUGHT EXCEPTION]', err.message || err);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[UNHANDLED REJECTION]', reason);
+});
 
 console.log('Starting MedicoScope server...');
 console.log(`PORT: ${PORT}`);

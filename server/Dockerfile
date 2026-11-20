@@ -1,16 +1,17 @@
-FROM node:20-alpine AS base
+FROM node:20-slim AS base
 
 WORKDIR /app
 
-# Install dependencies (production only for lean image)
+# Install dependencies (production only)
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Copy source files
 COPY . .
 
-# Expose port (Cloud Run sets PORT=8080)
+# Cloud Run defaults to PORT 8080
 ENV PORT=8080
+ENV NODE_ENV=production
 EXPOSE 8080
 
 CMD ["node", "src/index.js"]
