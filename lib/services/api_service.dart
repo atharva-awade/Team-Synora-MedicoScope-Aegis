@@ -12,9 +12,16 @@ class ApiService {
         if (token != null) 'Authorization': 'Bearer $token',
       };
 
+  Uri _resolveUri(String endpoint) {
+    if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+      return Uri.parse(endpoint);
+    }
+    return Uri.parse('${ApiConstants.baseUrl}$endpoint');
+  }
+
   Future<Map<String, dynamic>> get(String endpoint) async {
     final response = await http.get(
-      Uri.parse('${ApiConstants.baseUrl}$endpoint'),
+      _resolveUri(endpoint),
       headers: _headers,
     );
     return _handleResponse(response);
@@ -23,7 +30,7 @@ class ApiService {
   Future<Map<String, dynamic>> post(
       String endpoint, Map<String, dynamic> body) async {
     final response = await http.post(
-      Uri.parse('${ApiConstants.baseUrl}$endpoint'),
+      _resolveUri(endpoint),
       headers: _headers,
       body: jsonEncode(body),
     );
@@ -33,7 +40,7 @@ class ApiService {
   Future<Map<String, dynamic>> put(
       String endpoint, Map<String, dynamic> body) async {
     final response = await http.put(
-      Uri.parse('${ApiConstants.baseUrl}$endpoint'),
+      _resolveUri(endpoint),
       headers: _headers,
       body: jsonEncode(body),
     );
@@ -42,7 +49,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> delete(String endpoint) async {
     final response = await http.delete(
-      Uri.parse('${ApiConstants.baseUrl}$endpoint'),
+      _resolveUri(endpoint),
       headers: _headers,
     );
     return _handleResponse(response);

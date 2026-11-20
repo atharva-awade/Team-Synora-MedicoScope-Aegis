@@ -1,21 +1,35 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
 import 'package:medicoscope/core/theme/app_theme.dart';
 import 'package:medicoscope/core/providers/auth_provider.dart';
 import 'package:medicoscope/services/gemini_nano_service.dart';
 import 'package:medicoscope/services/gemini_tts_service.dart';
-import 'package:medicoscope/services/api_service.dart';
 import 'package:medicoscope/core/constants/api_constants.dart';
 
-enum GeminiLiveState { idle, listening, thinking, speaking }
+enum GeminiLiveState {
+  idle,
+  listening,
+  thinking,
+  speaking,
+}
 
+/// Gemini Live Telehealth Screen - Real-Time Bidirectional Voice Consult.
+///
+/// Features:
+/// - True hands-free bidirectional voice loop (Auto-listen on TTS completion)
+/// - Instant interruption / barge-in (Tap orb while AI speaks to ask follow-up)
+/// - Google Cloud Run Gemini 1.5 Pro / Flash engine via /chat
+/// - Fail-safe Google Gemini Nano on-device AICore fallback (<50ms)
+/// - Multilingual speech recognition and Google Neural voice synthesis
 class GeminiLiveScreen extends StatefulWidget {
   final String? initialPrompt;
+
   const GeminiLiveScreen({super.key, this.initialPrompt});
 
   @override
@@ -29,6 +43,10 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
   late AnimationController _rotationController;
   late stt.SpeechToText _speech;
   bool _speechAvailable = false;
+  bool _isProcessing = false;
+  bool _continuousMode = true; // Auto-listen after AI responds for fluent bidirectional chat
+  Timer? _silenceTimer;
+
   final TextEditingController _textController = TextEditingController();
   final ScrollController _transcriptScrollController = ScrollController();
 
@@ -59,9 +77,9 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
 
   final List<String> _quickPrompts = [
     'Analyze my blood pressure of 145/92',
-    'I have an irregular mole on my arm',
-    'Shortness of breath after climbing stairs',
-    'Explain my recent screening results simply',
+    'I have a persistent dry cough and slight fever',
+    'What do the ABCDE criteria mean for skin moles?',
+    'Guide me through a calming 432Hz breathing exercise',
   ];
 
   @override
@@ -83,7 +101,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     _initSpeechRecognizer();
 
     if (widget.initialPrompt != null) {
-      Future.delayed(const Duration(milliseconds: 400), () {
+      Future.delayed(const Duration(milliseconds: 500), () {
         _processQuery(widget.initialPrompt!);
       });
     }
@@ -92,9 +110,18 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
   void _onTTSStateChange() {
     if (!mounted) return;
     if (GeminiTTSService.state == TTSState.idle && _state == GeminiLiveState.speaking) {
-      setState(() {
-        _state = GeminiLiveState.idle;
-      });
+      if (_continuousMode) {
+        // Fluent bidirectional loop: wait a gentle breather, then listen for user follow-up
+        Future.delayed(const Duration(milliseconds: 600), () {
+          if (mounted && _state == GeminiLiveState.speaking) {
+            _startListening();
+          }
+        });
+      } else {
+        setState(() {
+          _state = GeminiLiveState.idle;
+        });
+      }
     }
   }
 
@@ -112,7 +139,8 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
           if (status == 'done' || status == 'notListening') {
             if (mounted &&
                 _state == GeminiLiveState.listening &&
-                _userSpeech.trim().isNotEmpty) {
+                _userSpeech.trim().isNotEmpty &&
+                !_isProcessing) {
               _processQuery(_userSpeech);
             }
           }
@@ -126,6 +154,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
 
   @override
   void dispose() {
+    _silenceTimer?.cancel();
     _pulseController.dispose();
     _rotationController.dispose();
     GeminiTTSService.stateNotifier.removeListener(_onTTSStateChange);
@@ -136,25 +165,11 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     super.dispose();
   }
 
-  Future<void> _toggleListening() async {
-    // If speaking, stop playback
-    if (_state == GeminiLiveState.speaking) {
-      _stopSpeaking();
-      return;
-    }
+  Future<void> _startListening() async {
+    if (!mounted) return;
+    _silenceTimer?.cancel();
+    await GeminiTTSService.stop();
 
-    // If currently listening, stop and process
-    if (_state == GeminiLiveState.listening) {
-      await _speech.stop();
-      if (_userSpeech.trim().isNotEmpty) {
-        _processQuery(_userSpeech);
-      } else {
-        setState(() => _state = GeminiLiveState.idle);
-      }
-      return;
-    }
-
-    // Start Real Microphone Listening
     setState(() {
       _state = GeminiLiveState.listening;
       _userSpeech = '';
@@ -162,65 +177,121 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
 
     if (_speechAvailable) {
       final locId = _sttLocales[_selectedLanguage] ?? 'en_IN';
-      await _speech.listen(
-        onResult: (result) {
-          if (mounted) {
+      try {
+        await _speech.listen(
+          onResult: (result) {
+            if (!mounted || _state != GeminiLiveState.listening) return;
             setState(() {
               _userSpeech = result.recognizedWords;
             });
-            if (result.finalResult && result.recognizedWords.trim().isNotEmpty) {
-              _processQuery(result.recognizedWords);
+            _silenceTimer?.cancel();
+            if (result.recognizedWords.trim().isNotEmpty) {
+              if (result.finalResult && !_isProcessing) {
+                _processQuery(result.recognizedWords);
+              } else {
+                // Auto-submit after 1.6s of silence for natural conversational turn-taking
+                _silenceTimer = Timer(const Duration(milliseconds: 1600), () {
+                  if (mounted &&
+                      _state == GeminiLiveState.listening &&
+                      _userSpeech.trim().isNotEmpty &&
+                      !_isProcessing) {
+                    _speech.stop();
+                    _processQuery(_userSpeech);
+                  }
+                });
+              }
             }
-          }
-        },
-        listenFor: const Duration(seconds: 20),
-        pauseFor: const Duration(seconds: 3),
-        localeId: locId,
-      );
+          },
+          listenFor: const Duration(seconds: 30),
+          pauseFor: const Duration(seconds: 4),
+          localeId: locId,
+        );
+      } catch (_) {
+        setState(() => _state = GeminiLiveState.idle);
+      }
     } else {
       setState(() {
-        _userSpeech = 'Microphone active. Speak or tap any clinical query.';
+        _userSpeech = 'Microphone active. Tap any clinical prompt or type below.';
       });
     }
   }
 
+  Future<void> _toggleListening() async {
+    // If speaking: barge-in / interrupt immediately and start listening to user
+    if (_state == GeminiLiveState.speaking) {
+      await _startListening();
+      return;
+    }
+
+    // If listening: stop immediately and process whatever user spoke
+    if (_state == GeminiLiveState.listening) {
+      _silenceTimer?.cancel();
+      await _speech.stop();
+      if (_userSpeech.trim().isNotEmpty && !_isProcessing) {
+        _processQuery(_userSpeech);
+      } else {
+        setState(() => _state = GeminiLiveState.idle);
+      }
+      return;
+    }
+
+    // If idle or thinking: start listening
+    await _startListening();
+  }
+
   Future<void> _processQuery(String query) async {
-    if (!mounted || query.trim().isEmpty) return;
-    
+    if (!mounted || query.trim().isEmpty || _isProcessing) return;
+
+    _isProcessing = true;
+    _silenceTimer?.cancel();
     if (_speech.isListening) {
       await _speech.stop();
     }
 
+    final trimmed = query.trim();
+
     setState(() {
       _state = GeminiLiveState.thinking;
-      _userSpeech = query.trim();
-      _transcript.add({'role': 'user', 'text': query.trim()});
+      _userSpeech = trimmed;
+      _transcript.add({'role': 'user', 'text': trimmed});
     });
 
     _scrollTranscriptToBottom();
 
     try {
       final auth = Provider.of<AuthProvider>(context, listen: false);
-      final api = ApiService(token: auth.token);
-
       String replyText = '';
-      try {
-        // 1. Query live Google Cloud Run Gemini Chatbot in chosen language
-        final resp = await api.post(
-          '${ApiConstants.chatbotBaseUrl}/chat',
-          {
-            'message': query.trim(),
-            'session_id': 'gemini_live_${auth.user?.id ?? "guest"}',
-            'language': _selectedLanguage,
-            'medical_context': 'Patient real-time live voice telehealth consult with Gemini Live.',
-          },
-        ).timeout(const Duration(seconds: 8));
 
-        replyText = resp['response']?.toString() ?? '';
+      try {
+        // 1. Direct call to Google Cloud Run Gemini Telehealth Engine
+        final url = Uri.parse('${ApiConstants.chatbotBaseUrl}/chat');
+        final headers = {
+          'Content-Type': 'application/json',
+          if (auth.token != null) 'Authorization': 'Bearer ${auth.token}',
+        };
+        final body = jsonEncode({
+          'message': trimmed,
+          'session_id': 'gemini_live_${auth.user?.id ?? "guest"}',
+          'language': _selectedLanguage,
+          'medical_context': 'Patient live bi-directional telehealth consultation with Google Gemini Live.',
+        });
+
+        final resp = await http
+            .post(url, headers: headers, body: body)
+            .timeout(const Duration(seconds: 9));
+
+        if (resp.statusCode >= 200 && resp.statusCode < 300) {
+          final data = jsonDecode(resp.body);
+          replyText = data['response']?.toString() ?? '';
+        }
       } catch (_) {
-        // 2. Fail-Safe: On-Device Google Gemini Nano Edge Engine (<50ms)
+        replyText = '';
+      }
+
+      // 2. Fail-Safe: On-Device Google Gemini Nano Edge Engine (<50ms)
+      if (replyText.trim().isEmpty) {
         final nanoRes = await GeminiNanoService.infer(
-          query: query.trim(),
+          query: trimmed,
           patientName: auth.user?.name,
         );
         replyText = nanoRes.text;
@@ -232,6 +303,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
         _aiResponse = replyText;
         _transcript.add({'role': 'ai', 'text': replyText});
         _state = GeminiLiveState.speaking;
+        _isProcessing = false;
       });
 
       _scrollTranscriptToBottom();
@@ -251,15 +323,18 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
       if (!mounted) return;
       setState(() {
         _state = GeminiLiveState.idle;
+        _isProcessing = false;
       });
     }
   }
 
   void _stopSpeaking() async {
+    _silenceTimer?.cancel();
     await GeminiTTSService.stop();
     if (mounted) {
       setState(() {
         _state = GeminiLiveState.idle;
+        _isProcessing = false;
       });
     }
   }
@@ -312,23 +387,49 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
                 ],
               ),
             ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF48BB78).withOpacity(0.15),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFF48BB78).withOpacity(0.4)),
-              ),
-              child: const Row(
-                children: [
-                  CircleAvatar(radius: 3, backgroundColor: Color(0xFF48BB78)),
-                  SizedBox(width: 5),
-                  Text(
-                    'Bi-directional Voice',
-                    style: TextStyle(fontSize: 10, color: Color(0xFF48BB78), fontWeight: FontWeight.w700),
+            const SizedBox(width: 6),
+            // Continuous auto-listen indicator
+            InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: () {
+                setState(() {
+                  _continuousMode = !_continuousMode;
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _continuousMode
+                      ? const Color(0xFF48BB78).withOpacity(0.18)
+                      : Colors.white12,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: _continuousMode
+                        ? const Color(0xFF48BB78).withOpacity(0.5)
+                        : Colors.white24,
                   ),
-                ],
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 3,
+                      backgroundColor: _continuousMode
+                          ? const Color(0xFF48BB78)
+                          : Colors.white38,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _continuousMode ? 'Auto-Listen' : 'Push-to-Talk',
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        color: _continuousMode
+                            ? const Color(0xFF48BB78)
+                            : Colors.white60,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -403,7 +504,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
           if (_transcript.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.refresh_rounded, color: Colors.white54, size: 20),
-              tooltip: 'Reset Voice Session',
+              tooltip: 'Reset Conversation',
               onPressed: () {
                 _stopSpeaking();
                 setState(() {
@@ -583,16 +684,16 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
             const SizedBox(height: 6),
             Text(
               _state == GeminiLiveState.speaking
-                  ? 'Tap orb to interrupt & ask new question'
+                  ? 'Tap orb to interrupt & ask follow-up'
                   : _state == GeminiLiveState.listening
-                      ? 'Listening... tap orb when done'
+                      ? 'Listening... tap orb or stop speaking to send'
                       : 'Tap orb to speak with Google Gemini Live',
               style: const TextStyle(fontSize: 12, color: Colors.white54),
             ),
 
             const SizedBox(height: 16),
 
-            // Quick Clinical Prompt Pills (Custom Dark Glassmorphic Styling - No more blank white pills!)
+            // Quick Clinical Prompt Pills (Dark Glassmorphic Styling - No blank white boxes)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SingleChildScrollView(
@@ -610,7 +711,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF1C2230), // Solid dark contrast
+                              color: const Color(0xFF1C2230),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                 color: const Color(0xFF7C4DFF).withOpacity(0.4),
@@ -643,7 +744,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
 
             const SizedBox(height: 12),
 
-            // Bottom Text & Voice Bar (Allows typing or 1-tap mic)
+            // Bottom Text & Voice Bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Container(
