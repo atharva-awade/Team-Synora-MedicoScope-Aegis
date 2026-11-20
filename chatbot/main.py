@@ -31,9 +31,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Dual-Engine Clients (Google Gemini 2.5 Flash Primary + Groq Fail-Safe) ───
+# ── Dual-Engine Clients (Google Gemini Primary + Groq Fail-Safe) ───
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-flash-lite-latest")
+
+def _get_gemini_candidates() -> list[str]:
+    """Returns candidate Gemini model IDs in priority order."""
+    candidates = []
+    for m in [GEMINI_MODEL, "gemini-flash-lite-latest", "gemini-3.8-flash", "gemini-flash-latest"]:
+        if m and m not in candidates:
+            candidates.append(m)
+    return candidates
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
@@ -256,11 +264,9 @@ MEDICAL KNOWLEDGE BASE:
 # ── Dual-Engine Invocation Helpers ──────────────────────────────────────────
 
 async def _gemini_generate(system_prompt: str, user_input: str, history: list) -> str:
-    """Calls Google Gemini 2.5 Flash via REST API."""
+    """Calls Google Gemini via REST API with automated candidate fallback."""
     if not GEMINI_API_KEY:
         raise ValueError("GEMINI_API_KEY not configured")
-    
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
     
     contents = []
     for msg in history[-10:]:
@@ -277,24 +283,32 @@ async def _gemini_generate(system_prompt: str, user_input: str, history: list) -
         }
     }
     
-    async with httpx.AsyncClient(timeout=15.0) as client:
-        resp = await client.post(url, json=payload)
-        if resp.status_code != 200:
-            raise RuntimeError(f"Gemini error ({resp.status_code}): {resp.text[:200]}")
-        data = resp.json()
-        candidates = data.get("candidates", [])
-        if not candidates:
-            raise RuntimeError("Gemini returned empty candidates")
-        return candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+    last_err = None
+    for model_id in _get_gemini_candidates():
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_API_KEY}"
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                resp = await client.post(url, json=payload)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    candidates = data.get("candidates", [])
+                    if candidates:
+                        text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                        if text:
+                            return text
+                else:
+                    last_err = f"Gemini error ({model_id} HTTP {resp.status_code}): {resp.text[:200]}"
+        except Exception as e:
+            last_err = f"Gemini error ({model_id}): {e}"
+            continue
+    raise RuntimeError(last_err or "Gemini returned empty candidates")
 
 
 async def _gemini_stream(system_prompt: str, user_input: str, history: list) -> AsyncGenerator[str, None]:
-    """Streams token chunks from Google Gemini 2.5 Flash via SSE."""
+    """Streams token chunks from Google Gemini via SSE with automated candidate fallback."""
     if not GEMINI_API_KEY:
         raise ValueError("GEMINI_API_KEY not configured")
         
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:streamGenerateContent?alt=sse&key={GEMINI_API_KEY}"
-    
     contents = []
     for msg in history[-10:]:
         role = "user" if isinstance(msg, HumanMessage) else "model"
@@ -310,32 +324,40 @@ async def _gemini_stream(system_prompt: str, user_input: str, history: list) -> 
         }
     }
     
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        async with client.stream("POST", url, json=payload) as stream_resp:
-            if stream_resp.status_code != 200:
-                body = await stream_resp.aread()
-                raise RuntimeError(f"Gemini stream error ({stream_resp.status_code}): {body[:200]}")
-            buffer = ""
-            async for chunk in stream_resp.aiter_text():
-                buffer += chunk
-                while "\n" in buffer:
-                    line, buffer = buffer.split("\n", 1)
-                    line = line.strip()
-                    if line.startswith("data: "):
-                        data_str = line[6:].strip()
-                        if data_str == "[DONE]":
-                            break
-                        try:
-                            item = json.loads(data_str)
-                            cands = item.get("candidates", [])
-                            if cands:
-                                parts = cands[0].get("content", {}).get("parts", [])
-                                for p in parts:
-                                    t = p.get("text", "")
-                                    if t:
-                                        yield t
-                        except Exception:
-                            pass
+    connected = False
+    for model_id in _get_gemini_candidates():
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:streamGenerateContent?alt=sse&key={GEMINI_API_KEY}"
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                async with client.stream("POST", url, json=payload) as stream_resp:
+                    if stream_resp.status_code == 200:
+                        connected = True
+                        buffer = ""
+                        async for chunk in stream_resp.aiter_text():
+                            buffer += chunk
+                            while "\n" in buffer:
+                                line, buffer = buffer.split("\n", 1)
+                                line = line.strip()
+                                if line.startswith("data: "):
+                                    data_str = line[6:].strip()
+                                    if data_str == "[DONE]":
+                                        break
+                                    try:
+                                        item = json.loads(data_str)
+                                        cands = item.get("candidates", [])
+                                        if cands:
+                                            parts = cands[0].get("content", {}).get("parts", [])
+                                            for p in parts:
+                                                t = p.get("text", "")
+                                                if t:
+                                                    yield t
+                                    except Exception:
+                                        pass
+                        return
+        except Exception:
+            continue
+    if not connected:
+        raise RuntimeError("All Gemini streaming model candidates failed to connect")
 
 
 async def execute_chat(system_template: str, user_input: str, history: list, patient_name: str = "") -> str:
@@ -401,26 +423,28 @@ async def stream_chat(system_template: str, user_input: str, history: list, pati
 
 
 async def execute_text_generation(prompt: str, system_prompt: str = "You are a clinical AI assistant.") -> str:
-    """Invokes Google Gemini 2.5 Flash Primary with Groq Fail-Safe for single prompt tasks."""
+    """Invokes Google Gemini Primary with Groq Fail-Safe for single prompt tasks."""
     if GEMINI_API_KEY:
-        try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
-            payload = {
-                "systemInstruction": {"parts": [{"text": system_prompt}]},
-                "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-                "generationConfig": {"temperature": 0.6, "maxOutputTokens": 1024}
-            }
-            async with httpx.AsyncClient(timeout=15.0) as client:
-                resp = await client.post(url, json=payload)
-                if resp.status_code == 200:
-                    data = resp.json()
-                    cands = data.get("candidates", [])
-                    if cands:
-                        text = cands[0].get("content", {}).get("parts", [{}])[0].get("text", "")
-                        if text and text.strip():
-                            return text.strip()
-        except Exception as e:
-            print(f"[FAIL-SAFE TRIGGERED] Gemini text gen failed: {e}. Falling back to Groq...")
+        for model_id in _get_gemini_candidates():
+            try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_API_KEY}"
+                payload = {
+                    "systemInstruction": {"parts": [{"text": system_prompt}]},
+                    "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+                    "generationConfig": {"temperature": 0.6, "maxOutputTokens": 1024}
+                }
+                async with httpx.AsyncClient(timeout=15.0) as client:
+                    resp = await client.post(url, json=payload)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        cands = data.get("candidates", [])
+                        if cands:
+                            text = cands[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                            if text and text.strip():
+                                return text.strip()
+            except Exception as e:
+                print(f"[FAIL-SAFE TRIGGERED] Gemini ({model_id}) text gen failed: {e}. Trying next...")
+                continue
 
     if llm:
         try:

@@ -28,9 +28,16 @@ from pydantic import BaseModel
 # ── Config ────────────────────────────────────────────────────────────────────
 NODE_API = os.getenv("BACKEND_URL", "https://medicoscope-api-lbto.onrender.com/api")
 
-# Primary AI engine: Google Gemini 2.5 Flash
+# Primary AI engine: Google Gemini Primary
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-flash-lite-latest")
+
+def _get_gemini_candidates() -> list[str]:
+    cands = []
+    for m in [GEMINI_MODEL, "gemini-flash-lite-latest", "gemini-3.8-flash", "gemini-flash-latest"]:
+        if m and m not in cands:
+            cands.append(m)
+    return cands
 
 # Automatic fail-safe engine: Groq / Llama
 GROQ_KEY = os.getenv("GROQ_API_KEY")
@@ -118,40 +125,42 @@ def _llm_triage(complaint: str) -> dict:
         f'Patient: "{complaint}"'
     )
 
-    # 1. Primary: Google Gemini 2.5 Flash
+    # 1. Primary: Google Gemini Primary
     if GEMINI_KEY:
-        try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_KEY}"
-            payload = {
-                "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-                "generationConfig": {
-                    "temperature": 0.2,
-                    "maxOutputTokens": 160,
-                    "responseMimeType": "application/json"
+        for model_id in _get_gemini_candidates():
+            try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_KEY}"
+                payload = {
+                    "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+                    "generationConfig": {
+                        "temperature": 0.2,
+                        "maxOutputTokens": 160,
+                        "responseMimeType": "application/json"
+                    }
                 }
-            }
-            with httpx.Client(timeout=8.0) as client:
-                resp = client.post(url, json=payload)
-                if resp.status_code == 200:
-                    cand = resp.json().get("candidates", [])
-                    if cand:
-                        text = cand[0].get("content", {}).get("parts", [{}])[0].get("text", "")
-                        data = json.loads(text)
-                        allowed = {"diabetes", "hypertension", "anemia"}
-                        suspected = [d for d in data.get("suspected", []) if d in allowed]
-                        if not suspected:
-                            suspected = base["suspected"]
-                        acuity = "emergency" if (
-                            data.get("acuity") == "emergency" or base["acuity"] == "emergency"
-                        ) else "routine"
-                        return {
-                            "suspected": suspected,
-                            "acuity": acuity,
-                            "reasoning": str(data.get("reasoning", ""))[:240],
-                            "planner": "gemini",
-                        }
-        except Exception as e:
-            print(f"[AEGIS TRIAGE FAIL-SAFE] Gemini triage failed: {e}. Trying Groq...")
+                with httpx.Client(timeout=8.0) as client:
+                    resp = client.post(url, json=payload)
+                    if resp.status_code == 200:
+                        cand = resp.json().get("candidates", [])
+                        if cand:
+                            text = cand[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                            data = json.loads(text)
+                            allowed = {"diabetes", "hypertension", "anemia"}
+                            suspected = [d for d in data.get("suspected", []) if d in allowed]
+                            if not suspected:
+                                suspected = base["suspected"]
+                            acuity = "emergency" if (
+                                data.get("acuity") == "emergency" or base["acuity"] == "emergency"
+                            ) else "routine"
+                            return {
+                                "suspected": suspected,
+                                "acuity": acuity,
+                                "reasoning": str(data.get("reasoning", ""))[:240],
+                                "planner": "gemini",
+                            }
+            except Exception as e:
+                print(f"[AEGIS TRIAGE FAIL-SAFE] Gemini ({model_id}) triage failed: {e}. Trying next...")
+                continue
 
     # 2. Fail-Safe: Groq / Llama
     client = _groq()
