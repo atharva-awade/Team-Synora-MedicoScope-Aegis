@@ -14,7 +14,7 @@
     "gate:promote": "node quality/harness/promote.js",
     "gate": "npm run gate:verify && npm run gate:bench && npm run gate:fuzz && npm run gate:api && node quality/harness/parity.js --check",
     "test": "npm run test:aegis && npm run gate",
-    "test:aegis": "node --test 'aegis/__tests__/*.test.js'"
+    "test:aegis": "node --test aegis/__tests__/*.test.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
