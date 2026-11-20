@@ -79,17 +79,26 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/ambulance', ambulanceRoutes);
 app.use('/api/alerts', ambulanceRoutes);
 
-// Health check
+// Health checks (both root and /api/health for Cloud Run and ingress probes)
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', service: 'medicoscope-backend', timestamp: new Date().toISOString() });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Connect DB and start server
-connectDB().then(() => {
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`MedicoScope server running on port ${PORT}`);
-  });
-}).catch((err) => {
+// Start listening immediately on PORT so Cloud Run health check passes instantly
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`MedicoScope server running on port ${PORT}`);
+  connectDB();
+});
+
+server.on('error', (err) => {
   console.error('Failed to start server:', err.message || err);
   process.exit(1);
 });

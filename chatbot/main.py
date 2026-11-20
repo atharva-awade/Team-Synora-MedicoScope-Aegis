@@ -477,6 +477,7 @@ def clean_doctor_report(text: str) -> str:
 
 # ── Routes ──────────────────────────────────────────────────────────────────
 
+@app.get("/")
 @app.get("/health")
 async def health():
     return {
