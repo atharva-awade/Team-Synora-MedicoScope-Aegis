@@ -26,7 +26,7 @@ import httpx
 from pydantic import BaseModel
 
 # ── Config ────────────────────────────────────────────────────────────────────
-NODE_API = os.getenv("BACKEND_URL", "https://medicoscope-api-lbto.onrender.com/api")
+NODE_API = os.getenv("BACKEND_URL", "https://medicoscope-backend-efmsp2t7cq-el.a.run.app/api")
 
 # Primary AI engine: Google Gemini Primary
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")

@@ -74,7 +74,7 @@ if GROQ_API_KEY:
         print(f"Warning: ChatGroq init failed: {e}")
 
 # ── Config ─────────────────────────────────────────────────────────────────
-BACKEND_URL = os.getenv("BACKEND_URL", "https://medicoscope-api-lbto.onrender.com/api")
+BACKEND_URL = os.getenv("BACKEND_URL", "https://medicoscope-backend-efmsp2t7cq-el.a.run.app/api")
 # Shared secret for service-to-service calls (vitals ingest). Must match the
 # Node server's SERVICE_KEY. If unset, the Node side warns and allows.
 SERVICE_KEY = os.getenv("SERVICE_KEY", "")

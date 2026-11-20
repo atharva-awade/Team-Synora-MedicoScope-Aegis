@@ -1,9 +1,10 @@
 class ApiConstants {
-  static const String baseUrl = 'https://medicoscope-api-lbto.onrender.com/api';
+  static const String baseUrl =
+      'https://medicoscope-backend-efmsp2t7cq-el.a.run.app/api';
 
-  // Chatbot - the redeployed service that has the Aegis consult route.
+  // Google Cloud Run Chatbot - primary Google Gemini + Aegis consult engine
   static const String chatbotBaseUrl =
-      'https://medicoscope-chatbot-lbto.onrender.com';
+      'https://medicoscope-chatbot-efmsp2t7cq-el.a.run.app';
 
   // Auth
   static const String register = '/auth/register';
