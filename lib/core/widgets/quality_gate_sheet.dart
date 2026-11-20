@@ -186,26 +186,39 @@ class _QualityGateSheetState extends State<QualityGateSheet> with SingleTickerPr
   Future<void> _runBenchmark() async {
     setState(() => _isBenchmarking = true);
 
-    final effective = _getEffectiveRecord();
-    final proof = await QualityGateService.runRepeatabilityBenchmark(
-      record: effective,
-      patientName: widget.patientName ?? 'Patient',
-      doctorNotes: widget.doctorNotes,
-      iterations: 10,
-    );
-
-    if (mounted) {
-      setState(() {
-        _proof = proof;
-        _isBenchmarking = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('🔬 10x Stress-Test Completed: Variance σ = ${proof.variance.toStringAsFixed(6)} (10/10 Matched)'),
-          backgroundColor: const Color(0xFF2ECC71),
-        ),
+    try {
+      final effective = _getEffectiveRecord();
+      final proof = await QualityGateService.runRepeatabilityBenchmark(
+        record: effective,
+        patientName: widget.patientName ?? 'Patient',
+        doctorNotes: widget.doctorNotes,
+        iterations: 10,
       );
+
+      if (mounted) {
+        setState(() {
+          _proof = proof;
+          _isBenchmarking = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '🔬 10x Stress-Test Completed: Variance σ = ${proof.variance.toStringAsFixed(6)} (10/10 Matched)'),
+            backgroundColor: const Color(0xFF2ECC71),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isBenchmarking = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('⚠️ Repeatability test failed: $e'),
+            backgroundColor: const Color(0xFFE74C3C),
+          ),
+        );
+      }
     }
   }
 

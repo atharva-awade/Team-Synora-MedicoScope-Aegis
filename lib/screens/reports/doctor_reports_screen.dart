@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:medicoscope/core/theme/theme_provider.dart';
 import 'package:medicoscope/core/locale/locale_provider.dart';
 import 'package:medicoscope/core/locale/app_strings.dart';
+import 'package:medicoscope/widgets/aegis/medgemma_badge.dart';
 
 class DoctorReportsScreen extends StatefulWidget {
   const DoctorReportsScreen({super.key});
@@ -775,6 +776,8 @@ class _ReportCard extends StatelessWidget {
                           isDark ? AppTheme.darkTextDim : AppTheme.textLight,
                     ),
                   ),
+                  const SizedBox(height: 3),
+                  const MedGemmaBadge(compact: true),
                 ],
               ),
               const SizedBox(width: 4),

@@ -1,3 +1,4 @@
+import 'package:medicoscope/core/widgets/language_selector_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:medicoscope/core/theme/app_theme.dart';
@@ -172,6 +173,8 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                         ),
                     ],
                   ),
+                  const LanguageSelectorButton(compact: true),
+                  const SizedBox(width: 8),
                   const Padding(
                     padding: EdgeInsets.only(right: AppTheme.spacingMedium),
                     child: ThemeToggleButton(),
@@ -339,9 +342,8 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                     // appointment request + confirm / reschedule history.
                     DashboardTile(
                       icon: Icons.event_available_outlined,
-                      title: 'My Appointments',
-                      description:
-                          'Pending patient requests & confirmations',
+                      title: AppStrings.get('My Appointments', lang),
+                      description: AppStrings.get('Pending patient requests & confirmations', lang),
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -358,7 +360,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
 
                     DashboardTile(
                       icon: DiseaseRegistry.of(DiseaseType.diabetes).icon,
-                      title: 'Diabetes Screening',
+                      title: AppStrings.get('Diabetes Screening', lang),
                       description:
                           DiseaseRegistry.of(DiseaseType.diabetes).shortDesc,
                       gradient: LinearGradient(
@@ -378,7 +380,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
 
                     DashboardTile(
                       icon: DiseaseRegistry.of(DiseaseType.hypertension).icon,
-                      title: 'Hypertension Screening',
+                      title: AppStrings.get('Hypertension Screening', lang),
                       description: DiseaseRegistry.of(DiseaseType.hypertension)
                           .shortDesc,
                       gradient: LinearGradient(
@@ -399,7 +401,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
 
                     DashboardTile(
                       icon: DiseaseRegistry.of(DiseaseType.anemia).icon,
-                      title: 'Anemia Screening',
+                      title: AppStrings.get('Anemia Screening', lang),
                       description:
                           DiseaseRegistry.of(DiseaseType.anemia).shortDesc,
                       gradient: LinearGradient(

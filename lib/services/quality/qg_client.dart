@@ -133,15 +133,21 @@ class QgClient {
     final res = await http
         .post(_uri(path), headers: _headers, body: jsonEncode(body))
         .timeout(timeout);
-    final decoded = res.body.isEmpty
-        ? <String, dynamic>{}
-        : jsonDecode(res.body) as Map<String, dynamic>;
+    Map<String, dynamic> decoded;
+    try {
+      decoded = res.body.isEmpty
+          ? <String, dynamic>{}
+          : jsonDecode(res.body) as Map<String, dynamic>;
+    } catch (_) {
+      decoded = <String, dynamic>{'message': res.body};
+    }
     if (res.statusCode >= 200 && res.statusCode < 300) return decoded;
     // 409 is the gate refusing to finalize. It is a normal outcome, not a fault,
     // and it carries the remediation list the clinician needs.
     if (res.statusCode == 409 && decoded['verdict'] is Map) {
       throw QgBlockedException(
-        QgVerdict.fromJson(Map<String, dynamic>.from(decoded['verdict'] as Map)),
+        QgVerdict.fromJson(
+            Map<String, dynamic>.from(decoded['verdict'] as Map)),
         (decoded['message'] ?? 'Quality Gate blocked this content').toString(),
       );
     }

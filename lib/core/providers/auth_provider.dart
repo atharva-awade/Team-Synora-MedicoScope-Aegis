@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
-import '../../models/user_model.dart';
-import '../../services/auth_service.dart';
-import '../../services/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:medicoscope/models/user_model.dart';
+import 'package:medicoscope/services/auth_service.dart';
+import 'package:medicoscope/services/api_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   UserModel? _user;
@@ -13,10 +13,10 @@ class AuthProvider extends ChangeNotifier {
 
   UserModel? get user => _user;
   String? get token => _token;
-  bool get isAuthenticated => _token != null && _user != null;
   bool get isLoading => _isLoading;
-  bool get isPatient => _user?.role == 'patient';
+  bool get isAuthenticated => _token != null && _user != null;
   bool get isDoctor => _user?.role == 'doctor';
+  bool get isPatient => _user?.role == 'patient';
   bool get isAdmin => _user?.role == 'admin';
   String get userRole => _user?.role ?? '';
 
@@ -34,13 +34,14 @@ class AuthProvider extends ChangeNotifier {
       final storedUser = prefs.getString('auth_user');
 
       if (storedToken != null && storedUser != null) {
-        // Check if token is expired
         if (JwtDecoder.isExpired(storedToken)) {
           await _clearStorage();
         } else {
           _token = storedToken;
           _user = UserModel.fromJson(jsonDecode(storedUser));
         }
+      } else {
+        await _clearStorage();
       }
     } catch (e) {
       await _clearStorage();

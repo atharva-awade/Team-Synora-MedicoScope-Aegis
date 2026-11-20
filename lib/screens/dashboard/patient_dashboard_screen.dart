@@ -1,3 +1,4 @@
+import 'package:medicoscope/core/widgets/language_selector_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:medicoscope/core/theme/app_theme.dart';
@@ -24,6 +25,7 @@ import 'package:medicoscope/screens/alerts/patient_alerts_screen.dart';
 import 'package:medicoscope/screens/appointments/patient_appointments_screen.dart';
 import 'package:medicoscope/screens/nearby_doctors/nearby_doctors_screen.dart';
 import 'package:medicoscope/screens/steps/steps_screen.dart';
+import 'package:medicoscope/screens/live/gemini_live_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:medicoscope/core/theme/theme_provider.dart';
 
@@ -145,6 +147,8 @@ class PatientDashboardScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
+                  const LanguageSelectorButton(compact: true),
+                  const SizedBox(width: 8),
                   const Padding(
                     padding: EdgeInsets.only(right: AppTheme.spacingMedium),
                     child: ThemeToggleButton(),
@@ -264,11 +268,30 @@ class PatientDashboardScreen extends StatelessWidget {
 
                     const SizedBox(height: AppTheme.spacingMedium),
 
+                    // Gemini Live Voice-to-Voice Telehealth (Google AI Showcase)
+                    DashboardTile(
+                      icon: Icons.record_voice_over_rounded,
+                      title: 'Gemini Live Telehealth',
+                      description: 'Real-time conversational voice consult with Google Gemini AI',
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF4285F4), Color(0xFF7C4DFF)],
+                      ),
+                      onTap: () => _navigateTo(
+                        context,
+                        const GeminiLiveScreen(),
+                      ),
+                      animationDelay: 430,
+                    ),
+
+                    const SizedBox(height: AppTheme.spacingMedium),
+
                     // AI Consult tile - the autonomous Aegis agent (hero feature).
                     DashboardTile(
                       icon: Icons.auto_awesome,
-                      title: 'AI Consult · Aegis',
-                      description: 'Autonomous agent: reasons, screens & escalates safely',
+                      title: AppStrings.get('AI Consult · Aegis', lang),
+                      description: AppStrings.get('Autonomous agent: reasons, screens & escalates safely', lang),
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -304,8 +327,8 @@ class PatientDashboardScreen extends StatelessWidget {
 
                     DashboardTile(
                       icon: Icons.dashboard_customize_outlined,
-                      title: 'Risk Dashboard',
-                      description: 'Diabetes • Hypertension • Anemia overview',
+                      title: AppStrings.get('Risk Dashboard', lang),
+                      description: AppStrings.get('Diabetes • Hypertension • Anemia overview', lang),
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -323,7 +346,7 @@ class PatientDashboardScreen extends StatelessWidget {
                     // Diabetes deck
                     DashboardTile(
                       icon: DiseaseRegistry.of(DiseaseType.diabetes).icon,
-                      title: 'Diabetes Screening',
+                      title: AppStrings.get('Diabetes Screening', lang),
                       description:
                           DiseaseRegistry.of(DiseaseType.diabetes).shortDesc,
                       gradient: LinearGradient(
@@ -344,7 +367,7 @@ class PatientDashboardScreen extends StatelessWidget {
                     // Hypertension deck
                     DashboardTile(
                       icon: DiseaseRegistry.of(DiseaseType.hypertension).icon,
-                      title: 'Hypertension Screening',
+                      title: AppStrings.get('Hypertension Screening', lang),
                       description:
                           DiseaseRegistry.of(DiseaseType.hypertension).shortDesc,
                       gradient: LinearGradient(
@@ -366,7 +389,7 @@ class PatientDashboardScreen extends StatelessWidget {
                     // Anemia deck
                     DashboardTile(
                       icon: DiseaseRegistry.of(DiseaseType.anemia).icon,
-                      title: 'Anemia Screening',
+                      title: AppStrings.get('Anemia Screening', lang),
                       description:
                           DiseaseRegistry.of(DiseaseType.anemia).shortDesc,
                       gradient: LinearGradient(
@@ -445,8 +468,8 @@ class PatientDashboardScreen extends StatelessWidget {
                     // acoustic analysis (screening-grade).
                     DashboardTile(
                       icon: Icons.air_outlined,
-                      title: 'Respiratory Check',
-                      description: 'Breathing-pattern screening from a short recording',
+                      title: AppStrings.get('Respiratory Check', lang),
+                      description: AppStrings.get('Breathing-pattern screening from a short recording', lang),
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -484,9 +507,8 @@ class PatientDashboardScreen extends StatelessWidget {
                     // and reschedule proposals.
                     DashboardTile(
                       icon: Icons.event_available_outlined,
-                      title: 'My Appointments',
-                      description:
-                          'Doctor confirmations & reschedule proposals',
+                      title: AppStrings.get('My Appointments', lang),
+                      description: AppStrings.get('Doctor confirmations & reschedule proposals', lang),
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,

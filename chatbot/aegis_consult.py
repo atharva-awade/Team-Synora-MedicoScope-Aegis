@@ -28,10 +28,11 @@ from pydantic import BaseModel
 # ── Config ────────────────────────────────────────────────────────────────────
 NODE_API = os.getenv("BACKEND_URL", "https://medicoscope-api-lbto.onrender.com/api")
 
-# The agent's PLANNER uses Groq/Llama (same provider as the rest of the app).
-# It only refines triage/planning - it NEVER decides safety (that's the
-# deterministic Aegis gate) and never executes actions. If Groq is unavailable
-# the deterministic keyword planner runs instead, so the consult never breaks.
+# Primary AI engine: Google Gemini 2.5 Flash
+GEMINI_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+
+# Automatic fail-safe engine: Groq / Llama
 GROQ_KEY = os.getenv("GROQ_API_KEY")
 GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 
@@ -105,42 +106,83 @@ def _llm_triage(complaint: str) -> dict:
     and always falls back to the keyword triage on any failure. Returns the
     same shape as _triage, plus a short `reasoning` string for the trace."""
     base = _triage(complaint)
+    if not (complaint or "").strip():
+        return base
+
+    prompt = (
+        "You are the triage step of a screening agent. From the patient's "
+        "words, pick which of EXACTLY these conditions to screen for: "
+        "diabetes, hypertension, anemia. Also rate acuity as 'routine' or "
+        "'emergency'. Reply ONLY as compact JSON: "
+        '{"suspected":["..."],"acuity":"...","reasoning":"one short sentence"}.\n'
+        f'Patient: "{complaint}"'
+    )
+
+    # 1. Primary: Google Gemini 2.5 Flash
+    if GEMINI_KEY:
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_KEY}"
+            payload = {
+                "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+                "generationConfig": {
+                    "temperature": 0.2,
+                    "maxOutputTokens": 160,
+                    "responseMimeType": "application/json"
+                }
+            }
+            with httpx.Client(timeout=8.0) as client:
+                resp = client.post(url, json=payload)
+                if resp.status_code == 200:
+                    cand = resp.json().get("candidates", [])
+                    if cand:
+                        text = cand[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                        data = json.loads(text)
+                        allowed = {"diabetes", "hypertension", "anemia"}
+                        suspected = [d for d in data.get("suspected", []) if d in allowed]
+                        if not suspected:
+                            suspected = base["suspected"]
+                        acuity = "emergency" if (
+                            data.get("acuity") == "emergency" or base["acuity"] == "emergency"
+                        ) else "routine"
+                        return {
+                            "suspected": suspected,
+                            "acuity": acuity,
+                            "reasoning": str(data.get("reasoning", ""))[:240],
+                            "planner": "gemini",
+                        }
+        except Exception as e:
+            print(f"[AEGIS TRIAGE FAIL-SAFE] Gemini triage failed: {e}. Trying Groq...")
+
+    # 2. Fail-Safe: Groq / Llama
     client = _groq()
-    if not client or not (complaint or "").strip():
-        return base
-    try:
-        prompt = (
-            "You are the triage step of a screening agent. From the patient's "
-            "words, pick which of EXACTLY these conditions to screen for: "
-            "diabetes, hypertension, anemia. Also rate acuity as 'routine' or "
-            "'emergency'. Reply ONLY as compact JSON: "
-            '{"suspected":["..."],"acuity":"...","reasoning":"one short sentence"}.\n'
-            f'Patient: "{complaint}"'
-        )
-        resp = client.chat.completions.create(
-            model=GROQ_MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.2,
-            max_tokens=160,
-            response_format={"type": "json_object"},
-        )
-        data = json.loads(resp.choices[0].message.content)
-        allowed = {"diabetes", "hypertension", "anemia"}
-        suspected = [d for d in data.get("suspected", []) if d in allowed]
-        if not suspected:
-            suspected = base["suspected"]
-        # Acuity: take the MORE severe of LLM vs deterministic (fail toward care).
-        acuity = "emergency" if (
-            data.get("acuity") == "emergency" or base["acuity"] == "emergency"
-        ) else "routine"
-        return {
-            "suspected": suspected,
-            "acuity": acuity,
-            "reasoning": str(data.get("reasoning", ""))[:240],
-            "planner": "llm",
-        }
-    except Exception:
-        return base
+    if client:
+        try:
+            resp = client.chat.completions.create(
+                model=GROQ_MODEL,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.2,
+                max_tokens=160,
+                response_format={"type": "json_object"},
+            )
+            data = json.loads(resp.choices[0].message.content)
+            allowed = {"diabetes", "hypertension", "anemia"}
+            suspected = [d for d in data.get("suspected", []) if d in allowed]
+            if not suspected:
+                suspected = base["suspected"]
+            # Acuity: take the MORE severe of LLM vs deterministic (fail toward care).
+            acuity = "emergency" if (
+                data.get("acuity") == "emergency" or base["acuity"] == "emergency"
+            ) else "routine"
+            return {
+                "suspected": suspected,
+                "acuity": acuity,
+                "reasoning": str(data.get("reasoning", ""))[:240],
+                "planner": "groq",
+            }
+        except Exception:
+            return base
+
+    return base
 
 
 def _plan(suspected: list[str]) -> list[dict]:

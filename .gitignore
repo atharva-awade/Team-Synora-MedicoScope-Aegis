@@ -58,3 +58,6 @@ android/build/
 
 # Internal commit-sequencing plan (not part of the project)
 .commit_plan/
+.codex_build*
+output/
+deck/

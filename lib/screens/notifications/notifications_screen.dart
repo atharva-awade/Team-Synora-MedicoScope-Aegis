@@ -13,8 +13,196 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:medicoscope/core/locale/locale_provider.dart';
 import 'package:medicoscope/core/locale/app_strings.dart';
 
+
+enum NotificationModality {
+  all,
+  skinCancer,
+  cardiac,
+  anemia,
+  respiratory,
+  retinopathy,
+  vitals,
+  mindSpace,
+  appointments,
+}
+
+class ModalityMeta {
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  const ModalityMeta({
+    required this.label,
+    required this.icon,
+    required this.color,
+  });
+}
+
+const Map<NotificationModality, ModalityMeta> _modalityMetadata = {
+  NotificationModality.all: ModalityMeta(
+    label: 'All Modalities',
+    icon: Icons.all_inbox_rounded,
+    color: Color(0xFF6366F1),
+  ),
+  NotificationModality.skinCancer: ModalityMeta(
+    label: 'Skin Care / Derm',
+    icon: Icons.coronavirus_outlined,
+    color: Color(0xFFE65100),
+  ),
+  NotificationModality.cardiac: ModalityMeta(
+    label: 'Cardiac / Heart',
+    icon: Icons.favorite_rounded,
+    color: Color(0xFFD32F2F),
+  ),
+  NotificationModality.anemia: ModalityMeta(
+    label: 'Anemia / Pallor',
+    icon: Icons.bloodtype_rounded,
+    color: Color(0xFFC2185B),
+  ),
+  NotificationModality.respiratory: ModalityMeta(
+    label: 'Respiratory',
+    icon: Icons.air_rounded,
+    color: Color(0xFF0097A7),
+  ),
+  NotificationModality.retinopathy: ModalityMeta(
+    label: 'Retinopathy',
+    icon: Icons.visibility_rounded,
+    color: Color(0xFF7B1FA2),
+  ),
+  NotificationModality.vitals: ModalityMeta(
+    label: 'Vitals & Telemetry',
+    icon: Icons.monitor_heart_rounded,
+    color: Color(0xFF00897B),
+  ),
+  NotificationModality.mindSpace: ModalityMeta(
+    label: 'MindSpace',
+    icon: Icons.psychology_rounded,
+    color: Color(0xFF5C6BC0),
+  ),
+  NotificationModality.appointments: ModalityMeta(
+    label: 'Appointments',
+    icon: Icons.event_available_rounded,
+    color: Color(0xFF7C4DFF),
+  ),
+};
+
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
+
+  static NotificationModality classifyItem(Map<String, dynamic> item) {
+    final source = (item['source'] ?? '').toString().toLowerCase();
+    final report = (item['report'] ?? item['clinicalReport'] ?? item['message'] ?? '').toString().toLowerCase();
+    final transcript = (item['transcript'] ?? '').toString().toLowerCase();
+    final combined = '$source $report $transcript';
+
+    if (source == 'appointment_request' || report.startsWith('appointment request') || combined.contains('preferred slot')) {
+      return NotificationModality.appointments;
+    }
+    if (source.contains('skin') || combined.contains('skin lesion') || combined.contains('melanoma') || combined.contains('carcinoma') || combined.contains('skin cancer') || combined.contains('actinic') || combined.contains('keratosis')) {
+      return NotificationModality.skinCancer;
+    }
+    if (source.contains('heart') || source.contains('cardio') || combined.contains('heart sound') || combined.contains('auscultation') || combined.contains('murmur') || combined.contains('arrhythmia') || combined.contains('ecg')) {
+      return NotificationModality.cardiac;
+    }
+    if (source.contains('anemia') || source.contains('pallor') || combined.contains('conjunctival') || combined.contains('hemoglobin') || combined.contains('pallor')) {
+      return NotificationModality.anemia;
+    }
+    if (source.contains('respiratory') || combined.contains('respiratory') || combined.contains('lung sound') || combined.contains('crackles') || combined.contains('wheez') || combined.contains('fev1')) {
+      return NotificationModality.respiratory;
+    }
+    if (source.contains('retin') || combined.contains('retinopathy') || combined.contains('fundus') || combined.contains('macular') || combined.contains('retinal')) {
+      return NotificationModality.retinopathy;
+    }
+    if (source.contains('vital') || item.containsKey('vital_type') || combined.contains('blood pressure') || combined.contains('spo2') || combined.contains('heart rate') || combined.contains('tachycardia') || combined.contains('hypertension')) {
+      return NotificationModality.vitals;
+    }
+    if (source.contains('mindspace') || combined.contains('mindspace') || combined.contains('voice acoustic') || combined.contains('phq')) {
+      return NotificationModality.mindSpace;
+    }
+    return NotificationModality.all;
+  }
+
+  static String formatReadableTimestamp(dynamic rawDate) {
+    if (rawDate == null || rawDate.toString().isEmpty) return 'N/A';
+    try {
+      DateTime? dt;
+      if (rawDate is DateTime) {
+        dt = rawDate.toLocal();
+      } else if (rawDate is int) {
+        dt = DateTime.fromMillisecondsSinceEpoch(rawDate).toLocal();
+      } else if (rawDate is num) {
+        dt = DateTime.fromMillisecondsSinceEpoch(rawDate.toInt()).toLocal();
+      } else {
+        final str = rawDate.toString().trim();
+        final asNum = int.tryParse(str);
+        if (asNum != null && str.length >= 10) {
+          dt = DateTime.fromMillisecondsSinceEpoch(asNum).toLocal();
+        } else {
+          dt = DateTime.tryParse(str)?.toLocal();
+        }
+      }
+      if (dt == null) return rawDate.toString();
+
+      final now = DateTime.now();
+      final diff = now.difference(dt);
+
+      String rel;
+      if (diff.inSeconds < 45) {
+        rel = 'Just now';
+      } else if (diff.inMinutes < 60) {
+        rel = '${diff.inMinutes}m ago';
+      } else if (diff.inHours < 24) {
+        rel = '${diff.inHours}h ago';
+      } else {
+        rel = '${diff.inDays}d ago';
+      }
+
+      final h = dt.hour == 0 ? 12 : (dt.hour > 12 ? dt.hour - 12 : dt.hour);
+      final ap = dt.hour >= 12 ? 'PM' : 'AM';
+      final mi = dt.minute.toString().padLeft(2, '0');
+      final se = dt.second.toString().padLeft(2, '0');
+
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      final isToday = dt.year == now.year && dt.month == now.month && dt.day == now.day;
+      final isYesterday = dt.year == now.year && dt.month == now.month && dt.day == (now.day - 1);
+      final datePart = isToday ? 'Today' : (isYesterday ? 'Yesterday' : '${months[dt.month - 1]} ${dt.day}, ${dt.year}');
+
+      return '$datePart • $h:$mi:$se $ap ($rel)';
+    } catch (_) {
+      return rawDate.toString();
+    }
+  }
+
+  static String exactTimestamp(dynamic rawDate) {
+    if (rawDate == null || rawDate.toString().isEmpty) return 'N/A';
+    try {
+      DateTime? dt;
+      if (rawDate is DateTime) {
+        dt = rawDate.toLocal();
+      } else if (rawDate is int) {
+        dt = DateTime.fromMillisecondsSinceEpoch(rawDate).toLocal();
+      } else if (rawDate is num) {
+        dt = DateTime.fromMillisecondsSinceEpoch(rawDate.toInt()).toLocal();
+      } else {
+        final str = rawDate.toString().trim();
+        final asNum = int.tryParse(str);
+        if (asNum != null && str.length >= 10) {
+          dt = DateTime.fromMillisecondsSinceEpoch(asNum).toLocal();
+        } else {
+          dt = DateTime.tryParse(str)?.toLocal();
+        }
+      }
+      if (dt == null) return rawDate.toString();
+      final h = dt.hour == 0 ? 12 : (dt.hour > 12 ? dt.hour - 12 : dt.hour);
+      final ap = dt.hour >= 12 ? 'PM' : 'AM';
+      final mi = dt.minute.toString().padLeft(2, '0');
+      final se = dt.second.toString().padLeft(2, '0');
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      return '${months[dt.month - 1]} ${dt.day}, ${dt.year} • $h:$mi:$se $ap IST';
+    } catch (_) {
+      return rawDate.toString();
+    }
+  }
 
   @override
   State<NotificationsScreen> createState() => _NotificationsScreenState();
@@ -35,6 +223,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   String? _vitalsExpandedId;
 
   Timer? _refreshTimer;
+  NotificationModality _selectedModality = NotificationModality.all;
 
   @override
   void initState() {
@@ -445,18 +634,173 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     }
   }
 
-  String _timeAgo(String isoDate) {
-    try {
-      final date = DateTime.parse(isoDate);
-      final diff = DateTime.now().toUtc().difference(date);
-      if (diff.inMinutes < 1) return 'Just now';
-      if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-      if (diff.inHours < 24) return '${diff.inHours}h ago';
-      return '${diff.inDays}d ago';
-    } catch (_) {
-      return '';
-    }
+
+  NotificationModality _classifyItem(Map<String, dynamic> item) => NotificationsScreen.classifyItem(item);
+  String _formatReadableTimestamp(dynamic rawDate) => NotificationsScreen.formatReadableTimestamp(rawDate);
+  String _exactTimestamp(dynamic rawDate) => NotificationsScreen.exactTimestamp(rawDate);
+
+  dynamic _resolveTimestamp(Map<String, dynamic> item) {
+    return item['created_at'] ??
+        item['createdAt'] ??
+        item['timestamp'] ??
+        item['date'] ??
+        item['raw_timestamp'];
   }
+
+  String _resolveLocation(Map<String, dynamic> item) {
+    final loc = item['location'] ?? item['locationLabel'] ?? '';
+    if (loc.toString().trim().isNotEmpty) return loc.toString().trim();
+    final lat = item['latitude'];
+    final lng = item['longitude'];
+    if (lat != null && lng != null) {
+      return 'GPS: ${(lat as num).toStringAsFixed(4)}°, ${(lng as num).toStringAsFixed(4)}°';
+    }
+    return '';
+  }
+
+  String _resolveMapsUrl(Map<String, dynamic> item) {
+    final url = item['maps_url'] ?? item['mapsUrl'] ?? '';
+    if (url.toString().trim().isNotEmpty) return url.toString().trim();
+    final lat = item['latitude'];
+    final lng = item['longitude'];
+    if (lat != null && lng != null) {
+      return 'https://www.google.com/maps?q=$lat,$lng';
+    }
+    return '';
+  }
+
+  String _cleanReportText(String? rawReport) {
+    if (rawReport == null || rawReport.trim().isEmpty) {
+      return 'No report details available';
+    }
+    var text = rawReport;
+    // Replace **Header:** or **Header** with clean header
+    text = text.replaceAllMapped(RegExp(r'\*\*([^*]+)\*\*'), (m) => m.group(1)?.trim() ?? '');
+    // Replace bullet * with clean bullet dot •
+    text = text.replaceAllMapped(RegExp(r'(^|\n)\s*[*•-]\s+', multiLine: true), (m) => '${m.group(1)}• ');
+    // Strip any leftover rogue asterisks completely
+    text = text.replaceAll('*', '');
+    return text.trim();
+  }
+
+  Widget _buildModalityBadge(NotificationModality mod, bool isDark) {
+    final meta = _modalityMetadata[mod] ?? _modalityMetadata[NotificationModality.all]!;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: meta.color.withValues(alpha: isDark ? 0.25 : 0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: meta.color.withValues(alpha: 0.4), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(meta.icon, size: 12, color: meta.color),
+          const SizedBox(width: 4),
+          Text(
+            meta.label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: meta.color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModalityFilterBar(bool isDark) {
+    final allItems = [..._mentalNotifications, ..._vitalsAlerts];
+    return Container(
+      height: 44,
+      margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacingMedium, vertical: 6),
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: NotificationModality.values.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final mod = NotificationModality.values[index];
+          final meta = _modalityMetadata[mod]!;
+          final isSelected = _selectedModality == mod;
+
+          final count = mod == NotificationModality.all
+              ? allItems.length
+              : allItems.where((i) => _classifyItem(i) == mod).length;
+
+          return InkWell(
+            onTap: () {
+              setState(() {
+                _selectedModality = mod;
+                if (mod == NotificationModality.vitals) {
+                  _tabController.animateTo(0);
+                } else if (mod != NotificationModality.all) {
+                  _tabController.animateTo(1);
+                }
+              });
+            },
+            borderRadius: BorderRadius.circular(20),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? meta.color
+                    : (isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.04)),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isSelected ? meta.color : (isDark ? Colors.white12 : Colors.black12),
+                  width: isSelected ? 1.5 : 1.0,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    meta.icon,
+                    size: 14,
+                    color: isSelected ? Colors.white : (isDark ? Colors.white70 : Colors.black87),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    meta.label,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      color: isSelected ? Colors.white : (isDark ? Colors.white70 : Colors.black87),
+                    ),
+                  ),
+                  if (count > 0) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? Colors.white.withOpacity(0.25)
+                            : meta.color.withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '$count',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: isSelected ? Colors.white : meta.color,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -498,6 +842,8 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                   ],
                 ),
               ),
+
+              _buildModalityFilterBar(isDark),
 
               // Tab bar
               Container(
@@ -713,10 +1059,13 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                           ),
                         ),
                         const SizedBox(width: 8),
+                        _buildModalityBadge(_classifyItem(a), isDark),
+                        const SizedBox(width: 8),
                         Text(
-                          _timeAgo(a['created_at'] ?? ''),
+                          _formatReadableTimestamp(_resolveTimestamp(a)),
                           style: TextStyle(
                             fontSize: 11,
+                            fontWeight: FontWeight.w600,
                             color: isDark
                                 ? AppTheme.darkTextDim
                                 : AppTheme.textLight,
@@ -801,6 +1150,12 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                             ),
                           ),
                         ),
+                      _buildDetailRow(
+                        isDark,
+                        Icons.schedule_rounded,
+                        'Real Timestamp',
+                        _exactTimestamp(_resolveTimestamp(a)),
+                      ),
                       _buildDetailRow(
                         isDark,
                         Icons.access_time,
@@ -1078,10 +1433,13 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                           ),
                         ),
                         const SizedBox(width: 8),
+                        _buildModalityBadge(_classifyItem(n), isDark),
+                        const SizedBox(width: 8),
                         Text(
-                          _timeAgo(n['created_at'] ?? ''),
+                          _formatReadableTimestamp(_resolveTimestamp(n)),
                           style: TextStyle(
                             fontSize: 11,
+                            fontWeight: FontWeight.w600,
                             color: isDark
                                 ? AppTheme.darkTextDim
                                 : AppTheme.textLight,
@@ -1093,6 +1451,13 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                       const SizedBox(height: 12),
                       Divider(
                         color: isDark ? Colors.white12 : Colors.black12,
+                      ),
+                      const SizedBox(height: 8),
+                      _buildDetailRow(
+                        isDark,
+                        Icons.schedule_rounded,
+                        'Real Timestamp',
+                        _exactTimestamp(_resolveTimestamp(n)),
                       ),
                       const SizedBox(height: 8),
                       Text(
@@ -1107,8 +1472,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        n['report'] ??
-                            AppStrings.get('no_report_available', lang),
+                        _cleanReportText(n['report'] ?? n['clinicalReport']),
                         style: TextStyle(
                           fontSize: 13,
                           height: 1.5,
@@ -1127,36 +1491,35 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                               '${(n['voice_marker_headline']?.toString().isNotEmpty ?? false) ? ' - ${n['voice_marker_headline']}' : ''}',
                         ),
                       ],
-                      if ((n['location']?.toString().isNotEmpty ?? false) ||
-                          (n['maps_url']?.toString().isNotEmpty ?? false)) ...[
+                      if (_resolveLocation(n).isNotEmpty || _resolveMapsUrl(n).isNotEmpty) ...[
                         const SizedBox(height: 10),
                         _buildDetailRow(
                           isDark,
                           Icons.location_on,
                           AppStrings.get('location', lang),
-                          (n['location']?.toString().isNotEmpty ?? false)
-                              ? n['location'].toString()
-                              : 'Shared',
+                          _resolveLocation(n).isNotEmpty ? _resolveLocation(n) : 'Patient Shared GPS',
                         ),
-                        if (n['maps_url'] != null &&
-                            (n['maps_url'] as String).isNotEmpty)
-                          GestureDetector(
-                            onTap: () => launchUrl(Uri.parse(n['maps_url'])),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.map,
-                                    size: 14, color: Color(0xFF667EEA)),
-                                const SizedBox(width: 8),
-                                Text(
-                                  AppStrings.get('open_maps', lang),
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF667EEA),
-                                    decoration: TextDecoration.underline,
+                        if (_resolveMapsUrl(n).isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4, bottom: 4),
+                            child: GestureDetector(
+                              onTap: () => launchUrl(Uri.parse(_resolveMapsUrl(n))),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.map,
+                                      size: 14, color: Color(0xFF667EEA)),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    AppStrings.get('open_maps', lang),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF667EEA),
+                                      decoration: TextDecoration.underline,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                       ],

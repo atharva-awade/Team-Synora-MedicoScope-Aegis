@@ -1,3 +1,4 @@
+import 'package:medicoscope/core/widgets/language_selector_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:medicoscope/core/locale/locale_provider.dart';

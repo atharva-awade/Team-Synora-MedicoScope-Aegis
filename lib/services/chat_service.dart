@@ -6,15 +6,27 @@ import 'package:medicoscope/services/api_service.dart';
 import 'package:medicoscope/services/disease_risk_store.dart';
 
 class ChatService {
+  static const String _domainGuardrail =
+      '[MEDIBOT SYSTEM DIRECTIVE & EMOTIONAL INTELLIGENCE]:\n'
+      '1. EMOTIONAL EMPATHY: You are MediBot, MedicoScope\'s empathetic, comforting medical assistant. Speak with deep warmth, compassion, and emotional sensitivity. Never give cold, dry, or generic answers. Validate patient fears and anxieties gently.\n'
+      '2. PATIENT HISTORY AWARENESS: Actively personalize your answers using the PATIENT DATA below (recent scans, vitals BP/HR, MindSpace check-ins, medications). Acknowledge their health journey specifically.\n'
+      '3. FINDING NEARBY DOCTORS: MedicoScope has a built-in real-time GPS "Find Nearby Doctors" module. NEVER ask the patient for a pincode or address, and NEVER hallucinate doctor names. Give a clear, beautifully formatted step-by-step walkthrough to use MedicoScope\'s native GPS Nearby Doctors feature.\n'
+      '4. DOMAIN BOUNDARIES: Answer ONLY health, clinical, and medical topics. Strictly decline coding, programming, mathematics, or non-medical queries.\n'
+      '5. NO RAW HTML: NEVER use raw HTML tags such as <ul>, <ol>, <li>, </li>, </ul>, </ol>, <br>, <table>, <p>, <span>, <div> anywhere, including inside tables. Use clean plain text with bullet symbols (•) or clean markdown.\n'
+      '6. CLEAN BOLD & NO STRAY ASTERISKS: When bolding words, use clean markdown **word** directly. NEVER put an asterisk in front of a bold word (do NOT write * **word** or *word or ***word***). Use bullet dots (•) or clear headers instead of asterisk prefixes.\n'
+      '7. FORMATTING: Format all answers with clear Markdown headers, bullet points (•), and supportive emojis.';
+
   /// Trim the medical context so we don't blow up on Groq's token limit.
   /// Keeps the most useful recent data and truncates the tail.
   static String _trimContext(String? context, {int maxChars = 3500}) {
-    if (context == null || context.isEmpty) return '';
-    if (context.length <= maxChars) return context;
-    // Keep the head (profile) + tail (most recent entries).
-    final head = context.substring(0, maxChars ~/ 3);
-    final tail = context.substring(context.length - (maxChars * 2 ~/ 3));
-    return '$head\n…\n$tail';
+    final base = (context != null && context.isNotEmpty)
+        ? '$_domainGuardrail\n\n$context'
+        : _domainGuardrail;
+    if (base.length <= maxChars) return base;
+    // Keep the head (guardrail + profile) + tail (most recent entries).
+    final head = base.substring(0, maxChars ~/ 3);
+    final tail = base.substring(base.length - (maxChars * 2 ~/ 3));
+    return '$head\n...\n$tail';
   }
 
   /// Non-streaming call - uses the smaller streaming-capable model via

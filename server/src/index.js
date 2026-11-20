@@ -22,6 +22,7 @@ const qualityGateRoutes = require('./routes/quality-gate');
 const episodeRoutes = require('./routes/episodes');
 const toolsRoutes = require('./routes/tools');
 const appointmentRoutes = require('./routes/appointments');
+const ambulanceRoutes = require('./routes/ambulance');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -75,6 +76,8 @@ app.use('/api/quality-gate', qualityGateRoutes);
 app.use('/api/episodes', episodeRoutes);
 app.use('/api/tools', toolsRoutes);
 app.use('/api/appointments', appointmentRoutes);
+app.use('/api/ambulance', ambulanceRoutes);
+app.use('/api/alerts', ambulanceRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

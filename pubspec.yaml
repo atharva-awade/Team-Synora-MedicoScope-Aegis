@@ -108,6 +108,8 @@ dependencies:
 
   # Markdown rendering for the medical-assistant chat (bold, lists, headings)
   flutter_markdown: ^0.7.4
+  audioplayers: ^6.6.0
+  flutter_tts: ^4.2.5
 
 dev_dependencies:
   flutter_test:

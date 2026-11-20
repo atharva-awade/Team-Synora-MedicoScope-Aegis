@@ -1,3 +1,4 @@
+import 'package:medicoscope/core/widgets/language_selector_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:medicoscope/core/locale/locale_provider.dart';
@@ -87,22 +88,28 @@ class _UserGuideScreenState extends State<UserGuideScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              // Skip button
+              // Top Bar with Language Selector & Skip button
               Padding(
-                padding: const EdgeInsets.all(AppTheme.spacingLarge),
-                child: Align(
-                  alignment: Alignment.topRight,
-                  child: TextButton(
-                    onPressed: _navigateToWelcome,
-                    child: Text(
-                      AppStrings.get('skip', lang),
-                      style: TextStyle(
-                        color: AppTheme.textGray,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppTheme.spacingLarge,
+                  vertical: AppTheme.spacingSmall,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const LanguageSelectorButton(compact: true),
+                    TextButton(
+                      onPressed: _navigateToWelcome,
+                      child: Text(
+                        AppStrings.get('skip', lang),
+                        style: TextStyle(
+                          color: AppTheme.textGray,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ),
 

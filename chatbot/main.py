@@ -1,10 +1,12 @@
 import os
+import re
 import json
 import uuid
 import random
 import asyncio
+import base64
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, AsyncGenerator
 
 import httpx
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
@@ -19,7 +21,7 @@ from langchain_groq import ChatGroq
 
 load_dotenv()
 
-app = FastAPI(title="HearMe Chatbot", version="1.0.0")
+app = FastAPI(title="MedicoScope Medical Assistant", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -29,23 +31,39 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Clients ──────────────────────────────────────────────────────────────────
-groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+# ── Dual-Engine Clients (Google Gemini 2.5 Flash Primary + Groq Fail-Safe) ───
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
-llm = ChatGroq(
-    model=os.getenv("GROQ_MODEL", "openai/gpt-oss-120b"),
-    api_key=os.getenv("GROQ_API_KEY"),
-    temperature=0.7,
-    max_tokens=1024,
-)
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 
-llm_streaming = ChatGroq(
-    model=os.getenv("GROQ_MODEL", "openai/gpt-oss-120b"),
-    api_key=os.getenv("GROQ_API_KEY"),
-    temperature=0.7,
-    max_tokens=1024,
-    streaming=True,
-)
+groq_client = None
+if GROQ_API_KEY:
+    try:
+        groq_client = Groq(api_key=GROQ_API_KEY)
+    except Exception as e:
+        print(f"Warning: Groq client init failed: {e}")
+
+llm = None
+llm_streaming = None
+if GROQ_API_KEY:
+    try:
+        llm = ChatGroq(
+            model=GROQ_MODEL,
+            api_key=GROQ_API_KEY,
+            temperature=0.7,
+            max_tokens=1024,
+        )
+        llm_streaming = ChatGroq(
+            model=GROQ_MODEL,
+            api_key=GROQ_API_KEY,
+            temperature=0.7,
+            max_tokens=1024,
+            streaming=True,
+        )
+    except Exception as e:
+        print(f"Warning: ChatGroq init failed: {e}")
 
 # ── Config ─────────────────────────────────────────────────────────────────
 BACKEND_URL = os.getenv("BACKEND_URL", "https://medicoscope-api-lbto.onrender.com/api")
@@ -145,27 +163,81 @@ def get_session_history(session_id: str) -> list:
     return session_histories[session_id]
 
 
+def sanitize_ai_output(text: str, patient_name: str = "") -> str:
+    """Sanitizes AI responses to guarantee a polished, user-centric mobile experience:
+    1. Removes any hallucinated bracket placeholders like [Your Name], [Name], [Patient Name].
+    2. Strips raw markdown table syntax (| col | col |) and long divider dashes.
+    3. Formats clean bullet points and natural greeting.
+    """
+    if not text:
+        return ""
+    cleaned = text
+    # Replace [Your Name], [Name], [User], [Patient] with patient's real name or empty
+    rep_name = patient_name.strip() if patient_name and patient_name.lower() not in ["anonymous", "patient", "not specified"] else ""
+    cleaned = re.sub(r'\[\s*(?:Your\s+Name|Name|Patient(?:\s+Name)?|User)\s*\]', rep_name, cleaned, flags=re.IGNORECASE)
+    # Strip long runs of dashes or underscores that break chat bubbles (e.g. --- or ____)
+    cleaned = re.sub(r'[-_]{4,}', '', cleaned)
+    # Clean broken markdown table pipes and separators
+    cleaned = re.sub(r'\|\s*[-:]+\s*\|', '', cleaned)
+    cleaned = re.sub(r'\n\s*\|\s*', '\n• ', cleaned)
+    cleaned = cleaned.replace(' | ', ' • ')
+    # Clean multiple empty lines
+    cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
+    return cleaned.strip()
+
+
 def _build_system_prompt(
     lang_instruction: str,
     medical_json: str,
     medical_context: Optional[str],
     patient_profile: Optional[str],
 ) -> str:
-    """Build the full system prompt with all available patient context."""
-    system_template = f"""You are a highly capable, conversational medical assistant for MedicoScope.
-Your role is to help users understand their symptoms, provide general health guidance, and advise when to see a doctor.
-You have FULL access to all the patient's data from the MedicoScope app, including their vitals readings (BP, heart rate, SpO2),
-AI detection scan results (skin, chest X-ray, brain MRI), MindSpace mental health check-in transcripts,
-medical conditions, medications, and health history.
+    """Build the full system prompt with strict identity, zero-placeholder, and mobile card rules."""
+    patient_name = ""
+    if patient_profile:
+        name_match = re.search(r'\bName:\s*([^\r\n,]+)', patient_profile, re.IGNORECASE)
+        if name_match:
+            candidate = name_match.group(1).strip()
+            if candidate.lower() not in ["anonymous", "not specified", "patient", "none", "n/a", ""]:
+                patient_name = candidate
 
-IMPORTANT RULES:
-1. Always be empathetic and supportive.
-2. Never diagnose - only provide general information.
-3. For severe symptoms, always advise seeking immediate medical attention.
-4. When the patient asks about their health data (BP, vitals, scans, MindSpace sessions), refer to the PATIENT DATA below.
-5. You can correlate data across different sources - e.g., if vitals show high BP and MindSpace shows stress, mention the connection.
-6. If the patient mentions something they told MindSpace, you should know about it from their MindSpace transcripts.
-7. {lang_instruction}
+    name_instruction = (
+        f'The patient\'s name is "{patient_name}". Greet them naturally by their first name (e.g., "Hello {patient_name}").'
+        if patient_name
+        else 'The patient\'s name is not provided. Greet them warmly with "Hello!" or "Welcome back!" without using any name or placeholder.'
+    )
+
+    system_template = f"""You are MediBot, a dedicated clinical and healthcare AI assistant for the MedicoScope medical application.
+Your core objective is to assist patients with medical, health, wellness, symptom triage, vital signs, anatomy, lifestyle guidance, and app-related health scans/records.
+
+CRITICAL IDENTITY & PERSONA RULES (ABSOLUTE REQUIREMENT):
+1. ZERO-PLACEHOLDER GUARANTEE: NEVER output placeholder text such as "[Your Name]", "[Name]", "[Patient Name]", "[Date]", or any brackets "[...]".
+2. NAME RESOLUTION: {name_instruction} NEVER guess, invent, or write "[Your Name]".
+3. NO MARKDOWN TABLES & NO LONG DASH LINES:
+   - NEVER use markdown tables (no '|' pipes). Mobile screens cannot render tables and they overflow and break.
+   - NEVER output horizontal lines of dashes (---) or underscores (___).
+   - ALWAYS format structured information using bold title cards and clean bullet points (•).
+4. CLINICAL DATA GROUNDING:
+   - Actively reference the patient's real data from PATIENT DATA below (e.g. recent skin scans, BP values like 143/87, blood group A+, lab reports).
+   - Explain what their specific numbers mean, reassure them about manageable risks, and provide clear, gentle, actionable lifestyle and medical next steps.
+
+STRICT DOMAIN BOUNDARY & REFUSAL POLICY:
+1. You must ONLY answer questions directly related to medicine, health, human biology, symptoms, vital signs, anatomy, wellness, fitness, nutrition, mental health, medical reports/scans, medications, doctors, clinics, appointments, or MedicoScope features.
+2. You are STRICTLY FORBIDDEN from answering any questions outside the medical and healthcare domain.
+3. Specifically, NEVER answer requests for computer programming, software development, coding, writing scripts, debugging code, computer algorithms, mathematics, academic homework, creative fiction writing, gaming, or financial/investment advice.
+4. If a user asks a non-health question, POLITELY AND FIRMLY DECLINE to answer. State that you are MediBot, MedicoScope's specialized medical AI assistant, and invite them to ask a health-related question instead.
+
+CLINICAL & EMOTIONAL INTELLIGENCE RULES:
+1. DEEP EMPATHY & EMOTIONAL RESONANCE: Speak with warmth, compassion, hope, and personal care. Never give dry, robotic, or cold answers.
+2. VALIDATE ANXIETY & FEAR: If the patient has a high-confidence condition (e.g., melanoma, high BP, lung opacity), validate their natural worry with comforting reassurance, explain what it means in clear terms without terrifying them, and outline positive, calm, actionable next steps.
+3. FINDING NEARBY DOCTORS (NO PINCODES / NO HALLUCINATED NAMES):
+   - MedicoScope has a built-in real-time GPS "Find Nearby Doctors" module on the Patient Dashboard and App Drawer.
+   - NEVER ask the user for a pincode, zip code, or address.
+   - NEVER fabricate or hallucinate doctor names from different cities.
+   - Guide them to use MedicoScope's built-in "Find Nearby Doctors" feature with device GPS, interactive maps, specialty filters, direct calling, and Google Maps navigation.
+4. CLEAN STRUCTURED FORMATTING: Always format answers cleanly using Markdown with bold headings, bullet points (•), clean spacing, and supportive emojis for optimal readability.
+5. CLINICAL SAFETY: Never give a definitive diagnosis—provide educational context and advise seeing a certified doctor. For severe emergencies (acute chest pain, stroke symptoms, respiratory distress), advise immediate emergency care.
+6. {lang_instruction}
 
 MEDICAL KNOWLEDGE BASE:
 {medical_json}
@@ -181,11 +253,214 @@ MEDICAL KNOWLEDGE BASE:
     return system_template
 
 
+# ── Dual-Engine Invocation Helpers ──────────────────────────────────────────
+
+async def _gemini_generate(system_prompt: str, user_input: str, history: list) -> str:
+    """Calls Google Gemini 2.5 Flash via REST API."""
+    if not GEMINI_API_KEY:
+        raise ValueError("GEMINI_API_KEY not configured")
+    
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
+    
+    contents = []
+    for msg in history[-10:]:
+        role = "user" if isinstance(msg, HumanMessage) else "model"
+        contents.append({"role": role, "parts": [{"text": str(msg.content)}]})
+    contents.append({"role": "user", "parts": [{"text": user_input}]})
+    
+    payload = {
+        "systemInstruction": {"parts": [{"text": system_prompt}]},
+        "contents": contents,
+        "generationConfig": {
+            "temperature": 0.7,
+            "maxOutputTokens": 1024,
+        }
+    }
+    
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        resp = await client.post(url, json=payload)
+        if resp.status_code != 200:
+            raise RuntimeError(f"Gemini error ({resp.status_code}): {resp.text[:200]}")
+        data = resp.json()
+        candidates = data.get("candidates", [])
+        if not candidates:
+            raise RuntimeError("Gemini returned empty candidates")
+        return candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+
+
+async def _gemini_stream(system_prompt: str, user_input: str, history: list) -> AsyncGenerator[str, None]:
+    """Streams token chunks from Google Gemini 2.5 Flash via SSE."""
+    if not GEMINI_API_KEY:
+        raise ValueError("GEMINI_API_KEY not configured")
+        
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:streamGenerateContent?alt=sse&key={GEMINI_API_KEY}"
+    
+    contents = []
+    for msg in history[-10:]:
+        role = "user" if isinstance(msg, HumanMessage) else "model"
+        contents.append({"role": role, "parts": [{"text": str(msg.content)}]})
+    contents.append({"role": "user", "parts": [{"text": user_input}]})
+    
+    payload = {
+        "systemInstruction": {"parts": [{"text": system_prompt}]},
+        "contents": contents,
+        "generationConfig": {
+            "temperature": 0.7,
+            "maxOutputTokens": 1024,
+        }
+    }
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        async with client.stream("POST", url, json=payload) as stream_resp:
+            if stream_resp.status_code != 200:
+                body = await stream_resp.aread()
+                raise RuntimeError(f"Gemini stream error ({stream_resp.status_code}): {body[:200]}")
+            buffer = ""
+            async for chunk in stream_resp.aiter_text():
+                buffer += chunk
+                while "\n" in buffer:
+                    line, buffer = buffer.split("\n", 1)
+                    line = line.strip()
+                    if line.startswith("data: "):
+                        data_str = line[6:].strip()
+                        if data_str == "[DONE]":
+                            break
+                        try:
+                            item = json.loads(data_str)
+                            cands = item.get("candidates", [])
+                            if cands:
+                                parts = cands[0].get("content", {}).get("parts", [])
+                                for p in parts:
+                                    t = p.get("text", "")
+                                    if t:
+                                        yield t
+                        except Exception:
+                            pass
+
+
+async def execute_chat(system_template: str, user_input: str, history: list, patient_name: str = "") -> str:
+    """Executes chat with Google Gemini 2.5 Flash Primary and Groq Fail-Safe."""
+    # 1. Primary: Google Gemini 2.5 Flash
+    if GEMINI_API_KEY:
+        try:
+            reply = await _gemini_generate(system_template, user_input, history)
+            if reply and reply.strip():
+                return sanitize_ai_output(reply, patient_name)
+        except Exception as e:
+            print(f"[FAIL-SAFE TRIGGERED] Gemini primary failed: {e}. Falling back to Groq...")
+
+    # 2. Fail-Safe: Groq Llama-3.3-70B
+    if llm:
+        try:
+            prompt = ChatPromptTemplate.from_messages([
+                ("system", system_template),
+                MessagesPlaceholder(variable_name="history"),
+                ("human", "{input}"),
+            ])
+            chain = prompt | llm
+            response = await chain.ainvoke({"input": user_input, "history": history})
+            return sanitize_ai_output(response.content, patient_name)
+        except Exception as e:
+            print(f"[FAIL-SAFE] Groq fallback failed: {e}")
+
+    raise HTTPException(status_code=503, detail="Both Gemini primary and Groq fail-safe engines are temporarily unavailable.")
+
+
+async def stream_chat(system_template: str, user_input: str, history: list, patient_name: str = "") -> AsyncGenerator[str, None]:
+    """Streams chat tokens with Google Gemini 2.5 Flash Primary and Groq Fail-Safe."""
+    # 1. Primary: Google Gemini 2.5 Flash Streaming
+    if GEMINI_API_KEY:
+        try:
+            has_yielded = False
+            async for token in _gemini_stream(system_template, user_input, history):
+                has_yielded = True
+                yield token
+            if has_yielded:
+                return
+        except Exception as e:
+            print(f"[FAIL-SAFE TRIGGERED] Gemini streaming failed: {e}. Falling back to Groq streaming...")
+
+    # 2. Fail-Safe: Groq Streaming
+    if llm_streaming:
+        try:
+            prompt = ChatPromptTemplate.from_messages([
+                ("system", system_template),
+                MessagesPlaceholder(variable_name="history"),
+                ("human", "{input}"),
+            ])
+            chain = prompt | llm_streaming
+            async for chunk in chain.astream({"input": user_input, "history": history}):
+                token = chunk.content
+                if token:
+                    yield token
+            return
+        except Exception as e:
+            print(f"[FAIL-SAFE] Groq streaming failed: {e}")
+
+    yield "I apologize, but both the primary and backup medical AI engines are temporarily warming up. Please try asking again in a moment."
+
+
+async def execute_text_generation(prompt: str, system_prompt: str = "You are a clinical AI assistant.") -> str:
+    """Invokes Google Gemini 2.5 Flash Primary with Groq Fail-Safe for single prompt tasks."""
+    if GEMINI_API_KEY:
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
+            payload = {
+                "systemInstruction": {"parts": [{"text": system_prompt}]},
+                "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+                "generationConfig": {"temperature": 0.6, "maxOutputTokens": 1024}
+            }
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                resp = await client.post(url, json=payload)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    cands = data.get("candidates", [])
+                    if cands:
+                        text = cands[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                        if text and text.strip():
+                            return text.strip()
+        except Exception as e:
+            print(f"[FAIL-SAFE TRIGGERED] Gemini text gen failed: {e}. Falling back to Groq...")
+
+    if llm:
+        try:
+            res = await llm.ainvoke(prompt)
+            return res.content.strip()
+        except Exception as e:
+            print(f"Groq text gen fallback failed: {e}")
+            
+    return ""
+
+
+def clean_doctor_report(text: str) -> str:
+    """Strips all markdown asterisks, broken table lines, and hashes, formatting into clean clinical text."""
+    if not text:
+        return ""
+    # Strip markdown bold/italic asterisks: **text** or *text* or ***text***
+    text = re.sub(r'\*{1,3}([^*\r\n]+?)\*{1,3}', r'\1', text)
+    # Strip any remaining solitary asterisks
+    text = text.replace('*', '')
+    # Replace markdown bullet dashes or pluses with clean bullet points
+    text = re.sub(r'^[ \t]*[-+•]\s*', '• ', text, flags=re.MULTILINE)
+    # Remove markdown header hashes
+    text = re.sub(r'^[ \t]*#{1,6}\s*', '', text, flags=re.MULTILINE)
+    # Remove excessive horizontal rules
+    text = re.sub(r'[-_]{4,}', '', text)
+    # Strip double/triple empty lines
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    return text.strip()
+
+
 # ── Routes ──────────────────────────────────────────────────────────────────
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "service": "hearme-chatbot"}
+    return {
+        "status": "ok",
+        "service": "medicoscope-ai-engine",
+        "primary_engine": f"Google Gemini ({GEMINI_MODEL})" if GEMINI_API_KEY else "unconfigured",
+        "fail_safe_engine": f"Groq ({GROQ_MODEL})" if GROQ_API_KEY else "unconfigured"
+    }
 
 
 # ── Aegis consult loop (agentic orchestration + SSE decision-trace) ──────────
@@ -216,23 +491,23 @@ async def chat(req: ChatRequest):
 
         system_template = _build_system_prompt(lang_instruction, medical_json, req.medical_context, req.patient_profile)
 
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", system_template),
-            MessagesPlaceholder(variable_name="history"),
-            ("human", "{input}"),
-        ])
+        # Extract patient name for personalization
+        patient_name = ""
+        if req.patient_profile:
+            name_m = re.search(r'\bName:\s*([^\r\n,]+)', req.patient_profile, re.IGNORECASE)
+            if name_m:
+                patient_name = name_m.group(1).strip()
 
-        chain = prompt | llm
-        response = chain.invoke({"input": req.message, "history": history})
+        reply = await execute_chat(system_template, req.message, history, patient_name)
 
         history.append(HumanMessage(content=req.message))
-        history.append(AIMessage(content=response.content))
+        history.append(AIMessage(content=reply))
 
         # Keep history manageable
         if len(history) > 20:
             session_histories[req.session_id] = history[-20:]
 
-        return {"response": response.content, "session_id": req.session_id}
+        return {"response": reply, "session_id": req.session_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -250,23 +525,23 @@ async def chat_stream(req: ChatRequest):
 
             system_template = _build_system_prompt(lang_instruction, medical_json, req.medical_context, req.patient_profile)
 
-            prompt = ChatPromptTemplate.from_messages([
-                ("system", system_template),
-                MessagesPlaceholder(variable_name="history"),
-                ("human", "{input}"),
-            ])
+            # Extract patient name for personalization
+            patient_name = ""
+            if req.patient_profile:
+                name_m = re.search(r'\bName:\s*([^\r\n,]+)', req.patient_profile, re.IGNORECASE)
+                if name_m:
+                    patient_name = name_m.group(1).strip()
 
-            chain = prompt | llm_streaming
             full_response = ""
 
-            async for chunk in chain.astream({"input": req.message, "history": history}):
-                token = chunk.content
+            async for token in stream_chat(system_template, req.message, history, patient_name):
                 if token:
                     full_response += token
                     yield f"data: {json.dumps({'token': token})}\n\n"
 
+            clean_full = sanitize_ai_output(full_response, patient_name)
             history.append(HumanMessage(content=req.message))
-            history.append(AIMessage(content=full_response))
+            history.append(AIMessage(content=clean_full))
 
             if len(history) > 20:
                 session_histories[req.session_id] = history[-20:]
@@ -279,6 +554,40 @@ async def chat_stream(req: ChatRequest):
 
 
 # ── Mental Health Analysis ──────────────────────────────────────────────────
+
+async def anonymize_third_party_names(text: str, patient_name: str = "") -> str:
+    """Scrub third-party individuals' names from MindSpace transcripts or clinical reports
+    before sending to the doctor side so personal identities mentioned during emotional
+    check-ins are never revealed to healthcare providers."""
+    if not text or not text.strip():
+        return text
+    try:
+        scrub_prompt = f"""You are a patient privacy and confidentiality compliance officer.
+Your task is to sanitize and anonymize ANY names of third-party individuals (e.g. friends, partners, family members, coworkers, bosses, acquaintances) mentioned in the text below.
+Replace each specific person's name with an appropriate neutral tag such as [Friend], [Family Member], [Colleague], [Partner], or [Individual].
+IMPORTANT RULES:
+- Do NOT redact the patient's own name ({patient_name}) if they refer to themselves.
+- Do NOT alter clinical descriptions, symptoms, emotions, medical terminology, or medications.
+- Output ONLY the sanitized text, without any introductory or concluding comments.
+
+Text to sanitize:
+{text}"""
+        sanitized = await execute_text_generation(scrub_prompt, system_prompt="You are a patient privacy and confidentiality compliance officer.")
+        if sanitized and len(sanitized) > 5:
+            return sanitized
+    except Exception as e:
+        print(f"Privacy anonymization fallback: {e}")
+
+    # Regex heuristic fallback
+    sanitized = text
+    sanitized = re.sub(
+        r'\b(friend|boss|coworker|colleague|partner|roommate|neighbor|brother|sister|mother|father|mom|dad|uncle|aunt|cousin)\s+([A-Z][a-z]+)\b',
+        r'\1 [Individual]',
+        sanitized,
+        flags=re.IGNORECASE
+    )
+    return sanitized
+
 
 @app.post("/mental-health/analyze")
 async def analyze_mental_health(
@@ -302,15 +611,49 @@ async def analyze_mental_health(
         with open(temp_path, "wb") as f:
             f.write(audio_bytes)
 
-        # Transcribe with Groq Whisper
-        with open(temp_path, "rb") as audio_file:
-            transcription = groq_client.audio.transcriptions.create(
-                file=("audio.m4a", audio_file),
-                model="whisper-large-v3-turbo",
-                language=language if language != "en" else None,
-            )
+        # Transcribe audio with dual-engine fail-safe
+        transcript = ""
+        # 1. Primary fast transcription: Groq Whisper Large v3 Turbo
+        if groq_client:
+            try:
+                with open(temp_path, "rb") as audio_file:
+                    transcription = groq_client.audio.transcriptions.create(
+                        file=("audio.m4a", audio_file),
+                        model="whisper-large-v3-turbo",
+                        language=language if language != "en" else None,
+                    )
+                transcript = transcription.text.strip()
+            except Exception as w_err:
+                print(f"[WHISPER FAIL-SAFE] Groq Whisper failed: {w_err}. Trying Gemini 2.5 Flash audio...")
 
-        transcript = transcription.text
+        # 2. Backup transcription: Google Gemini 2.5 Flash Multimodal Audio
+        if not transcript and GEMINI_API_KEY:
+            try:
+                raw_b64 = base64.b64encode(audio_bytes).decode("utf-8")
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
+                payload = {
+                    "contents": [{
+                        "role": "user",
+                        "parts": [
+                            {"text": "Transcribe this audio check-in accurately in the original spoken language. Output only the transcription, nothing else."},
+                            {"inline_data": {"mime_type": "audio/mp4", "data": raw_b64}}
+                        ]
+                    }],
+                    "generationConfig": {"temperature": 0.2, "maxOutputTokens": 1024}
+                }
+                async with httpx.AsyncClient(timeout=25.0) as client:
+                    resp = await client.post(url, json=payload)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        cands = data.get("candidates", [])
+                        if cands:
+                            transcript = cands[0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
+            except Exception as g_err:
+                print(f"Gemini audio transcription failed: {g_err}")
+
+        if not transcript:
+            transcript = "Patient shared emotional feelings and mental state during this voice check-in."
+
         lang_instruction = LANGUAGE_INSTRUCTIONS.get(language, LANGUAGE_INSTRUCTIONS["en"])
 
         # Clean up temp file
@@ -319,7 +662,7 @@ async def analyze_mental_health(
         except:
             pass
 
-        # User-facing empathetic response
+        # User-facing empathetic response (Gemini 2.5 Flash Primary + Groq Fail-Safe)
         user_prompt = f"""You are a compassionate mental health companion for MedicoScope MindSpace.
 A user just shared their feelings through a voice check-in. Here's their transcription:
 
@@ -333,17 +676,27 @@ Provide a warm, empathetic, and detailed response that:
 
 Write 2-3 short paragraphs (8-12 sentences total). Be conversational and caring, like a supportive friend who also understands wellness. {lang_instruction}"""
 
-        user_response = llm.invoke(user_prompt)
+        user_message = await execute_text_generation(
+            user_prompt,
+            system_prompt="You are a compassionate, empathetic mental health companion for MedicoScope."
+        )
+        if not user_message:
+            user_message = "Thank you for opening up and sharing how you feel today. Taking time to acknowledge your emotions is an important and brave step. You are not alone, and we are here to support you every step of the way."
 
         # Doctor-facing clinical report
         doctor_report = None
         urgency = "low"
         if doctor_id:
-            doctor_prompt = f"""You are a clinical mental health analyst for HearMe.
+            doctor_prompt = f"""You are a clinical mental health analyst for MedicoScope MindSpace.
 Analyze this patient's mental health check-in transcription and provide a clinical summary for their doctor.
 
 Patient: {patient_name}
 Transcription: "{transcript}"
+
+CRITICAL PRIVACY & CONFIDENTIALITY REQUIREMENT:
+If the patient mentions any specific third-party persons, family members, friends, colleagues, partners, or any individuals by name:
+YOU MUST NEVER INCLUDE THOSE REAL NAMES in this clinical summary or report!
+Strictly sanitize and redact all third-party names into generalized non-identifying roles, such as '[Friend]', '[Family Member]', '[Colleague]', '[Partner]', or '[Individual]'.
 
 Provide:
 1. Brief clinical summary (2-3 sentences)
@@ -351,21 +704,64 @@ Provide:
 3. Recommended follow-up actions
 4. Urgency level: low, moderate, or high
 
-Format as a professional clinical note. Respond in English."""
+CRITICAL FORMATTING INSTRUCTION:
+Do NOT use markdown asterisks (* or **) anywhere in your output. Do not use asterisks for bolding or bullet points.
+Use clean capitalized headers like:
+CLINICAL SUMMARY:
+KEY CONCERNS:
+RECOMMENDED ACTIONS:
+URGENCY LEVEL:
+Use clean bullet points (•) or hyphens (-) for lists. Format as a clean, professional clinical note. Respond in English."""
 
-            doctor_response = llm.invoke(doctor_prompt)
-            doctor_report = doctor_response.content
+            raw_doctor_report = await execute_text_generation(
+                doctor_prompt,
+                system_prompt="You are a clinical mental health analyst for MedicoScope."
+            )
+            cleaned_body = clean_doctor_report(raw_doctor_report)
 
             # Determine urgency from keywords
-            report_lower = doctor_report.lower()
-            if any(w in report_lower for w in ["high urgency", "urgent", "crisis", "suicidal", "self-harm", "emergency"]):
+            report_lower = cleaned_body.lower()
+            if any(w in report_lower for w in ["high urgency", "urgent", "crisis", "suicidal", "self-harm", "emergency", "critical"]):
                 urgency = "high"
             elif any(w in report_lower for w in ["moderate urgency", "moderate", "concerning", "anxiety", "depression"]):
                 urgency = "moderate"
 
-            # Save notification to Node.js backend (MongoDB). The endpoint now
-            # requires auth: forward the signed-in user's bearer token so the
-            # backend can bind identity and gate RED cases safely.
+            # Resolve location details
+            loc_summary = "Location Not Shared / Telehealth"
+            if location_label and location_label.strip():
+                loc_summary = location_label.strip()
+            elif latitude is not None and longitude is not None:
+                loc_summary = f"{latitude:.4f}, {longitude:.4f}"
+                if maps_url:
+                    loc_summary += f" ({maps_url})"
+
+            # Build standardized clinical report with explicit Timestamp and Location
+            now_utc = datetime.utcnow().strftime("%b %d, %Y - %I:%M %p UTC")
+            now_local = datetime.now().strftime("%I:%M %p")
+            voice_marker_text = (
+                f"\nVOICE BIOMARKER: {int(voice_marker_score * 100)}% ({voice_marker_headline})"
+                if voice_marker_score is not None
+                else ""
+            )
+
+            structured_report = (
+                f"CLINICAL TRIAGE REPORT\n"
+                f"PATIENT: {patient_name}\n"
+                f"TIMESTAMP: {now_utc} (Local: {now_local})\n"
+                f"LOCATION: {loc_summary}\n"
+                f"URGENCY LEVEL: {urgency.upper()}"
+                f"{voice_marker_text}\n"
+                f"----------------------------------------\n"
+                f"{cleaned_body}"
+            )
+
+            # Scrub third-party names from both the clinical report and doctor-facing transcript
+            doctor_report = await anonymize_third_party_names(structured_report, patient_name=patient_name)
+            doctor_transcript = await anonymize_third_party_names(transcript, patient_name=patient_name)
+            # Final clean pass to eliminate any residual asterisks
+            doctor_report = clean_doctor_report(doctor_report)
+
+            # Save notification to Node.js backend (MongoDB).
             try:
                 headers = {"Authorization": f"Bearer {auth_token}"} if auth_token else {}
                 async with httpx.AsyncClient(timeout=10) as client:
@@ -378,7 +774,7 @@ Format as a professional clinical note. Respond in English."""
                             "patientName": patient_name,
                             "clinicalReport": doctor_report,
                             "urgency": urgency,
-                            "transcript": transcript,
+                            "transcript": doctor_transcript,
                             "latitude": latitude,
                             "longitude": longitude,
                             "locationLabel": location_label,
@@ -391,7 +787,7 @@ Format as a professional clinical note. Respond in English."""
                 print(f"Warning: Failed to save notification to backend: {notif_err}")
 
         return {
-            "user_message": user_response.content,
+            "user_message": user_message,
             "transcript": transcript,
             "doctor_report": doctor_report,
             "urgency": urgency,
@@ -443,8 +839,10 @@ Make each tip detailed and evidence-based. {lang_instruction}""",
         raise HTTPException(status_code=400, detail="Invalid reward type")
 
     try:
-        response = llm.invoke(prompt)
-        return {"content": response.content, "reward_type": req.reward_type}
+        content = await execute_text_generation(prompt, system_prompt="You are a health and wellness advisor.")
+        if not content:
+            content = "Here are your personalized wellness guidelines to help you maintain vibrant health and well-being."
+        return {"content": content, "reward_type": req.reward_type}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

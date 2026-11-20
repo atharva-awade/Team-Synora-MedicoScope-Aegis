@@ -21,6 +21,10 @@ import 'package:medicoscope/core/theme/theme_provider.dart';
 import 'package:medicoscope/core/locale/locale_provider.dart';
 import 'package:medicoscope/core/locale/app_strings.dart';
 import 'package:record/record.dart';
+import 'package:medicoscope/services/gemini_tts_service.dart';
+import 'package:medicoscope/services/sos_emergency_service.dart';
+import 'package:medicoscope/services/ambulance_service.dart';
+import 'package:medicoscope/widgets/mental_health/lyria_soundscape_card.dart';
 
 class MentalHealthScreen extends StatefulWidget {
   const MentalHealthScreen({super.key});
@@ -42,6 +46,7 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
   bool _showCoins = false;
   String? _recordedPath;
   String _linkedDoctorId = '';
+  String _ttsLanguage = 'en'; // TTS voice language preference
   // Local, on-device voice acoustic-biomarker analysis (runs on the same
   // recording; screening signal only, never a diagnosis).
   VoiceBiomarkerResult? _voiceMarkers;
@@ -71,6 +76,23 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
     );
     _fetchLinkedDoctor();
     _loadVoiceCalibration();
+    GeminiTTSService.init();
+    GeminiTTSService.stateNotifier.addListener(_onTTSStateChange);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final appLang = Provider.of<LocaleProvider>(context, listen: false).languageCode;
+        if (GeminiTTSService.languageNames.containsKey(appLang)) {
+          setState(() {
+            _ttsLanguage = appLang;
+            GeminiTTSService.setLanguage(appLang);
+          });
+        }
+      }
+    });
+  }
+
+  void _onTTSStateChange() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _loadVoiceCalibration() async {
@@ -99,6 +121,8 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
   void dispose() {
     _countdownTimer?.cancel();
     _ampSub?.cancel();
+    GeminiTTSService.stateNotifier.removeListener(_onTTSStateChange);
+    GeminiTTSService.stop();
     _pulseController.dispose();
     _hourglassController.dispose();
     _recorder.dispose();
@@ -287,6 +311,7 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
         patientId: user?.id ?? 'anonymous',
         patientName: user?.name ?? 'Unknown',
         doctorId: _linkedDoctorId,
+        language: _ttsLanguage,
         authToken: authProvider.token,
         voiceMarkerScore: _voiceMarkers?.markerScore,
         voiceMarkerHeadline: _voiceMarkers?.headline,
@@ -296,12 +321,17 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
 
       _hourglassController.stop();
       _hourglassController.reset();
+      final message = result['user_message'] as String? ?? 'Thank you for sharing.';
       setState(() {
-        _responseText =
-            result['user_message'] as String? ?? 'Thank you for sharing.';
+        _responseText = message;
         _coinsEarned = coins;
         _isProcessing = false;
       });
+      // Automatically synthesize and speak response in user's chosen regional language
+      GeminiTTSService.speak(
+        text: message,
+        languageCode: _ttsLanguage,
+      );
 
       if (coins > 0) {
         final totalEarned = await coinsProvider.addCoins(coins);
@@ -325,6 +355,32 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
           voiceMarkerScore: _voiceMarkers?.markerScore,
         );
       }
+
+      // If high urgency / crisis detected, dispatch SOS SMS to emergency contact with GPS
+      final urgency = result['urgency'] as String? ?? 'low';
+      if (urgency.toLowerCase() == 'high') {
+        try {
+          await SosEmergencyService.sendAlertSms(
+            alertType: 'mindspace_crisis',
+            patientName: authProvider.user?.name ?? 'Patient',
+            severity: 'CRITICAL',
+            headline: 'High urgency detected during MindSpace mental health check-in',
+            details: 'Crisis indicator identified. Urgent support recommended.',
+          );
+        } catch (_) {}
+
+        if (mounted) {
+          AmbulanceService.triggerCriticalAlertCountdown(
+            context: context,
+            alertHeadline: 'High Urgency / Crisis Detected during MindSpace Check-In',
+            alertSeverity: 'CRITICAL',
+            patientName: authProvider.user?.name ?? 'Patient',
+            patientId: authProvider.user?.id,
+            details: 'Crisis indicator identified. Urgent medical evaluation recommended.',
+          );
+        }
+      }
+
     } catch (e) {
       _hourglassController.stop();
       _hourglassController.reset();
@@ -363,6 +419,141 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
     } catch (_) {
       return null;
     }
+  }
+
+  void _showTTSLanguageSheet() {
+    final isDark = Provider.of<ThemeProvider>(context, listen: false).isDarkMode;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E293B) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.25),
+                blurRadius: 18,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white24 : Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF7C4DFF).withOpacity(0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.record_voice_over_rounded,
+                        color: Color(0xFF7C4DFF),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'MindSpace Voice Language',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color: isDark ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          'Select language for voice guidance & responses',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark ? Colors.white54 : Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                ...GeminiTTSService.languageNames.entries.map((e) {
+                  final isSelected = e.key == _ttsLanguage;
+                  return InkWell(
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      setState(() {
+                        _ttsLanguage = e.key;
+                        GeminiTTSService.setLanguage(e.key);
+                      });
+                      if (_responseText != null) {
+                        GeminiTTSService.speak(
+                          text: _responseText!,
+                          languageCode: e.key,
+                        );
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? const Color(0xFF7C4DFF).withOpacity(0.12)
+                            : (isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade50),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected
+                              ? const Color(0xFF7C4DFF)
+                              : (isDark ? Colors.white12 : Colors.grey.shade200),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            e.value,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                              color: isSelected
+                                  ? const Color(0xFF7C4DFF)
+                                  : (isDark ? Colors.white : Colors.black87),
+                            ),
+                          ),
+                          const Spacer(),
+                          if (isSelected)
+                            const Icon(Icons.check_circle_rounded,
+                                color: Color(0xFF7C4DFF), size: 18),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -421,6 +612,46 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                    // TTS Voice Language Quick Switcher Pill
+                    GestureDetector(
+                      onTap: _showTTSLanguageSheet,
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E293B) : Colors.white.withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: const Color(0xFF7C4DFF).withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.record_voice_over_rounded,
+                              size: 15,
+                              color: Color(0xFF7C4DFF),
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              _ttsLanguage.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF7C4DFF),
+                              ),
+                            ),
+                            const Icon(
+                              Icons.arrow_drop_down,
+                              size: 16,
+                              color: Color(0xFF7C4DFF),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     // Coins display - tappable to open rewards
@@ -660,8 +891,14 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
                       const SizedBox(height: 20),
 
                       // Voice calibration status + action (idle only).
-                      if (!_isRecording && !_isProcessing)
+                      if (!_isRecording && !_isProcessing) ...[
                         _calibrationCard(isDark),
+                        const SizedBox(height: 12),
+                        // Google Lyria Generative Acoustic DTx Soundscape
+                        LyriaSoundscapeCard(
+                          voiceMarkerScore: _voiceMarkers?.markerScore,
+                        ),
+                      ],
 
                       const SizedBox(height: 12),
 
@@ -751,6 +988,9 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
                                           : AppTheme.textDark,
                                     ),
                                   ),
+                                  const Spacer(),
+                                  // Gemini 3.8 Flash TTS Voice Player Bar
+                                  _buildTTSControlBar(isDark),
                                 ],
                               ),
                               const SizedBox(height: 12),
@@ -787,6 +1027,135 @@ class _MentalHealthScreenState extends State<MentalHealthScreen>
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTTSControlBar(bool isDark) {
+    final ttsState = GeminiTTSService.state;
+    final isLoading = ttsState == TTSState.loading;
+    final isPlaying = ttsState == TTSState.playing;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF3E8FF),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFF7C4DFF).withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Play / Pause / Loading button
+          InkWell(
+            onTap: isLoading
+                ? null
+                : () {
+                    if (_responseText == null) return;
+                    if (isPlaying) {
+                      GeminiTTSService.pause();
+                    } else if (ttsState == TTSState.paused) {
+                      GeminiTTSService.resume();
+                    } else {
+                      GeminiTTSService.speak(
+                        text: _responseText!,
+                        languageCode: _ttsLanguage,
+                      );
+                    }
+                  },
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isLoading)
+                    const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFF7C4DFF),
+                      ),
+                    )
+                  else
+                    Icon(
+                      isPlaying
+                          ? Icons.pause_circle_filled_rounded
+                          : ttsState == TTSState.paused
+                              ? Icons.play_circle_fill_rounded
+                              : Icons.volume_up_rounded,
+                      size: 18,
+                      color: const Color(0xFF7C4DFF),
+                    ),
+                  const SizedBox(width: 4),
+                  Text(
+                    isLoading
+                        ? 'Synthesizing...'
+                        : isPlaying
+                            ? 'Pause'
+                            : ttsState == TTSState.paused
+                                ? 'Resume'
+                                : 'Listen',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF7C4DFF),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (isPlaying || ttsState == TTSState.paused) ...[
+            const SizedBox(width: 2),
+            InkWell(
+              onTap: () => GeminiTTSService.stop(),
+              borderRadius: BorderRadius.circular(12),
+              child: const Padding(
+                padding: EdgeInsets.all(4),
+                child: Icon(
+                  Icons.stop_circle_outlined,
+                  size: 16,
+                  color: Colors.redAccent,
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(width: 4),
+          // Language selector inside bar
+          GestureDetector(
+            onTap: _showTTSLanguageSheet,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF7C4DFF).withOpacity(0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _ttsLanguage.toUpperCase(),
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF7C4DFF),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_drop_down,
+                    size: 14,
+                    color: Color(0xFF7C4DFF),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

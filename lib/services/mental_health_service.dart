@@ -10,6 +10,7 @@ class MentalHealthService {
     required String patientId,
     required String patientName,
     required String doctorId,
+    String language = 'en',
     String? authToken,
     double? voiceMarkerScore,
     String? voiceMarkerHeadline,
@@ -22,6 +23,7 @@ class MentalHealthService {
       ..fields['patient_id'] = patientId
       ..fields['patient_name'] = patientName
       ..fields['doctor_id'] = doctorId
+      ..fields['language'] = language
       // Forwarded to the Node backend so the now-authenticated notification
       // endpoint can bind identity and gate RED cases safely.
       ..files.add(await http.MultipartFile.fromPath('audio', filePath));
@@ -134,7 +136,25 @@ class MentalHealthService {
     }
   }
 
-  /// Save mindspace session to DB
+  /// Anonymize personal third-party names to protect patient confidentiality from doctor reports
+  static String redactPersonalNames(String text) {
+    if (text.isEmpty) return text;
+    var sanitized = text;
+    final patterns = [
+      RegExp(r'\b(friend|boss|coworker|colleague|partner|roommate|neighbor|brother|sister|mother|father|mom|dad|uncle|aunt|cousin)\s+([A-Z][a-z]+)\b', caseSensitive: false),
+      RegExp(r'\b(told|with|from|called|met|saw|spoke with|spoke to|talked to|talked with)\s+([A-Z][a-z]+)\b', caseSensitive: false),
+      RegExp(r'\b([A-Z][a-z]+)\s+(told me|said that|did that|hurt me|threatened|yelled at me)\b', caseSensitive: false),
+    ];
+    for (final pattern in patterns) {
+      sanitized = sanitized.replaceAllMapped(pattern, (m) {
+        final prefixOrSuffix = m.group(1)!;
+        return '$prefixOrSuffix [Individual]';
+      });
+    }
+    return sanitized;
+  }
+
+  /// Save mindspace session to DB (with third-party privacy redaction for doctor-facing records)
   static Future<void> saveSessionToDb({
     required String token,
     required String transcript,
@@ -146,11 +166,16 @@ class MentalHealthService {
     double? voiceMarkerScore,
   }) async {
     try {
+      final sanitizedReport = doctorReport != null ? redactPersonalNames(doctorReport) : null;
+      final sanitizedTranscript = (doctorId != null && doctorId.isNotEmpty)
+          ? redactPersonalNames(transcript)
+          : transcript;
+
       final api = ApiService(token: token);
       await api.post(ApiConstants.mindspaceSession, {
-        'transcript': transcript,
+        'transcript': sanitizedTranscript,
         'userMessage': userMessage,
-        'doctorReport': doctorReport,
+        'doctorReport': sanitizedReport,
         'urgency': urgency,
         'coinsEarned': coinsEarned,
         'doctorId': doctorId,

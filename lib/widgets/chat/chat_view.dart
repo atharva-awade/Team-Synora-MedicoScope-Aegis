@@ -19,6 +19,8 @@ import 'package:medicoscope/models/chat_message.dart';
 import 'package:medicoscope/services/api_service.dart';
 import 'package:medicoscope/services/appointment_service.dart';
 import 'package:medicoscope/services/chat_service.dart';
+import 'package:medicoscope/services/gemini_tts_service.dart';
+import 'package:medicoscope/services/gemini_nano_service.dart';
 import 'package:medicoscope/services/disease_result_pipeline.dart';
 import 'package:medicoscope/services/disease_risk_store.dart';
 
@@ -46,6 +48,8 @@ class _ChatViewState extends State<ChatView> {
   String _streamingText = '';
   String _lastUserText = '';
   bool _showScrollDown = false;
+  bool _autoVoice = false;
+  bool _isNanoMode = false;
   final List<String> _contextChips = [];
 
   int _seq = 0;
@@ -65,6 +69,7 @@ class _ChatViewState extends State<ChatView> {
 
   @override
   void dispose() {
+    GeminiTTSService.stop();
     _controller.dispose();
     _scroll.removeListener(_onScroll);
     _scroll.dispose();
@@ -128,7 +133,7 @@ class _ChatViewState extends State<ChatView> {
           List<Map<String, dynamic>>.from(data['detections'] ?? []);
       if (detections.isNotEmpty) {
         _hasHealthData = true;
-        parts.add('\n--- Recent Detection Results ---');
+        parts.add('\r\n--- Recent Detection Results ---');
         for (final d in detections) {
           final cat = d['category'] ?? '';
           final cls = d['className'] ?? '';
@@ -147,7 +152,7 @@ class _ChatViewState extends State<ChatView> {
       final vitals = List<Map<String, dynamic>>.from(data['vitals'] ?? []);
       if (vitals.isNotEmpty) {
         _hasHealthData = true;
-        parts.add('\n--- Recent Vitals Sessions ---');
+        parts.add('\r\n--- Recent Vitals Sessions ---');
         for (final v in vitals) {
           final date = v['date'] ?? '';
           parts.add(
@@ -174,12 +179,12 @@ class _ChatViewState extends State<ChatView> {
       final diseaseSummary = await DiseaseRiskStore.chatbotSummary();
       if (diseaseSummary.isNotEmpty) {
         _hasHealthData = true;
-        parts.add('\n--- Disease Screening Results ---');
+        parts.add('\r\n--- Disease Screening Results ---');
         parts.add(diseaseSummary);
       }
     } catch (_) {}
 
-    _medicalProfile = parts.join('\n');
+    _medicalProfile = parts.join('\r\n');
     _profileLoaded = true;
     _addGreeting();
   }
@@ -219,7 +224,7 @@ class _ChatViewState extends State<ChatView> {
       final fresh = await DiseaseRiskStore.chatbotSummary();
       if (fresh.isNotEmpty && !_medicalProfile.contains(fresh)) {
         _medicalProfile =
-            '$_medicalProfile\n--- Disease Screening Results (live) ---\n$fresh';
+            '$_medicalProfile\r\n--- Disease Screening Results (live) ---\r\n$fresh';
         _hasHealthData = true;
       }
     } catch (_) {}
@@ -241,6 +246,29 @@ class _ChatViewState extends State<ChatView> {
     final lang =
         Provider.of<LocaleProvider>(context, listen: false).languageCode;
 
+    // ── On-Device Google Gemini Nano (AICore) Offline Execution ─────────────
+    if (_isNanoMode) {
+      final nanoRes = await GeminiNanoService.infer(
+        query: text,
+        patientName: auth.user?.name,
+      );
+      final finalText = _formatMessageText(nanoRes.text);
+      if (mounted) {
+        setState(() {
+          _messages.add(
+            ChatMessage(id: _nextId(), text: finalText, isUser: false),
+          );
+          _streamingText = '';
+          _isLoading = false;
+        });
+      }
+      if (_autoVoice && finalText.isNotEmpty) {
+        GeminiTTSService.speak(text: finalText, languageCode: lang);
+      }
+      _scrollToBottom();
+      return;
+    }
+
     try {
       final stream = ChatService.sendMessageStream(
         message: text,
@@ -254,7 +282,7 @@ class _ChatViewState extends State<ChatView> {
         setState(() => _streamingText += token);
         _scrollToBottom();
       }
-      final finalText = _streamingText;
+      final finalText = _formatMessageText(_streamingText);
       if (mounted) {
         setState(() {
           if (finalText.isNotEmpty) {
@@ -264,6 +292,9 @@ class _ChatViewState extends State<ChatView> {
           _streamingText = '';
           _isLoading = false;
         });
+      }
+      if (_autoVoice && finalText.isNotEmpty) {
+        GeminiTTSService.speak(text: finalText, languageCode: lang);
       }
       if (auth.token != null && finalText.isNotEmpty) {
         unawaited(ChatService.saveMessageToDb(
@@ -291,13 +322,17 @@ class _ChatViewState extends State<ChatView> {
         language: lang,
         medicalContext: _medicalProfile,
       );
+      final cleanReply = _formatMessageText(reply);
       if (mounted) {
         setState(() {
           _streamingText = '';
           _messages
-              .add(ChatMessage(id: _nextId(), text: reply, isUser: false));
+              .add(ChatMessage(id: _nextId(), text: cleanReply, isUser: false));
           _isLoading = false;
         });
+      }
+      if (_autoVoice && cleanReply.isNotEmpty) {
+        GeminiTTSService.speak(text: cleanReply, languageCode: lang);
       }
       if (auth.token != null && reply.isNotEmpty) {
         unawaited(ChatService.saveMessageToDb(
@@ -311,6 +346,27 @@ class _ChatViewState extends State<ChatView> {
         await Provider.of<CoinsProvider>(context, listen: false).addChatCoins();
       }
     } catch (e) {
+      // Automatic On-Device Gemini Nano fail-safe fallback for offline / disconnected situations
+      try {
+        final nanoRes = await GeminiNanoService.infer(
+          query: text,
+          patientName: auth.user?.name,
+        );
+        final finalText = _formatMessageText(nanoRes.text);
+        if (mounted) {
+          setState(() {
+            _streamingText = '';
+            _messages.add(ChatMessage(id: _nextId(), text: finalText, isUser: false));
+            _isLoading = false;
+          });
+          if (_autoVoice && finalText.isNotEmpty) {
+            GeminiTTSService.speak(text: finalText, languageCode: lang);
+          }
+          _scrollToBottom();
+          return;
+        }
+      } catch (_) {}
+
       final err = e.toString();
       String msg;
       if (err.contains('quota') ||
@@ -515,6 +571,58 @@ class _ChatViewState extends State<ChatView> {
           spacing: 6,
           runSpacing: 6,
           children: [
+            // Engine Switcher Pill: Gemini 2.5 Flash vs Gemini Nano
+            GestureDetector(
+              onTap: () {
+                setState(() => _isNanoMode = !_isNanoMode);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    duration: const Duration(milliseconds: 1800),
+                    backgroundColor: _isNanoMode ? const Color(0xFF2E7D32) : const Color(0xFF1976D2),
+                    content: Text(
+                      _isNanoMode
+                          ? '📱 Switched to Google Gemini Nano (On-Device AICore / Zero Egress)'
+                          : '⚡ Switched to Google Gemini 2.5 Flash (Cloud Run / Live)',
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: _isNanoMode
+                      ? const Color(0xFF38A169).withOpacity(0.18)
+                      : const Color(0xFF4285F4).withOpacity(0.18),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: _isNanoMode
+                        ? const Color(0xFF48BB78).withOpacity(0.5)
+                        : const Color(0xFF4285F4).withOpacity(0.5),
+                    width: 1.2,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _isNanoMode ? Icons.phone_android_rounded : Icons.cloud_done_rounded,
+                      size: 13,
+                      color: _isNanoMode ? const Color(0xFF48BB78) : const Color(0xFF4285F4),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      _isNanoMode ? 'Gemini Nano (Edge)' : 'Gemini 2.5 Flash',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: _isNanoMode ? const Color(0xFF48BB78) : const Color(0xFF4285F4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             for (final c in _contextChips)
               Container(
                 padding:
@@ -594,7 +702,7 @@ class _ChatViewState extends State<ChatView> {
                         horizontal: 14, vertical: 10),
                     borderRadius: 14,
                     child: MarkdownBody(
-                      data: m.text + (m.streaming ? ' ▌' : ''),
+                      data: _formatMessageText(m.text) + (m.streaming ? ' ▌' : ''),
                       styleSheet: _mdStyle(isDark),
                     ),
                   ),
@@ -611,6 +719,35 @@ class _ChatViewState extends State<ChatView> {
                 const SizedBox(width: 14),
                 _miniAction(
                     Icons.refresh_rounded, 'Regenerate', _regenerate),
+                const SizedBox(width: 14),
+                ValueListenableBuilder<TTSState>(
+                  valueListenable: GeminiTTSService.stateNotifier,
+                  builder: (context, ttsState, _) {
+                    final isPlaying = ttsState == TTSState.playing &&
+                        GeminiTTSService.currentPlayingText == m.text;
+                    final isBuffering = ttsState == TTSState.loading &&
+                        GeminiTTSService.currentPlayingText == m.text;
+                    return _miniAction(
+                      isBuffering
+                          ? Icons.hourglass_top_rounded
+                          : (isPlaying
+                              ? Icons.stop_circle_outlined
+                              : Icons.volume_up_rounded),
+                      isPlaying ? 'Stop' : 'Listen',
+                      () async {
+                        if (isPlaying) {
+                          await GeminiTTSService.stop();
+                        } else {
+                          final lang = Provider.of<LocaleProvider>(context,
+                                  listen: false)
+                              .languageCode;
+                          await GeminiTTSService.speak(text: m.text,
+                              languageCode: lang);
+                        }
+                      },
+                    );
+                  },
+                ),
               ]),
             ),
         ],
@@ -647,6 +784,119 @@ class _ChatViewState extends State<ChatView> {
             color: Colors.white, size: 15),
       );
 
+  // Format message text
+  static String _formatMessageText(String raw) {
+    if (raw.isEmpty) return raw;
+
+    // 0. Clean bracketed placeholders (e.g. [Your Name], [Name], [User])
+    var text = raw.replaceAll(
+      RegExp(r'\[\s*(?:Your\s+Name|Name|Patient(?:\s+Name)?|User)\s*\]', caseSensitive: false),
+      '',
+    );
+    // Remove horizontal divider lines of 4+ dashes or underscores
+    text = text.replaceAll(RegExp(r'[-_]{4,}'), '');
+
+    // 1. Process entire text to convert multiline or inline HTML tags
+    text = text.replaceAll(RegExp(r'</li>\s*<li>', caseSensitive: false), '  •  ');
+    text = text.replaceAll(RegExp(r'<(?:ul|ol)[^>]*>\s*<li>', caseSensitive: false), '•  ');
+    text = text.replaceAll(RegExp(r'<li>', caseSensitive: false), '•  ');
+    text = text.replaceAll(RegExp(r'</li>\s*</(?:ul|ol)>', caseSensitive: false), ' ');
+    text = text.replaceAll(RegExp(r'</?(?:ul|ol)[^>]*>', caseSensitive: false), ' ');
+    text = text.replaceAll(RegExp(r'</li>', caseSensitive: false), ' ');
+    text = text.replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '  •  ');
+    text = text.replaceAll(RegExp(r'</?(?:b|strong)>', caseSensitive: false), '**');
+    text = text.replaceAll(RegExp(r'</?(?:i|em)>', caseSensitive: false), '*');
+    text = text.replaceAll(RegExp(r'</?p>', caseSensitive: false), '\n');
+    text = text.replaceAll(RegExp(r'</?(?:span|div)[^>]*>', caseSensitive: false), '');
+    // Strip any remaining HTML tags
+    text = text.replaceAll(RegExp(r'<[^>]+>'), '');
+
+    // 2. Process line-by-line for table and markdown cleanup
+    final lines = text.split(RegExp(r'\r?\n'));
+    final buffer = StringBuffer();
+
+    for (int i = 0; i < lines.length; i++) {
+      var line = lines[i].trim();
+      if (line.isEmpty) {
+        buffer.writeln();
+        continue;
+      }
+
+      // Check for markdown table divider line (e.g. |---|---| or |:---:|)
+      if (RegExp(r'^\|?\s*[-:]+[-|\s:]*\|?$').hasMatch(line)) {
+        continue; // drop markdown table divider lines
+      }
+
+      // Check for markdown table rows (e.g. | col 1 | col 2 |)
+      if (line.contains('|')) {
+        final cells = line
+            .split('|')
+            .map((c) => c.trim())
+            .where((c) => c.isNotEmpty)
+            .toList();
+        if (cells.length > 1) {
+          line = '• **${cells[0]}:** ${cells.sublist(1).join(' — ')}';
+        } else if (cells.length == 1) {
+          line = '• ${cells[0]}';
+        }
+      }
+
+      // ── Remove '*' written in front of words meant for bold ────────────────
+      // 1. Remove '* **word**' -> '**word**' (bullet asterisk preceding bold)
+      line = line.replaceAllMapped(
+        RegExp(r'(^|[|;•\s])\*\s*\*\*([^\*\r\n]+?)\*\*'),
+        (m) => '${m[1]}**${m[2]}**',
+      );
+      // 2. Remove stray '* **'
+      line = line.replaceAllMapped(
+        RegExp(r'(^|[|;•\s])\*\s+\*\*'),
+        (m) => '${m[1]}**',
+      );
+      // 3. Remove '* word**' -> '**word**' (missing opening bold asterisk)
+      line = line.replaceAllMapped(
+        RegExp(r'(^|[|;•\s])\*([A-Za-z0-9_\u0900-\u097F\u0B80-\u0BFF\u0C00-\u0C7F\u0C80-\u0CFF\u0980-\u09FF]+)\*\*'),
+        (m) => '${m[1]}**${m[2]}**',
+      );
+      // 4. Remove '**word*' -> '**word**' (missing closing bold asterisk)
+      line = line.replaceAllMapped(
+        RegExp(r'(^|[|;•\s])\*\*([A-Za-z0-9_\u0900-\u097F\u0B80-\u0BFF\u0C00-\u0C7F\u0C80-\u0CFF\u0980-\u09FF]+)\*([^\*]|$)'),
+        (m) => '${m[1]}**${m[2]}**${m[3]}',
+      );
+      // 5. Triple asterisks '***word***' -> '**word**'
+      line = line.replaceAllMapped(
+        RegExp(r'\*{3,}([^\*\r\n]+?)\*{2,}'),
+        (m) => '**${m[1]}**',
+      );
+      line = line.replaceAllMapped(
+        RegExp(r'\*{2,}([^\*\r\n]+?)\*{3,}'),
+        (m) => '**${m[1]}**',
+      );
+
+      // 6. Fix spaces inside bold markers: '** word**' or '**word **' -> '**word**'
+      line = line.replaceAllMapped(
+        RegExp(r'\*\*\s+([^\*\r\n]+?)\*\*'),
+        (m) => '**${m[1]}**',
+      );
+      line = line.replaceAllMapped(
+        RegExp(r'\*\*([^\*\r\n]+?)\s+\*\*'),
+        (m) => '**${m[1]}**',
+      );
+
+      // 7. Clean consecutive asterisks (3 or more) down to 2
+      line = line.replaceAll(RegExp(r'\*{3,}'), '**');
+
+      // 8. Clean stray single asterisks before words at line starts -> clean bullet
+      line = line.replaceAllMapped(
+        RegExp(r'^\s*\*\s*([A-Za-z0-9_\u0900-\u097F\u0B80-\u0BFF\u0C00-\u0C7F\u0C80-\u0CFF\u0980-\u09FF])'),
+        (m) => '• ${m[1]}',
+      );
+
+      buffer.writeln(line);
+    }
+
+    return buffer.toString().trimRight();
+  }
+
   MarkdownStyleSheet _mdStyle(bool isDark) {
     final base = isDark ? AppTheme.darkTextLight : AppTheme.textDark;
     return MarkdownStyleSheet(
@@ -661,6 +911,13 @@ class _ChatViewState extends State<ChatView> {
           backgroundColor:
               (isDark ? Colors.white : Colors.black).withValues(alpha: .06),
           color: AppTheme.chatTealDark),
+      tableBody: TextStyle(fontSize: 12.5, height: 1.4, color: base),
+      tableHead: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: base),
+      tableBorder: TableBorder.all(
+        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.18),
+        width: 1,
+      ),
+      tableCellsPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       blockquoteDecoration: BoxDecoration(
         color: _accent.withValues(alpha: .08),
         borderRadius: BorderRadius.circular(8),
@@ -758,12 +1015,43 @@ class _ChatViewState extends State<ChatView> {
     final items = buildChatSuggestions(hasHealthData: _hasHealthData);
     return SizedBox(
       height: 40,
-      child: ListView.separated(
+      child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-        itemCount: items.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (_, i) => ActionChip(
+        children: [
+          // Auto voice toggle pill
+          ActionChip(
+            avatar: Icon(
+              _autoVoice ? Icons.volume_up_rounded : Icons.volume_off_rounded,
+              size: 15,
+              color: _autoVoice ? const Color(0xFF00BFA5) : Colors.grey,
+            ),
+            label: Text(
+              _autoVoice ? 'Auto Voice: ON' : 'Auto Voice: OFF',
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: _autoVoice ? FontWeight.bold : FontWeight.normal,
+                color: _autoVoice
+                    ? const Color(0xFF00BFA5)
+                    : (isDark ? AppTheme.darkTextGray : AppTheme.textGray),
+              ),
+            ),
+            onPressed: () {
+              setState(() => _autoVoice = !_autoVoice);
+              if (!_autoVoice) GeminiTTSService.stop();
+            },
+            backgroundColor: _autoVoice
+                ? const Color(0xFF00BFA5).withValues(alpha: .15)
+                : (isDark ? AppTheme.darkCard : Colors.grey.shade100),
+            side: BorderSide(
+              color: _autoVoice
+                  ? const Color(0xFF00BFA5).withValues(alpha: .4)
+                  : (isDark ? Colors.white12 : Colors.grey.shade300),
+            ),
+          ),
+          const SizedBox(width: 8),
+          for (int i = 0; i < items.length; i++) ...[
+            ActionChip(
           avatar: Icon(items[i].icon, size: 15, color: _accent),
           label: Text(items[i].label, style: const TextStyle(fontSize: 11.5)),
           onPressed: _isLoading ? null : () => _send(items[i].prompt),
@@ -771,7 +1059,10 @@ class _ChatViewState extends State<ChatView> {
           side: BorderSide(color: _accent.withValues(alpha: .25)),
           labelStyle: TextStyle(
               color: isDark ? AppTheme.darkTextLight : AppTheme.textDark),
-        ),
+            ),
+            if (i < items.length - 1) const SizedBox(width: 8),
+          ],
+        ],
       ),
     );
   }
@@ -787,6 +1078,28 @@ class _ChatViewState extends State<ChatView> {
                   color: isDark ? Colors.white10 : Colors.grey.shade300)),
         ),
         child: Row(children: [
+          // TTS voice quick toggle icon
+          GestureDetector(
+            onTap: () {
+              setState(() => _autoVoice = !_autoVoice);
+              if (!_autoVoice) GeminiTTSService.stop();
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(_autoVoice
+                    ? 'Voice readout turned ON'
+                    : 'Voice readout turned OFF'),
+                duration: const Duration(milliseconds: 900),
+                behavior: SnackBarBehavior.floating,
+              ));
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Icon(
+                _autoVoice ? Icons.volume_up_rounded : Icons.volume_off_rounded,
+                color: _autoVoice ? const Color(0xFF00BFA5) : (isDark ? Colors.white38 : Colors.grey),
+                size: 22,
+              ),
+            ),
+          ),
           Expanded(
             child: Container(
               decoration: BoxDecoration(

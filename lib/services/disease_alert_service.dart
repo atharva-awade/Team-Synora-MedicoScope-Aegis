@@ -7,6 +7,7 @@ import 'package:medicoscope/core/constants/api_constants.dart';
 import 'package:medicoscope/core/constants/disease_constants.dart';
 import 'package:medicoscope/models/disease_risk_result.dart';
 import 'package:medicoscope/services/location_service.dart';
+import 'package:medicoscope/services/sos_emergency_service.dart';
 
 class DiseaseAlert {
   final String id;
@@ -116,12 +117,34 @@ class DiseaseAlertService {
     // Best-effort doctor notification via the existing backend endpoint, which
     // now requires auth - forward the patient's token so the notification is
     // accepted and persisted (otherwise it would 401 and be lost).
+    // Resolve live location for doctor dispatch and SOS SMS
+    LocationFix fix = LocationFix.empty;
+    try {
+      fix = await LocationService.getFix();
+    } catch (_) {}
+
+    // 1. Dispatch SOS SMS with live GPS location to patient's emergency contact
+    try {
+      final diseaseTitle = DiseaseRegistry.of(result.disease).title;
+      final methodTitle = MethodRegistry.of(result.method).title;
+      final details = result.findings.isNotEmpty
+          ? result.findings.take(2).map((f) => '${f.name}: ${f.value} ${f.unit} (${f.flag})').join(', ')
+          : 'High risk screening finding requiring immediate attention.';
+
+      await SosEmergencyService.sendAlertSms(
+        alertType: 'disease_${result.disease.name}',
+        patientName: patientName,
+        severity: result.risk.label,
+        headline: '$diseaseTitle ($methodTitle): ${result.headline}',
+        details: details,
+        locationFix: fix,
+      );
+    } catch (_) {}
+
+    // 2. Best-effort doctor notification via the backend endpoint
     if (doctorId != null && doctorId.isNotEmpty && authToken != null) {
       try {
         final clinical = _buildClinicalReport(result);
-        // Attach the patient's live location so the doctor can locate them for
-        // a high/critical finding. Best-effort: null when unavailable.
-        final fix = await LocationService.getFix();
         await http
             .post(
               Uri.parse('${ApiConstants.baseUrl}/mental-health/notifications'),

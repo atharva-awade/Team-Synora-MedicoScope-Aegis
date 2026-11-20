@@ -5,6 +5,7 @@ import 'package:medicoscope/core/locale/app_strings.dart';
 import 'package:medicoscope/core/locale/locale_provider.dart';
 import 'package:medicoscope/core/theme/app_theme.dart';
 import 'package:medicoscope/core/theme/theme_provider.dart';
+import 'package:medicoscope/screens/live/gemini_live_screen.dart';
 import 'package:medicoscope/widgets/chat/chat_view.dart';
 
 /// Opens the full-screen immersive medical-assistant chat with a fade/slide.
@@ -105,6 +106,33 @@ class ChatScreen extends StatelessWidget {
                       ),
                     ]),
                   ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const GeminiLiveScreen()),
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: .22),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white38),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.record_voice_over_rounded, color: Colors.white, size: 15),
+                      SizedBox(width: 5),
+                      Text(
+                        'Gemini Live',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

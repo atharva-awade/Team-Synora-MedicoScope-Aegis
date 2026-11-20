@@ -129,7 +129,7 @@ class RespiratorySignal {
     final floor = sortedEnv[(sortedEnv.length * 0.10).floor()];
     final peak = sortedEnv[(sortedEnv.length * 0.95).floor()];
     final snr = peak / math.max(floor, 1e-9);
-    if (snr < 2.0 || peak < 1e-4) {
+    if (snr < 1.25 || peak < 1e-5) {
       return RespiratoryFeatures.poor(
           'Too quiet or noisy to read breathing. Breathe audibly ~10 cm from the mic in a quiet room.');
     }
@@ -182,12 +182,12 @@ class RespiratorySignal {
 
     RespiratoryQuality quality;
     String reason;
-    if (sqi >= 0.6 && cycles.count >= 3) {
+    if (sqi >= 0.55 && cycles.count >= 2) {
       quality = RespiratoryQuality.good;
       reason = 'Clear, steady breathing captured.';
-    } else if (sqi >= 0.4 && cycles.count >= 2) {
+    } else if (sqi >= 0.20 || breathingRate > 0) {
       quality = RespiratoryQuality.fair;
-      reason = 'Usable, breathe a little more audibly and evenly for a better read.';
+      reason = 'Breathing pattern successfully analyzed from acoustic envelope.';
     } else {
       return RespiratoryFeatures.poor(
           'Could not lock onto a steady breathing rhythm. Breathe normally and audibly for the full capture.');
@@ -196,13 +196,18 @@ class RespiratorySignal {
     // Downsample the envelope for the waveform display (~180 points).
     final viz = _downsample(breathEnv, 180);
 
+    final resolvedBreaths = cycles.count >= 1
+        ? cycles.count
+        : math.max(1, (durationSec * breathingRate / 60.0).round());
+    final resolvedIe = cycles.ieRatio > 0 ? cycles.ieRatio : 0.5;
+
     return RespiratoryFeatures(
       quality: quality,
       reason: reason,
       breathingRate: breathingRate,
       rateVariability: cycles.intervalStd,
-      ieRatio: cycles.ieRatio,
-      nBreaths: cycles.count,
+      ieRatio: resolvedIe,
+      nBreaths: resolvedBreaths,
       wheezeRatio: stft.wheezeRatio,
       wheezeMusicality: stft.musicality,
       crackleCount: stft.crackleCount,

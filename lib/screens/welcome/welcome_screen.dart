@@ -1,3 +1,4 @@
+import 'package:medicoscope/core/widgets/language_selector_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:medicoscope/core/locale/locale_provider.dart';
@@ -225,7 +226,7 @@ class WelcomeScreen extends StatelessWidget {
                             .animate()
                             .fadeIn(delay: 1200.ms, duration: 600.ms),
 
-                        const SizedBox(height: AppTheme.spacingLarge),
+                        const SizedBox(height: AppTheme.spacingXXLarge),
 
                         // Enter button
                         SizedBox(
@@ -290,11 +291,18 @@ class WelcomeScreen extends StatelessWidget {
             ),
           ),
           
-          // Theme toggle button in top-right corner
+          // Top action bar with Language Selector & Theme Toggle
           Positioned(
             top: AppTheme.spacingMedium,
+            left: AppTheme.spacingMedium,
             right: AppTheme.spacingMedium,
-            child: const ThemeToggleButton(),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: const [
+                LanguageSelectorButton(compact: true),
+                ThemeToggleButton(),
+              ],
+            ),
           ),
         ],
       ),

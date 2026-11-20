@@ -8,6 +8,8 @@ import 'package:medicoscope/core/widgets/theme_toggle_button.dart';
 import 'package:medicoscope/core/locale/locale_provider.dart';
 import 'package:medicoscope/core/locale/app_strings.dart';
 import 'package:medicoscope/models/detection_result.dart';
+import 'package:medicoscope/screens/ar/ar_viewer_screen.dart';
+import 'package:medicoscope/services/ar_service.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:medicoscope/core/theme/theme_provider.dart';
@@ -27,14 +29,36 @@ class DetectionResultsScreen extends StatefulWidget {
       _DetectionResultsScreenState();
 }
 
-class _DetectionResultsScreenState extends State<DetectionResultsScreen> {
+class _DetectionResultsScreenState extends State<DetectionResultsScreen>
+    with WidgetsBindingObserver {
   Size? _imageSize;
+  bool _isARActive = false;
+  bool _isBackgrounded = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     if (widget.result.hasBoundingBox) {
       _loadImageSize();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      if (mounted) setState(() => _isBackgrounded = true);
+    } else if (state == AppLifecycleState.resumed) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) setState(() => _isBackgrounded = false);
+      });
     }
   }
 
@@ -48,6 +72,63 @@ class _DetectionResultsScreenState extends State<DetectionResultsScreen> {
           frame.image.width.toDouble(),
           frame.image.height.toDouble(),
         );
+      });
+    }
+  }
+
+  Future<void> _launchAR() async {
+    if (_isARActive || widget.result.model3dPath.isEmpty) return;
+    setState(() => _isARActive = true);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Projecting ${widget.result.className} in AR...',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          duration: const Duration(seconds: 3),
+          backgroundColor: AppTheme.primaryOrange,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    }
+
+    try {
+      final success = await ARService.launchARViewer(
+        widget.result.model3dPath,
+        title: widget.result.className,
+      );
+      if (!success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(ARService.getARSupportMessage()),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } finally {
+      // Safe re-attachment grace period
+      Future.delayed(const Duration(milliseconds: 600), () {
+        if (mounted) setState(() => _isARActive = false);
       });
     }
   }
@@ -66,27 +147,9 @@ class _DetectionResultsScreenState extends State<DetectionResultsScreen> {
               : AppTheme.backgroundGradient,
         ),
         child: SafeArea(
-          child: Stack(
+          child: Column(
             children: [
-              // 3D Model Background
-              if (widget.result.model3dPath.isNotEmpty)
-                Positioned.fill(
-                  child: Opacity(
-                    opacity: 0.3,
-                    child: ModelViewer(
-                      src: widget.result.model3dPath,
-                      alt: '3D model of ${widget.result.className}',
-                      autoRotate: true,
-                      cameraControls: false,
-                      backgroundColor: Colors.transparent,
-                    ),
-                  ),
-                ),
-
-              // Content
-              Column(
-                children: [
-                  // App Bar
+              // App Bar
                   Padding(
                     padding: const EdgeInsets.all(AppTheme.spacingMedium),
                     child: Row(
@@ -196,7 +259,7 @@ class _DetectionResultsScreenState extends State<DetectionResultsScreen> {
                                       AppTheme.spacingMedium),
                                   decoration: BoxDecoration(
                                     color: AppTheme.primaryOrange
-                                        .withOpacity(0.1),
+                                        .withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(
                                         AppTheme.radiusMedium),
                                   ),
@@ -278,6 +341,27 @@ class _DetectionResultsScreenState extends State<DetectionResultsScreen> {
                                             color: AppTheme.textDark,
                                           ),
                                         ),
+                                        const Spacer(),
+                                        ElevatedButton.icon(
+                                          onPressed: _launchAR,
+                                          icon: const Icon(Icons.view_in_ar, size: 18, color: Colors.white),
+                                          label: Text(
+                                            _isARActive ? 'Projecting...' : 'View in AR',
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppTheme.primaryOrange,
+                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(16),
+                                            ),
+                                            elevation: 2,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -286,21 +370,83 @@ class _DetectionResultsScreenState extends State<DetectionResultsScreen> {
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(
                                           AppTheme.radiusLarge),
-                                      child: ModelViewer(
-                                        src: widget.result.model3dPath,
-                                        alt:
-                                            '3D model of ${widget.result.className}',
-                                        ar: true,
-                                        arModes: const [
-                                          'scene-viewer',
-                                          'webxr',
-                                          'quick-look'
+                                      child: Stack(
+                                        children: [
+                                          Positioned.fill(
+                                            child: (_isARActive || _isBackgrounded)
+                                                ? Container(
+                                                    color: isDark
+                                                        ? const Color(0xFF1E293B)
+                                                        : const Color(0xFFF1F5F9),
+                                                    child: Center(
+                                                      child: Column(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          const Icon(
+                                                            Icons.view_in_ar_rounded,
+                                                            size: 48,
+                                                            color: AppTheme.primaryOrange,
+                                                          ),
+                                                          const SizedBox(height: 12),
+                                                          Text(
+                                                            '3D View Standby',
+                                                            style: TextStyle(
+                                                              fontSize: 13,
+                                                              fontWeight: FontWeight.w600,
+                                                              color: isDark ? Colors.white70 : Colors.black54,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  )
+                                                : ModelViewer(
+                                                    key: ValueKey('model_${widget.result.model3dPath}'),
+                                                    src: widget.result.model3dPath,
+                                                    alt:
+                                                        '3D model of ${widget.result.className}',
+                                                    ar: false,
+                                                    autoRotate: true,
+                                                    autoRotateDelay: 0,
+                                                    rotationPerSecond: '30deg',
+                                                    cameraControls: true,
+                                                    backgroundColor: isDark
+                                                        ? const Color(0xFF1E293B)
+                                                        : const Color(0xFFF8FAFC),
+                                                  ),
+                                          ),
+                                          // Custom Native AR Cube Button at bottom right
+                                          Positioned(
+                                            right: 16,
+                                            bottom: 16,
+                                            child: Material(
+                                              color: Colors.white,
+                                              elevation: 4,
+                                              shape: const CircleBorder(),
+                                              child: InkWell(
+                                                customBorder: const CircleBorder(),
+                                                onTap: _launchAR,
+                                                child: Container(
+                                                  width: 48,
+                                                  height: 48,
+                                                  decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color: Colors.white,
+                                                    border: Border.all(
+                                                      color: Colors.black.withValues(alpha: 0.08),
+                                                      width: 1,
+                                                    ),
+                                                  ),
+                                                  child: const Icon(
+                                                    Icons.view_in_ar_rounded,
+                                                    color: AppTheme.primaryOrange,
+                                                    size: 26,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
                                         ],
-                                        autoRotate: true,
-                                        autoRotateDelay: 0,
-                                        rotationPerSecond: '30deg',
-                                        cameraControls: true,
-                                        backgroundColor: Colors.transparent,
                                       ),
                                     ),
                                   ),
@@ -366,11 +512,9 @@ class _DetectionResultsScreenState extends State<DetectionResultsScreen> {
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
+        );
   }
 
   Widget _buildImagePreview() {

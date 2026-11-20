@@ -248,7 +248,15 @@ class _NearbyDoctorsScreenState extends State<NearbyDoctorsScreen> {
           : Stack(
               children: [
                 Positioned.fill(child: _buildMap(isDark)),
-                SafeArea(child: _buildTopBar(isDark)),
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: SafeArea(
+                    bottom: false,
+                    child: _buildTopBar(isDark),
+                  ),
+                ),
                 if (_isLoading) _buildLoadingOverlay(isDark),
                 _buildBottomSheet(isDark),
               ],
@@ -267,10 +275,8 @@ class _NearbyDoctorsScreenState extends State<NearbyDoctorsScreen> {
       ),
       children: [
         TileLayer(
-          urlTemplate: isDark
-              ? 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}.png'
-              : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.medicoscope.app',
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'com.medicoscope.aegis',
         ),
         // User location marker
         if (_userLocation != null)
@@ -404,11 +410,7 @@ class _NearbyDoctorsScreenState extends State<NearbyDoctorsScreen> {
   }
 
   Widget _buildTopBar(bool isDark) {
-    return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
-      child: Padding(
+    return Padding(
         padding: const EdgeInsets.all(AppTheme.spacingMedium),
         child: Column(
           children: [
@@ -475,8 +477,7 @@ class _NearbyDoctorsScreenState extends State<NearbyDoctorsScreen> {
             ],
           ],
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildRecommendationChips(bool isDark) {
