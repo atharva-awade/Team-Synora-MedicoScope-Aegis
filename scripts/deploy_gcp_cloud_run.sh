@@ -37,6 +37,24 @@ echo "=========================================================="
 echo "--> Enabling Cloud Run and Cloud Build APIs..."
 gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com --project "$PROJECT_ID"
 
+echo "--> Granting Cloud Build permissions to default service accounts..."
+PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
+
+gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+    --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+    --role="roles/storage.admin" \
+    --condition=None --quiet || true
+
+gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+    --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+    --role="roles/artifactregistry.writer" \
+    --condition=None --quiet || true
+
+gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+    --member="serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com" \
+    --role="roles/storage.admin" \
+    --condition=None --quiet || true
+
 echo "--> [1/2] Deploying Node.js Backend API..."
 gcloud run deploy medicoscope-backend \
     --source server \

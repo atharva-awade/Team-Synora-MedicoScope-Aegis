@@ -69,6 +69,12 @@ if ($GeminiApiKey) {
 Write-Host "`n--> Enabling Cloud Run and Cloud Build APIs..." -ForegroundColor Cyan
 & gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com --project $ProjectId
 
+Write-Host "`n--> Configuring IAM permissions for Cloud Build..." -ForegroundColor Cyan
+$projectNumber = (& gcloud projects describe $ProjectId --format='value(projectNumber)').Trim()
+& gcloud projects add-iam-policy-binding $ProjectId --member="serviceAccount:${projectNumber}-compute@developer.gserviceaccount.com" --role="roles/storage.admin" --condition=None --quiet
+& gcloud projects add-iam-policy-binding $ProjectId --member="serviceAccount:${projectNumber}-compute@developer.gserviceaccount.com" --role="roles/artifactregistry.writer" --condition=None --quiet
+& gcloud projects add-iam-policy-binding $ProjectId --member="serviceAccount:${projectNumber}@cloudbuild.gserviceaccount.com" --role="roles/storage.admin" --condition=None --quiet
+
 # 5. Deploy Node.js Backend API
 Write-Host "`n--> [1/2] Deploying MedicoScope Node.js API to Cloud Run..." -ForegroundColor Cyan
 & gcloud run deploy medicoscope-backend `
