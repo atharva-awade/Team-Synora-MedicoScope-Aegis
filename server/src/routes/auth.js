@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const express = require('express');
+const mongoose = require('mongoose');
 const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
@@ -33,6 +34,12 @@ router.post('/register', [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ message: errors.array()[0].msg });
+    }
+
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        message: 'Database connection offline. Please whitelist Cloud Run outbound IPs (0.0.0.0/0) in MongoDB Atlas Network Access.'
+      });
     }
 
     const { email, password, name, phone, role } = req.body;
@@ -101,6 +108,12 @@ router.post('/login', [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ message: errors.array()[0].msg });
+    }
+
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        message: 'Database connection offline. Please whitelist Cloud Run outbound IPs (0.0.0.0/0) in MongoDB Atlas Network Access.'
+      });
     }
 
     const { email, password } = req.body;

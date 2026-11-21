@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 
+// Fail fast on disconnected queries instead of buffering for 10 seconds
+mongoose.set('bufferTimeoutMS', 2500);
+
 const connectDB = async () => {
   const uri = process.env.MONGODB_URI;
   if (!uri) {

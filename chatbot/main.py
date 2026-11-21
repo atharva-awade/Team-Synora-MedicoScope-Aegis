@@ -1058,14 +1058,14 @@ async def vitals_start(req: VitalsStartRequest):
 
     vitals_sessions[session_id] = session
 
-    # Persist the session envelope to MongoDB (durable; survives restarts).
-    await _backend_post("/vitals/sessions", {
+    # Persist the session envelope to MongoDB asynchronously (best-effort background task).
+    asyncio.create_task(_backend_post("/vitals/sessions", {
         "sessionId": session_id,
         "doctorId": req.doctor_id,
         "patientId": req.patient_id,
         "patientName": req.patient_name,
         "location": req.location,
-    }, _service_headers())
+    }, _service_headers()))
 
     return {"session_id": session_id, "scenario": scenario}
 
@@ -1088,16 +1088,16 @@ async def vitals_tick(req: VitalsTickRequest):
         if patient_id:
             vitals_alerts.setdefault(f"pat_{patient_id}", []).extend(alerts)
 
-        # Persist to MongoDB so the doctor's alert history survives restarts.
-        await _backend_post("/vitals/alerts", {
+        # Persist to MongoDB in background so vitals stream is zero-latency
+        asyncio.create_task(_backend_post("/vitals/alerts", {
             "doctorId": doctor_id,
             "patientId": patient_id,
             "patientName": session.get("patient_name", ""),
             "sessionId": req.session_id,
             "location": session.get("location", ""),
             "alerts": alerts,
-        }, _service_headers())
-        await _backend_patch(f"/vitals/sessions/{req.session_id}", {}, _service_headers())
+        }, _service_headers()))
+        asyncio.create_task(_backend_patch(f"/vitals/sessions/{req.session_id}", {}, _service_headers()))
 
     return {"data_points": points, "alerts": alerts}
 
