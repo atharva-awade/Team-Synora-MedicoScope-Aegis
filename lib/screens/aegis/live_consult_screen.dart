@@ -63,7 +63,7 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
 
   @override
   void dispose() {
-    GeminiTTSService.stop();
+    GeminiTTSService.stop().catchError((_) {});
     _complaintCtrl.dispose();
     _scroll.dispose();
     super.dispose();
@@ -99,29 +99,38 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
   }
 
   void _reach(int s) {
-    if (_stage < s) _stage = s;
+    if (!mounted) return;
+    if (_stage < s) {
+      setState(() => _stage = s);
+    }
   }
 
   void _add(_TraceItem t) {
+    if (!mounted) return;
     setState(() => _trace.add(t));
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scroll.hasClients) {
+      if (mounted && _scroll.hasClients) {
         _scroll.animateTo(_scroll.position.maxScrollExtent,
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
       }
     });
   }
 
-  Future<void> _speakVocal(String text) async {
+  void _speakVocal(String text) {
     if (!_vocalNarrator || !mounted || text.trim().isEmpty) return;
     try {
       final loc = Provider.of<LocaleProvider>(context, listen: false);
       final lang = loc.languageCode;
-      await GeminiTTSService.speak(
+      GeminiTTSService.speak(
         text: text,
         languageCode: lang,
-      );
-    } catch (_) {}
+      ).catchError((e) {
+        debugPrint('Aegis TTS speak error: $e');
+        return false;
+      });
+    } catch (e) {
+      debugPrint('Aegis _speakVocal error: $e');
+    }
   }
 
   Future<void> _start() async {
@@ -162,6 +171,7 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
 
     try {
       await for (final e in stream) {
+        if (!mounted) break;
         switch (e.event) {
           case 'consult_start':
             _add(_TraceItem('Orchestrator', 'Consult started',
@@ -300,18 +310,22 @@ class _LiveConsultScreenState extends State<LiveConsultScreen> {
             });
             break;
           case 'consult_error':
-            setState(() {
-              _running = false;
-              _error = e.data['error']?.toString() ?? 'Consult error';
-            });
+            if (mounted) {
+              setState(() {
+                _running = false;
+                _error = e.data['error']?.toString() ?? 'Consult error';
+              });
+            }
             break;
         }
       }
     } catch (err) {
-      setState(() {
-        _running = false;
-        _error = err.toString();
-      });
+      if (mounted) {
+        setState(() {
+          _running = false;
+          _error = err.toString();
+        });
+      }
     }
     if (mounted && _running) setState(() => _running = false);
   }

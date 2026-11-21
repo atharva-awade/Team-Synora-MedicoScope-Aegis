@@ -19,6 +19,7 @@ class GeminiTTSService {
   static final FlutterTts _flutterTts = FlutterTts();
   static bool _usingNativeFallback = true;
   static bool _isInitialized = false;
+  static bool _engineConfigured = false;
   static bool _isPreparingSpeech = false;
 
   static TTSState _state = TTSState.idle;
@@ -72,6 +73,20 @@ class GeminiTTSService {
   static void init() {
     if (_isInitialized) return;
     _isInitialized = true;
+
+    // Optional safe one-time engine configuration for Android
+    if (!_engineConfigured) {
+      _engineConfigured = true;
+      try {
+        if (Platform.isAndroid) {
+          _flutterTts.getEngines.then((engines) {
+            if (engines is List && engines.contains('com.google.android.tts')) {
+              _flutterTts.setEngine('com.google.android.tts').catchError((_) => 0);
+            }
+          }).catchError((_) {});
+        }
+      } catch (_) {}
+    }
 
     // Listen to Cloud AudioPlayer state
     _player.onPlayerStateChanged.listen((s) {
@@ -257,16 +272,6 @@ class GeminiTTSService {
   /// Speak using device's native TTS engine in regional Indian languages
   static Future<bool> _speakNative(String text, String lang, double? speed) async {
     try {
-      try {
-        if (Platform.isAndroid) {
-          final engines = await _flutterTts.getEngines;
-          if (engines is List && engines.contains('com.google.android.tts')) {
-            await _flutterTts.setEngine('com.google.android.tts');
-          }
-          await _flutterTts.awaitSpeakCompletion(true);
-        }
-      } catch (_) {}
-
       final localeTag = _nativeLocales[lang] ?? 'en-IN';
       
       try {
