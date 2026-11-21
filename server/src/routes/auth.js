@@ -84,7 +84,7 @@ router.post('/register', [
 
     const token = jwt.sign(
       { userId: user._id, email: user.email, role: user.role },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || 'medicoscope_production_jwt_secret_key_2026',
       { expiresIn: '30d' }
     );
     await recordSession(user._id, token, req.body.deviceId);
@@ -130,7 +130,7 @@ router.post('/login', [
 
     const token = jwt.sign(
       { userId: user._id, email: user.email, role: user.role },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || 'medicoscope_production_jwt_secret_key_2026',
       { expiresIn: '30d' }
     );
     await recordSession(user._id, token, req.body.deviceId);
