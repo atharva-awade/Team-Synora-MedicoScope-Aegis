@@ -191,8 +191,8 @@ class _VitalsScreenState extends State<VitalsScreen>
       _sendEmergencySms(alert);
 
       final sev = alert.severity.toLowerCase();
-      // Trigger 5-second countdown for critical or high vitals breach to book ambulance
-      if ((sev == 'critical' || sev == 'high') && mounted) {
+      // Trigger 5-second countdown only for critical vitals breach to book ambulance
+      if (sev == 'critical' && mounted) {
         // STOP background vitals monitoring immediately so alerts do not loop and spam
         final vitals = Provider.of<VitalsProvider>(context, listen: false);
         if (vitals.isMonitoring) {

@@ -270,15 +270,15 @@ class VitalsProvider extends ChangeNotifier {
     final timeStr =
         "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}";
 
-    // Generate natural vital fluctuations around healthy baseline
-    final hrWave = math.sin(tickIndex * 0.25) * 5.0;
-    final bpWave = math.sin(tickIndex * 0.15) * 6.0;
-    final randomJitter = (math.Random().nextDouble() - 0.5) * 2.0;
+    // Generate natural healthy vital fluctuations around healthy baseline
+    final hrWave = math.sin(tickIndex * 0.25) * 3.0;
+    final bpWave = math.sin(tickIndex * 0.15) * 4.0;
+    final randomJitter = (math.Random().nextDouble() - 0.5) * 1.5;
 
-    final hr = (74.0 + hrWave + randomJitter).clamp(55.0, 140.0);
-    final sys = (120.0 + bpWave + randomJitter * 1.5).clamp(85.0, 175.0);
-    final dia = (78.0 + bpWave * 0.6 + randomJitter).clamp(50.0, 110.0);
-    final spo2 = (98.0 - (math.Random().nextDouble() * 1.2)).clamp(90.0, 100.0);
+    final hr = (72.0 + hrWave + randomJitter).clamp(65.0, 82.0);
+    final sys = (118.0 + bpWave + randomJitter).clamp(112.0, 126.0);
+    final dia = (76.0 + bpWave * 0.5 + randomJitter).clamp(72.0, 82.0);
+    final spo2 = (98.0 - (math.Random().nextDouble() * 0.8)).clamp(96.0, 99.0);
 
     final point = VitalDataPoint(
       tick: tickIndex,
